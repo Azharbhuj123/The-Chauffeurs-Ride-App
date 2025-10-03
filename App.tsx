@@ -5,44 +5,25 @@
  * @format
  */
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+// App.tsx
+import React from "react";
+import { StatusBar, StyleSheet, useColorScheme } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import MainNavigation from "./src/navigation/MainNavigation";
 
-//@ts-ignore
-import Icon from 'react-native-vector-icons/AntDesign';
-
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+export default function App() {
+  const isDarkMode = useColorScheme() === "dark";
 
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
+      <MainNavigation />
     </SafeAreaProvider>
-  );
-}
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View style={styles.container}>
-            <Icon name="amazon" size={30} color="white" />
-
-    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent:"center",
-    alignItems:"center"
   },
 });
-
-export default App;

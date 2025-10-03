@@ -1,8 +1,18 @@
+// src/navigation/MainNavigation.tsx
+// @ts-nocheck
 import React from "react";
 import { View, Text, StyleSheet, Dimensions } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Icon from "react-native-vector-icons/Ionicons";
-const { width } = Dimensions.get("window"); // device width le rahe hain
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import Intro from "../components/Intro";
+import Splash_Screen from "../pages/splash_screens/Splash_Screen";
+import Signup from "../pages/auth_screens/Signup";
+import Verify from "../pages/auth_screens/Verify";
+
+const { width } = Dimensions.get("window");
+
 const HomeScreen = () => (
   <View style={styles.screen}>
     <Text>Home</Text>
@@ -23,8 +33,11 @@ const ProfileScreen = () => (
     <Text>Profile</Text>
   </View>
 );
+
 const Tab = createBottomTabNavigator();
-export default function BottomTabs() {
+const Stack = createNativeStackNavigator();
+
+function BottomTabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -33,18 +46,18 @@ export default function BottomTabs() {
         tabBarStyle: {
           position: "absolute",
           bottom: 15,
-          left: width * 0.05, // 5% from left
-          right: width * 0.05, // 5% from right
+          left: width * 0.05,
+          right: width * 0.05,
           borderRadius: 20,
           backgroundColor: "#fff",
-          height: 0.1 * width, // 10% of screen width → responsive height
+          height: 0.1 * width,
           shadowColor: "#000",
           shadowOpacity: 0.1,
           shadowOffset: { width: 0, height: 4 },
           shadowRadius: 8,
           elevation: 5,
         },
-        tabBarIcon: ({ focused }) => {
+        tabBarIcon: ({ focused, color, size }) => {
           let iconName = "";
           if (route.name === "Home") {
             iconName = focused ? "home" : "home-outline";
@@ -58,7 +71,7 @@ export default function BottomTabs() {
           return (
             <Icon
               name={iconName}
-              size={width * 0.07} // 7% of screen width
+              size={width * 0.07}
               color={focused ? "#FFD700" : "#999"}
             />
           );
@@ -72,6 +85,23 @@ export default function BottomTabs() {
     </Tab.Navigator>
   );
 }
+
+
+export default function MainNavigation() {
+  return (
+        <NavigationContainer>
+      <Stack.Navigator  initialRouteName="intro" screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="intro" component={Intro} />
+        <Stack.Screen name="Splash" component={Splash_Screen} />
+        <Stack.Screen name="Login" component={BookingScreen} />
+        <Stack.Screen  name="Signup" component={Signup} />
+        <Stack.Screen  name="Verify" component={Verify} />
+        <Stack.Screen name="MainTabs" component={BottomTabs} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
