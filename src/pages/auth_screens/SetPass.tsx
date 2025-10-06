@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from 'react';
 import {
     View,
@@ -28,22 +29,24 @@ const fs = (size) => {
     return Math.sqrt((height * height) + (width * width)) * (size / 1000);
 };
 
-function Signup({ navigation }) {
+function SetPass({ navigation }) {
     const [userType, setUserType] = useState('user');
     const [name, setName] = useState('');
     const [emailOrPhone, setEmailOrPhone] = useState('');
     const [password, setPassword] = useState('');
+    const [conPassword, setConPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [showPassword1, setShowPassword1] = useState(false);
 
     const insets = useSafeAreaInsets(); // ✅ handle top/bottom safe area
 
-    const handleSignUp = () => {
+    const handleSetPass = () => {
         console.log('Signing up as:', userType);
         console.log('Name:', name);
         console.log('Email/Phone:', emailOrPhone);
         console.log('Password:', password);
-        // Add your sign up logic here
-        navigation.navigate("Verify")
+        // Add your Sign in logic here
+        navigation.navigate("MainTabs")
     };
 
 
@@ -66,6 +69,10 @@ function Signup({ navigation }) {
             >
                 {/* Header Section */}
                 <View style={styles.header}>
+                          <TouchableOpacity onPress={()=>navigation.navigate("Login")} style={styles.backButton}>
+                                <Icon name="chevron-back" size={wp(6)} color="#000" />
+                                <Text style={styles.backText}>Back</Text>
+                              </TouchableOpacity>
                     <View style={styles.logoContainer}>
                         <Image
                             source={require('../../assets/images/headLogo.png')}
@@ -77,63 +84,18 @@ function Signup({ navigation }) {
 
                 {/* Form Section */}
                 <View style={styles.formContainer}>
-                    <Text style={styles.title}>Sign Up</Text>
-                    <Text style={styles.subtitle}>Continue your journey with the Chaffeurs</Text>
+                    <Text style={styles.title}>Set New Password</Text>
+                    <Text style={styles.subtitle}>Reset your password and continue</Text>
 
-                    {/* User Type Toggle */}
-                    <View style={styles.toggleContainer}>
-                        <TouchableOpacity
-                            style={[styles.toggleButton, userType === 'user' && styles.toggleButtonActive]}
-                            onPress={() => setUserType('user')}
-                            activeOpacity={0.7}
-                        >
-                            <Text style={[styles.toggleText, userType === 'user' && styles.toggleTextActive]}>
-                                Sign up as User
-                            </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.toggleButton, userType === 'driver' && styles.toggleButtonActive]}
-                            onPress={() => setUserType('driver')}
-                            activeOpacity={0.7}
-                        >
-                            <Text style={[styles.toggleText, userType === 'driver' && styles.toggleTextActive]}>
-                                Sign up as Driver
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
+              
 
-                    {/* Name Input */}
-                    <View style={styles.inputContainer}>
-                        <Icon name="person-outline" size={wp(5)} color="#999" style={styles.iconStyle} />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Name"
-                            placeholderTextColor="#999"
-                            value={name}
-                            onChangeText={setName}
-                        />
-                    </View>
 
                     {/* Email/Phone Input */}
-                    <View style={styles.inputContainer}>
-                        <Icon name="mail-outline" size={wp(5)} color="#999" style={styles.iconStyle} />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Email Or Phone No."
-                            placeholderTextColor="#999"
-                            value={emailOrPhone}
-                            onChangeText={setEmailOrPhone}
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                        />
-                    </View>
-
-                    {/* Password Input */}
                     <View style={styles.inputContainer}>
                         <Icon name="lock-closed-outline" size={wp(5)} color="#999" style={styles.iconStyle} />
                         <TextInput
                             style={styles.input}
-                            placeholder="Password"
+                            placeholder="Enter your password"
                             placeholderTextColor="#999"
                             value={password}
                             onChangeText={setPassword}
@@ -148,22 +110,32 @@ function Signup({ navigation }) {
                         </TouchableOpacity>
                     </View>
 
-                 
-                    <Button title="Sign Up"  onPress={handleSignUp}/>
-
-                 
-
-                    {/* Social Sign Up */}
-                    <SocialBtns />
-
-
-                    {/* Sign In Link */}
-                    <View style={styles.signInContainer}>
-                        <Text style={styles.signInText}>Already have an account? </Text>
-                        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-                            <Text style={styles.signInLink}>Sign In</Text>
+                    {/* Password Input */}
+                    <View style={styles.inputContainer}>
+                        <Icon name="lock-closed-outline" size={wp(5)} color="#999" style={styles.iconStyle} />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Confirm Password"
+                            placeholderTextColor="#999"
+                            value={conPassword}
+                            onChangeText={setConPassword}
+                            secureTextEntry={!showPassword1}
+                        />
+                        <TouchableOpacity onPress={() => setShowPassword1(!showPassword1)}>
+                            <Icon
+                                name={showPassword1 ? 'eye-outline' : 'eye-off-outline'}
+                                size={wp(5)}
+                                color="#999"
+                            />
                         </TouchableOpacity>
                     </View>
+
+         
+                    
+                            <Button title="Save"  onPress={handleSetPass}/>
+
+                    
+                  
                 </View>
             </ScrollView>
         </KeyboardAvoidingView>
@@ -188,11 +160,20 @@ const styles = StyleSheet.create({
     },
     logoContainer: {
         alignItems: 'center',
-        justifyContent: 'center',
         flex: 1,
     },
     logo: {
     },
+    backButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingTop: hp(2),
+      },
+      backText: {
+        fontSize: fs(16),
+        color: '#000',
+        marginLeft: wp(1),
+      },
     formContainer: {
         flex: 1,
         backgroundColor: '#FFF',
@@ -323,7 +304,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        paddingBottom: hp(4),
     },
     signInText: {
         fontSize: fs(14),
@@ -352,6 +332,13 @@ const styles = StyleSheet.create({
         fontSize: fs(14),
         textAlign: 'center',
     },
-});
 
-export default Signup;
+    forgotContainer:{
+        width:`100%`,
+        marginBottom:hp(2)
+    },
+    forgotText:{
+        textAlign:"right"
+    }
+});
+export default SetPass;

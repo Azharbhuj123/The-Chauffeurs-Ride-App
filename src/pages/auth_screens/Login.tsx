@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from 'react';
 import {
     View,
@@ -28,7 +29,7 @@ const fs = (size) => {
     return Math.sqrt((height * height) + (width * width)) * (size / 1000);
 };
 
-function Signup({ navigation }) {
+function Login({ navigation }) {
     const [userType, setUserType] = useState('user');
     const [name, setName] = useState('');
     const [emailOrPhone, setEmailOrPhone] = useState('');
@@ -42,8 +43,8 @@ function Signup({ navigation }) {
         console.log('Name:', name);
         console.log('Email/Phone:', emailOrPhone);
         console.log('Password:', password);
-        // Add your sign up logic here
-        navigation.navigate("Verify")
+        // Add your Sign in logic here
+        navigation.navigate("MainTabs")
     };
 
 
@@ -77,42 +78,11 @@ function Signup({ navigation }) {
 
                 {/* Form Section */}
                 <View style={styles.formContainer}>
-                    <Text style={styles.title}>Sign Up</Text>
+                    <Text style={styles.title}>Sign In</Text>
                     <Text style={styles.subtitle}>Continue your journey with the Chaffeurs</Text>
 
-                    {/* User Type Toggle */}
-                    <View style={styles.toggleContainer}>
-                        <TouchableOpacity
-                            style={[styles.toggleButton, userType === 'user' && styles.toggleButtonActive]}
-                            onPress={() => setUserType('user')}
-                            activeOpacity={0.7}
-                        >
-                            <Text style={[styles.toggleText, userType === 'user' && styles.toggleTextActive]}>
-                                Sign up as User
-                            </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.toggleButton, userType === 'driver' && styles.toggleButtonActive]}
-                            onPress={() => setUserType('driver')}
-                            activeOpacity={0.7}
-                        >
-                            <Text style={[styles.toggleText, userType === 'driver' && styles.toggleTextActive]}>
-                                Sign up as Driver
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
 
-                    {/* Name Input */}
-                    <View style={styles.inputContainer}>
-                        <Icon name="person-outline" size={wp(5)} color="#999" style={styles.iconStyle} />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Name"
-                            placeholderTextColor="#999"
-                            value={name}
-                            onChangeText={setName}
-                        />
-                    </View>
+
 
                     {/* Email/Phone Input */}
                     <View style={styles.inputContainer}>
@@ -148,20 +118,30 @@ function Signup({ navigation }) {
                         </TouchableOpacity>
                     </View>
 
-                 
-                    <Button title="Sign Up"  onPress={handleSignUp}/>
+                    <TouchableOpacity onPress={() => navigation.navigate("Forgot")}>
+                        <View style={styles.forgotContainer}>
 
-                 
+                            <Text style={styles.forgotText}>Forget password?</Text>
+                        </View>
 
-                    {/* Social Sign Up */}
+                    </TouchableOpacity>
+
+
+                    <Button title="Sign In" onPress={handleSignUp} />
+
+
+
+
+
+                    {/* Social Sign in */}
                     <SocialBtns />
 
 
-                    {/* Sign In Link */}
+                    {/* Sign in Link */}
                     <View style={styles.signInContainer}>
-                        <Text style={styles.signInText}>Already have an account? </Text>
-                        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-                            <Text style={styles.signInLink}>Sign In</Text>
+                        <Text style={styles.signInText}>Don’t have an account? </Text>
+                        <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
+                            <Text style={styles.signInLink}>Sign up</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -323,7 +303,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        paddingBottom: hp(4),
     },
     signInText: {
         fontSize: fs(14),
@@ -352,6 +331,13 @@ const styles = StyleSheet.create({
         fontSize: fs(14),
         textAlign: 'center',
     },
-});
 
-export default Signup;
+    forgotContainer: {
+        width: `100%`,
+        marginBottom: hp(2)
+    },
+    forgotText: {
+        textAlign: "right"
+    }
+});
+export default Login;

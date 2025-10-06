@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import React, { useState, useRef } from 'react';
 import {
   View,
@@ -13,19 +15,24 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
+import { useStore } from '../../stores/useStore';
+import Button from '../../components/Button';
 
 const { width, height } = Dimensions.get('window');
- 
+
 
 const fs = (size) => {
   return Math.sqrt((height * height) + (width * width)) * (size / 1000);
 };
 
-export default function Verify() {
+export default function Verify({ navigation }) {
   const [code, setCode] = useState(['', '', '', '']);
   const [isVerified, setIsVerified] = useState(false);
   const inputRefs = useRef([]);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  const { isForgot } = useStore();
+
 
   const handleCodeChange = (text, index) => {
     const newCode = [...code];
@@ -45,12 +52,17 @@ export default function Verify() {
   };
 
   const handleVerify = () => {
+
+    if (isForgot) {
+      navigation.navigate("SetPass");
+      return;
+    }
     // Add your verification logic here
     console.log('Verification code:', code.join(''));
-    
+
     // Simulate successful verification
     setIsVerified(true);
-    
+
     // Fade in animation
     Animated.timing(fadeAnim, {
       toValue: 1,
@@ -67,22 +79,27 @@ export default function Verify() {
 
   const handleResendCode = () => {
     console.log('Resending code...');
+
     // Add resend logic here
   };
 
-  if (isVerified) {
+  if (isVerified && !isForgot) {
+
+    setTimeout(() => {
+      navigation.navigate("MainTabs")
+    }, [3000])
     return (
       <View style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor="#FDD835" />
-        
+
         {/* Header Section */}
         <View style={styles.header}>
-          <View style={styles.logoContainer}>
-        <Image 
-              source={require("../../assets/images/headLogo.png")} 
+          <View style={[{ justifyContent: "center" }, styles.logoContainer]}>
+            <Image
+              source={require("../../assets/images/headLogo.png")}
               style={styles.logo}
               resizeMode="contain"
-            /> 
+            />
           </View>
         </View>
 
@@ -91,8 +108,8 @@ export default function Verify() {
           <View style={styles.congratsContent}>
             {/* Success Icon/Image */}
             <View style={styles.successIconContainer}>
-              <Image 
-                source={require('../../assets/images/congratulations.png')} 
+              <Image
+                source={require('../../assets/images/congratulations.png')}
                 style={styles.congratsImage}
                 resizeMode="contain"
               />
@@ -115,13 +132,17 @@ export default function Verify() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FDD835" />
-      
+
       {/* Header Section */}
       <View style={styles.header}>
-        
+        <TouchableOpacity onPress={() => navigation.navigate("Login")} style={styles.backButton}>
+          <Icon name="chevron-back" size={wp(6)} color="#000" />
+          <Text style={styles.backText}>Back</Text>
+        </TouchableOpacity>
+
         <View style={styles.logoContainer}>
-          <Image 
-            source={require('../../assets/images/headLogo.png')} 
+          <Image
+            source={require('../../assets/images/headLogo.png')}
             style={styles.logo}
             resizeMode="contain"
           />
@@ -161,14 +182,9 @@ export default function Verify() {
           </TouchableOpacity>
         </View>
 
-        {/* Verify Button */}
-        <TouchableOpacity 
-          style={styles.verifyButton} 
-          onPress={handleVerify}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.verifyButtonText}>Verify Now</Text>
-        </TouchableOpacity>
+      
+                            <Button title="Verify Now"  onPress={handleVerify}/>
+        
       </View>
     </View>
   );
@@ -188,7 +204,7 @@ const styles = StyleSheet.create({
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: hp(2),
+    paddingTop: hp(2),
   },
   backText: {
     fontSize: fs(16),
@@ -197,7 +213,6 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
     flex: 1,
   },
   logo: {
@@ -292,7 +307,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000',
   },
-  
+
   // Congratulations Screen Styles
   congratsContainer: {
     flex: 1,
@@ -327,7 +342,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   congratsTitle: {
-    fontSize: fs(28),
+    fontSize: fs(30),
     fontWeight: 'bold',
     color: '#000',
     marginBottom: hp(2),
