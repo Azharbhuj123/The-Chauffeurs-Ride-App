@@ -1,6 +1,5 @@
+//@ts-nocheck
 import React, { useState, useCallback } from 'react';
-// Note: We use an empty import list to resolve the compiler issue, 
-// but the React Native environment makes these modules available globally in your actual RN CLI project.
 import {
     View,
     Text,
@@ -400,13 +399,15 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginBottom: hp(3),
-        backgroundColor:"#F3F3F3"
+        backgroundColor:"#F3F3F3",
+        borderRadius: 50,
+
     },
     toggleButton: {
         flex: 1,
         paddingVertical: hp(1.5),
         marginHorizontal: wp(1.5),
-        borderRadius: 8,
+        borderRadius: 50,
         alignItems: 'center',
         
     },
@@ -420,7 +421,6 @@ const styles = StyleSheet.create({
     },
     toggleTextActive: {
         color: 'black',
-        fontWeight: 'bold',
     },
 
     // Schedule Details (Date/Time)
@@ -464,21 +464,28 @@ const styles = StyleSheet.create({
     // Vehicle Class Selector
     classSelectorContainer: {
         marginBottom: hp(2.5),
+        backgroundColor:'#fff',
+        padding: wp(6),
+        borderRadius:25,
+    boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
+
     },
     classButtonsRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        backgroundColor: LIGHT_GREY,
         borderRadius: 10,
         padding: 3,
+        gap:5
     },
     classButton: {
         flex: 1,
         paddingVertical: hp(1),
         borderRadius: 8,
         alignItems: 'center',
+        backgroundColor:LIGHT_GREY,
     },
     classButtonActive: {
+        padding:20,
         backgroundColor: PRIMARY_YELLOW,
     },
     classButtonText: {

@@ -168,7 +168,7 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
   },
   scrollView: {
     flex: 1,
@@ -199,6 +199,8 @@ const styles = StyleSheet.create({
   },
   rideStatusCard: {
     backgroundColor: '#fff',
+    boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
+
     borderRadius: wp('4%'),
     padding: wp('4%'),
     marginBottom: hp('2%'),
@@ -288,6 +290,8 @@ const styles = StyleSheet.create({
   },
   destinationCard: {
     backgroundColor: '#fff',
+    boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
+
     borderRadius: wp('4%'),
     padding: wp('4%'),
     marginBottom: wp('3%'),
