@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
     View,
     Text,
@@ -10,12 +10,17 @@ import {
     Dimensions,
     Platform,
     Image,
+    TouchableWithoutFeedback,
 } from 'react-native';
 import UserHeader from '../../components/Header';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import Icon from 'react-native-vector-icons/Ionicons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import Button from '../../components/Button';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 // --- Responsive Utility Functions (Mocking Libraries like 'react-native-responsive-screen') ---
@@ -47,14 +52,14 @@ const LocationInput = ({ fromLocation, toLocation, onSwap, onFromChange, onToCha
     // Swap Icon (Using text character for simplicity, rotated 90 degrees)
     const SwapIcon = () => (
         // <Text style={{ fontSize: wp(5), color: '#333', transform: [{ rotate: '90deg' }] }}>⇄</Text>
-        <Image  style={styles.swapper} source={require("../../assets/images/toway.png")}/>
+        <Image style={styles.swapper} source={require("../../assets/images/toway.png")} />
     );
 
     return (
         <View style={styles.locationContainer}>
             {/* Current Location Input */}
             <View style={[styles.inputRow, isSwapped ? { borderColor: '#E0E0E0' } : { borderColor: '#189237' }]}>
-                <FontAwesome6 name="location-crosshairs" style={[{color: isSwapped ? "black" :"green"},styles.iconStyle]} size={wp(5)} color="green" />
+                <FontAwesome6 name="location-crosshairs" style={[{ color: isSwapped ? "black" : "green" }, styles.iconStyle]} size={wp(5)} color="green" />
 
                 <TextInput
                     style={styles.locationInput}
@@ -65,13 +70,13 @@ const LocationInput = ({ fromLocation, toLocation, onSwap, onFromChange, onToCha
                 />
                 {/* Swap Button (optical and professional swap action) */}
             </View>
-                <TouchableOpacity style={styles.swapButton} onPress={handleSwap}>
-                    <SwapIcon />
-                </TouchableOpacity>
+            <TouchableOpacity style={styles.swapButton} onPress={handleSwap}>
+                <SwapIcon />
+            </TouchableOpacity>
 
             {/* Destination Input */}
             <View style={[styles.inputRow, { marginTop: hp(1.5) }, !isSwapped ? { borderColor: '#E0E0E0' } : { borderColor: '#189237' }]}>
-                <Icon name="location-outline"  style={[{color: !isSwapped ? "black" :"green"},styles.iconStyle]} size={wp(5)} />
+                <Icon name="location-outline" style={[{ color: !isSwapped ? "black" : "green" }, styles.iconStyle]} size={wp(5)} />
 
                 <TextInput
                     style={styles.locationInput}
@@ -126,7 +131,7 @@ const CarCard = ({ car, isSelected, onSelect }) => {
             onPress={() => onSelect(car.name)}
         >
             <Image
-                source={{ uri: car.imageUrl }}
+                source={car.imageUrl}
                 style={styles.carImage}
                 resizeMode="contain"
             />
@@ -134,7 +139,10 @@ const CarCard = ({ car, isSelected, onSelect }) => {
             <Text style={styles.carDescription}>{car.description}</Text>
             <View style={styles.carIconsRow}>
                 {/* Placeholder for small feature icons/dots */}
-                <Text style={{ color: PRIMARY_YELLOW, fontSize: wp(4) }}>• • •</Text>
+                {/* <Text style={{ color: PRIMARY_YELLOW, fontSize: wp(4) }}>• • •</Text> */}
+                <Icon name="wifi" size={wp(4)} />
+                <Icon name="snow" size={wp(4)} />
+                <Icon name="battery-full-outline" size={wp(4)} />
             </View>
         </TouchableOpacity>
     );
@@ -142,140 +150,189 @@ const CarCard = ({ car, isSelected, onSelect }) => {
 
 
 // --- Main App Component ---
-export default function BookingMain() {
+export default function BookingMain({navigation}) {
     const [isScheduledRide, setIsScheduledRide] = useState(false);
     const [selectedClass, setSelectedClass] = useState('Luxury');
     const [selectedCar, setSelectedCar] = useState('Prestige Sedan');
     const [fromLocation, setFromLocation] = useState('');
     const [toLocation, setToLocation] = useState('');
-    const [dateTime, setDateTime] = useState({ date: '10/15/2025', time: '06:30 PM' });
-
+    const [showPicker, setShowPicker] = useState(false);
+    const [pickerMode, setPickerMode] = useState('date'); // 'date' | 'time'
+    const [dateTime, setDateTime] = useState({
+        date: 'Select Date',
+        time: 'Select Time',
+    });
     const cars = [
         {
             name: 'Prestige Sedan',
             description: 'Classic, Sedan, 3 bags or equivalent',
-            // Placeholder image URL for a Sedan (Ensure a reliable placeholder is used)
-            imageUrl: 'https://placehold.co/150x70/202020/ffffff?text=Sedan',
+            imageUrl: require("../../assets/images/sedan.png"),
         },
         {
             name: 'Executive SUV',
             description: 'SUV, 5 seats, 6 bags or equivalent',
-            // Placeholder image URL for an SUV
-            imageUrl: 'https://placehold.co/150x70/202020/ffffff?text=SUV',
+            imageUrl: require("../../assets/images/suv.png"),
         },
     ];
 
-    const handleToggle = (isSchedule) => {
-        setIsScheduledRide(isSchedule);
-    };
+    const handleToggle = (isSchedule) => setIsScheduledRide(isSchedule);
 
     const handleSwapLocations = useCallback(() => {
-        // Simple state swap for mock functionality
         setFromLocation(toLocation);
         setToLocation(fromLocation);
     }, [fromLocation, toLocation]);
 
+    const onChange = (event, selectedDate) => {
+        setShowPicker(false);
+        if (selectedDate) {
+            const currentDate = new Date(selectedDate);
+            if (pickerMode === 'date') {
+                const formattedDate = currentDate.toLocaleDateString();
+                setDateTime(prev => ({ ...prev, date: formattedDate }));
+            } else {
+                const formattedTime = currentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                setDateTime(prev => ({ ...prev, time: formattedTime }));
+            }
+        }
+    };
+
+
+    const showDatepicker = () => {
+        setPickerMode('date');
+        setShowPicker(true);
+    };
+
+    const showTimepicker = () => {
+        setPickerMode('time');
+        setShowPicker(true);
+    };
+
+    useEffect(()=>{
+        const removeItem = async () =>{
+
+            await AsyncStorage.removeItem("CancelRide")
+        }
+
+        removeItem();
+
+    },[])
     return (
-        <SafeAreaView style={{ flex: 1 }}>
-            <View style={styles.safeArea}>
-                <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <SafeAreaView style={styles.safeArea}>
+            <TouchableWithoutFeedback onPress={() => setShowPicker(false)}>
 
-                    {/* User Header */}
-                    <UserHeader />
+                <ScrollView
+                    contentContainerStyle={styles.scrollViewContent}
+                    showsVerticalScrollIndicator={false}
+                >
+                    {/* --- White Section (main content) --- */}
+                    <View style={styles.whiteContainer}>
+                        {/* User Header */}
+                        <UserHeader />
 
+                        {/* --- Location Section --- */}
+                        <LocationInput
+                            fromLocation={fromLocation}
+                            toLocation={toLocation}
+                            onSwap={handleSwapLocations}
+                            onFromChange={setFromLocation}
+                            onToChange={setToLocation}
+                        />
 
-                    {/* --- Location Section --- */}
-                    <LocationInput
-                        fromLocation={fromLocation}
-                        toLocation={toLocation}
-                        onSwap={handleSwapLocations}
-                        onFromChange={setFromLocation}
-                        onToChange={setToLocation}
-                    />
-
-                    {/* --- Booking Toggle (Instant/Schedule) --- */}
-                    <View style={styles.toggleContainer}>
-                        <TouchableOpacity
-                            style={[
-                                styles.toggleButton,
-                                !isScheduledRide && styles.toggleButtonActive,
-                            ]}
-                            onPress={() => handleToggle(false)}
-                        >
-                            <Text
-                                style={[
-                                    styles.toggleText,
-                                    !isScheduledRide && styles.toggleTextActive,
-                                ]}
+                        {/* --- Booking Toggle --- */}
+                        <View style={styles.toggleContainer}>
+                            <TouchableOpacity
+                                style={[styles.toggleButton, !isScheduledRide && styles.toggleButtonActive]}
+                                onPress={() => handleToggle(false)}
                             >
-                                Instant Booking
-                            </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[
-                                styles.toggleButton,
-                                isScheduledRide && styles.toggleButtonActive,
-                            ]}
-                            onPress={() => handleToggle(true)}
-                        >
-                            <Text
-                                style={[
-                                    styles.toggleText,
-                                    isScheduledRide && styles.toggleTextActive,
-                                ]}
+                                <Text style={[styles.toggleText, !isScheduledRide && styles.toggleTextActive]}>
+                                    Instant Booking
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={[styles.toggleButton, isScheduledRide && styles.toggleButtonActive]}
+                                onPress={() => handleToggle(true)}
                             >
-                                Schedule a Ride
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* --- Schedule Details (Conditional Block) --- */}
-                    {/* Only appears if 'Schedule a Ride' is selected */}
-                    {isScheduledRide && (
-                        <View style={styles.scheduleDetails}>
-                            <Text style={styles.sectionTitle}>Select desired date & time</Text>
-                            <View style={styles.dateTimeRow}>
-                                {/* Date Picker Mock */}
-                                <TouchableOpacity style={styles.datePicker}>
-                                    <Text style={styles.datePickerText}>{dateTime.date}</Text>
-                                </TouchableOpacity>
-                                {/* Time Picker Mock */}
-                                <TouchableOpacity style={styles.timePicker}>
-                                    <Text style={styles.datePickerText}>{dateTime.time}</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    )}
-
-                    {/* --- Vehicle Class Selector --- */}
-                    <VehicleClassSelector
-                        selectedClass={selectedClass}
-                        onSelect={setSelectedClass}
-                    />
-
-                    {/* --- Car Selection Cards --- */}
-                    <View style={styles.carCardsRow}>
-                        {cars.map((car) => (
-                            <CarCard
-                                key={car.name}
-                                car={car}
-                                isSelected={selectedCar === car.name}
-                                onSelect={setSelectedCar}
-                            />
-                        ))}
-                    </View>
-
-                    {/* --- Selected Driver & Fare Details --- */}
-                    <View style={styles.driverSection}>
-                        <View style={styles.driverInfoRow}>
-                            <Text style={styles.starIcon}>★</Text>
-                            <Text style={styles.bookDriverText}>Book Selected Driver</Text>
-                            <TouchableOpacity>
-                                {/* Note: The '>' character is correctly escaped in JSX */}
-                                <Text style={styles.viewDriverText}>View Driver {'>'}</Text>
+                                <Text style={[styles.toggleText, isScheduledRide && styles.toggleTextActive]}>
+                                    Schedule a Ride
+                                </Text>
                             </TouchableOpacity>
                         </View>
 
+                        {/* --- Schedule Details --- */}
+                        {isScheduledRide && (
+                            <View style={styles.scheduleDetails}>
+                                <Text style={styles.sectionTitle}>Select desired date & time</Text>
+
+                                <View style={styles.dateTimeRow}>
+                                    <TouchableOpacity style={styles.datePicker} onPress={showDatepicker}>
+                                        <Text style={styles.datePickerText}>{dateTime.date}</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity style={styles.timePicker} onPress={showTimepicker}>
+                                        <Text style={styles.datePickerText}>{dateTime.time}</Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                                {showPicker && (
+                                    // 👇 Wrap in TouchableWithoutFeedback to detect outside taps
+                                    <View style={styles.overlay}>
+                                        <View style={styles.pickerContainer}>
+                                            <DateTimePicker
+                                                value={new Date()}
+                                                mode={pickerMode}
+                                                display="spinner"
+                                                onChange={onChange}
+                                                textColor="black"
+                                                themeVariant="light"
+                                                minimumDate={new Date()} // ⛔ Prevent past date
+                                                style={{
+                                                    marginTop:10,
+                                                    backgroundColor: '#f2f2f2',
+                                                    borderRadius: 12,
+                                                }}
+                                            />
+                                        </View>
+                                    </View>
+                                )}
+                            </View>
+                        )}
+
+
+
+                        {/* --- Vehicle Class Selector --- */}
+                        <VehicleClassSelector selectedClass={selectedClass} onSelect={setSelectedClass} />
+
+                        {/* --- Car Selection --- */}
+                        <View style={styles.carCardsRow}>
+                            {cars.map((car) => (
+                                <CarCard
+                                    key={car.name}
+                                    car={car}
+                                    isSelected={selectedCar === car.name}
+                                    onSelect={setSelectedCar}
+                                />
+                            ))}
+                        </View>
+
+                        {/* --- Driver Info --- */}
+                        <View style={styles.driverSection}>
+                            <View style={styles.driverInfoRow}>
+                                <Text style={styles.starIcon}>★</Text>
+                                <Text style={styles.bookDriverText}>Book Selected Driver</Text>
+                                <TouchableOpacity
+                                onPress={()=>navigation.navigate('SelectDriver')}
+                                    style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}
+                                >
+                                    <Text style={styles.viewDriverText}>View Driver</Text>
+                                    <MaterialIcons color="#FDD835" name="navigate-next" size={wp(6)} />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+
+                    {/* --- Grey Bottom Section --- */}
+                    <View style={styles.bottomContent}>
                         <View style={styles.fareContainer}>
                             <View>
                                 <Text style={styles.fareTitle}>Estimated Fare:</Text>
@@ -283,22 +340,17 @@ export default function BookingMain() {
                             </View>
                             <Text style={styles.fareDetails}>12.5 mi | 28 min</Text>
                         </View>
+
+                        <Button title="Confirm Booking" />
                     </View>
 
-                    {/* --- Confirm Button --- */}
-                    <TouchableOpacity style={styles.confirmButton}>
-                        <Text style={styles.confirmButtonText}>Confirm Booking</Text>
-                    </TouchableOpacity>
-
-                    {/* Spacing for bottom navigation (ensures scrollability) */}
-                    <View style={{ height: hp(12) }} />
-
                 </ScrollView>
+            </TouchableWithoutFeedback>
 
-            </View>
         </SafeAreaView>
     );
 }
+
 
 // --- Stylesheet ---
 const PRIMARY_YELLOW = '#FDD835';
@@ -308,14 +360,26 @@ const PADDING_HORIZONTAL = wp(5);
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-          backgroundColor: '#fff',
+        backgroundColor: '#fff',
         // Ensures content starts below the status bar on Android
         paddingTop: Platform.OS === 'android' ? 25 : 25,
     },
     scrollViewContent: {
-        paddingHorizontal: PADDING_HORIZONTAL,
-        paddingBottom: hp(2),
     },
+    whiteContainer: {
+        backgroundColor: '#fff',
+        paddingHorizontal: PADDING_HORIZONTAL,
+    },
+
+    bottomContent: {
+        backgroundColor: LIGHT_GREY,
+        paddingHorizontal: PADDING_HORIZONTAL,
+        borderTopLeftRadius: 25,
+        borderTopRightRadius: 25,
+        height: height * 0.3,
+        marginBottom:hp(3)
+    },
+
 
     // Header Styles (UserHeader)
     headerContainer: {
@@ -382,16 +446,16 @@ const styles = StyleSheet.create({
         height: '100%',
     },
     swapButton: {
-        position:"absolute",
-        right:0,
-        zIndex:1
+        position: "absolute",
+        right: 0,
+        zIndex: 1
 
     },
-    swapper:{
-        position:"relative",
-        top:hp(1),
-        zIndex:50000,
-        right:hp(-2)
+    swapper: {
+        position: "relative",
+        top: hp(1),
+        zIndex: 50000,
+        right: hp(-2)
     },
 
     // Toggle Styles (Instant/Schedule)
@@ -399,7 +463,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginBottom: hp(3),
-        backgroundColor:"#F3F3F3",
+        backgroundColor: "#F3F3F3",
         borderRadius: 50,
 
     },
@@ -409,7 +473,7 @@ const styles = StyleSheet.create({
         marginHorizontal: wp(1.5),
         borderRadius: 50,
         alignItems: 'center',
-        
+
     },
     toggleButtonActive: {
         backgroundColor: PRIMARY_YELLOW,
@@ -425,6 +489,10 @@ const styles = StyleSheet.create({
 
     // Schedule Details (Date/Time)
     scheduleDetails: {
+        backgroundColor: '#fff',
+        padding: wp(6),
+        borderRadius: 25,
+        boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
         marginBottom: hp(3),
     },
     sectionTitle: {
@@ -464,10 +532,10 @@ const styles = StyleSheet.create({
     // Vehicle Class Selector
     classSelectorContainer: {
         marginBottom: hp(2.5),
-        backgroundColor:'#fff',
+        backgroundColor: '#fff',
         padding: wp(6),
-        borderRadius:25,
-    boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
+        borderRadius: 25,
+        boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
 
     },
     classButtonsRow: {
@@ -475,17 +543,16 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         borderRadius: 10,
         padding: 3,
-        gap:5
+        gap: 5
     },
     classButton: {
         flex: 1,
         paddingVertical: hp(1),
         borderRadius: 8,
         alignItems: 'center',
-        backgroundColor:LIGHT_GREY,
+        backgroundColor: LIGHT_GREY,
     },
     classButtonActive: {
-        padding:20,
         backgroundColor: PRIMARY_YELLOW,
     },
     classButtonText: {
@@ -505,10 +572,9 @@ const styles = StyleSheet.create({
     },
     carCard: {
         width: wp(43),
-        backgroundColor: LIGHT_GREY,
+        boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
         borderRadius: 12,
         padding: wp(3),
-        alignItems: 'center',
         borderWidth: 2,
         borderColor: 'transparent',
     },
@@ -524,36 +590,39 @@ const styles = StyleSheet.create({
     },
     carImage: {
         width: '100%',
-        height: hp(8),
         marginVertical: hp(1),
     },
     carName: {
         fontSize: wp(4),
         fontWeight: 'bold',
         color: '#333',
+        textAlign: "left"
     },
     carDescription: {
         fontSize: wp(2.8),
         color: '#888',
-        textAlign: 'center',
         marginVertical: hp(0.5),
     },
     carIconsRow: {
         marginTop: hp(1),
+        flexDirection: 'row',       // items in a row
+        alignItems: 'center',       // vertically center
+        gap: 5
     },
 
     // Driver and Fare
     driverSection: {
-        marginBottom: hp(3),
-        borderBottomWidth: 1,
-        borderBottomColor: LIGHT_GREY,
-        paddingBottom: hp(2),
+
     },
     driverInfoRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         marginBottom: hp(2),
+        boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
+        padding: 20,
+        borderRadius: 50
+
     },
     starIcon: {
         color: PRIMARY_YELLOW,
@@ -571,10 +640,27 @@ const styles = StyleSheet.create({
         fontSize: wp(3.5),
         fontWeight: '600',
     },
+
+
+
+
+
+
+
+
     fareContainer: {
+        marginTop: hp(3),
+        marginBottom: hp(3),
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
+        width: wp(90), // same as width * 0.9
+        borderWidth: wp(0.3), // around 1px responsive
+        borderColor: '#AFAFAF',
+        paddingVertical: hp(1.2), // replaces top/bottom padding
+        paddingHorizontal: wp(8), // replaces left/right padding
+        borderRadius: wp(5), // responsive curve
+        alignSelf: 'center', // centers it nicely
     },
     fareTitle: {
         fontSize: wp(3.5),
@@ -584,6 +670,8 @@ const styles = StyleSheet.create({
         fontSize: wp(5.5),
         fontWeight: 'bold',
         color: '#333',
+        marginTop: 5,
+
         marginRight: wp(2), // Removed flex: 1 here
     },
     fareDetails: {
@@ -611,18 +699,6 @@ const styles = StyleSheet.create({
 
     // Bottom Navigation
     bottomNav: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: Platform.OS === 'ios' ? hp(11) : hp(9), // Adjust height for safety and aesthetics
-        backgroundColor: '#fff',
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        borderTopWidth: 1,
-        borderTopColor: LIGHT_GREY,
-        paddingBottom: Platform.OS === 'ios' ? hp(3) : 0, // Extra padding for iPhone bottom bar
     },
     navItem: {
         padding: wp(2),
@@ -634,4 +710,5 @@ const styles = StyleSheet.create({
     iconStyle: {
         marginRight: wp(3),
     },
+
 });

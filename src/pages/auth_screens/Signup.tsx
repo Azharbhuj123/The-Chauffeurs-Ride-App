@@ -323,7 +323,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        paddingBottom: hp(4),
+        paddingBottom: hp(6),
     },
     signInText: {
         fontSize: fs(14),

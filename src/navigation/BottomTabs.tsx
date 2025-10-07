@@ -8,8 +8,34 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import Home from '../pages/home_screen/Home';
 import BookingMain from '../pages/booking_screens/BookingMain';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import SelectDriver from '../pages/booking_screens/SelectDriver';
+import ConfirmBooking from '../pages/booking_screens/ConfirmBooking';
+import RideConfirmationScreen from '../pages/booking_screens/RideConfirmationScreen';
+import Chat from '../pages/chat/Chat';
+import RideCompletedScreen from "../pages/booking_screens/RideCompletedScreen"
+import PaymentSummaryScreen from '../pages/booking_screens/PaymentSummaryScreen';
+import CancelRide from '../pages/booking_screens/CancelRide';
 
- 
+
+const Stack = createNativeStackNavigator();
+
+
+function BookingStack() {
+    return (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="BookingMain" component={BookingMain} />
+            <Stack.Screen name="SelectDriver" component={SelectDriver} />
+            <Stack.Screen name="ConfirmBooking" component={ConfirmBooking} />
+            <Stack.Screen name="RideConfirmationScreen" component={RideConfirmationScreen} />
+            <Stack.Screen name="Chat" component={Chat} />
+            <Stack.Screen name="RideComplete" component={RideCompletedScreen} />
+            <Stack.Screen name="PaymentSummaryScreen" component={PaymentSummaryScreen} />
+            <Stack.Screen name="CancelRide" component={CancelRide} />
+        </Stack.Navigator>
+    );
+}
+
 const WalletScreen = () => (
     <View style={styles.screen}>
         <Text>Wallet</Text>
@@ -85,7 +111,9 @@ export default function BottomTabs() {
             }}
         >
             <Tab.Screen name="Home" component={Home} />
-            <Tab.Screen name="Bookings" component={BookingMain} />
+            <Tab.Screen name="Bookings" component={BookingStack} options={{
+                unmountOnBlur: true, // 👈 this line resets stack when you leave tab
+            }} />
             <Tab.Screen name="Wallet" component={WalletScreen} />
             <Tab.Screen name="Profile" component={ProfileScreen} />
         </Tab.Navigator>
@@ -100,7 +128,7 @@ const styles = StyleSheet.create({
     },
     tabBarContainer: {
         position: 'absolute',
-        bottom: hp('3%'),
+        bottom: hp('4%'),
         left: 0,
         right: 0,
         alignItems: 'center',

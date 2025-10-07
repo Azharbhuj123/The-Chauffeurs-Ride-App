@@ -1,0 +1,279 @@
+// @ts-nocheck
+// Screen 3: Cancel Ride - Select Reason
+
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  TextInput,
+  Modal,
+  Image, // 1. Import the Modal component
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from 'react-native-responsive-screen';
+import Button from '../../components/Button';
+
+// Make sure to receive the navigation prop
+export default function CancelRide({ navigation }) { 
+  const [selectedReason, setSelectedReason] = useState(null);
+  const [issueDescription, setIssueDescription] = useState('');
+  
+  // 2. State to control the modal's visibility
+  const [isModalVisible, setModalVisible] = useState(false);
+
+  const reasons = [
+    'Driver Behavior (e.g., rude, unsafe)',
+    'Vehicle was not clean',
+    'Driver took a long route',
+    'Waited too long for driver',
+    'Other reason',
+  ];
+
+  // Function to handle the final cancellation
+  const handleCancelRide = () => {
+    // Here you would typically send the cancellation reason to your server
+    console.log('Ride cancelled. Reason:', selectedReason !== null ? reasons[selectedReason] : 'N/A');
+    console.log('Description:', issueDescription);
+    // Then, show the confirmation modal
+    setModalVisible(true);
+  };
+
+  const handleGoHome = () => {
+    setModalVisible(false);
+    // Navigate to the Home screen or any other screen as needed
+    navigation.navigate('Home');
+  }
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        {/* Header */}
+         <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Icon name="arrow-left" size={24} color="#000" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Reason</Text>
+            <View style={{ width: 24 }} />
+        </View>
+
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {/* Select Issue Category */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Select Issue Category</Text>
+
+            {reasons.map((reason, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.radioOption}
+                onPress={() => setSelectedReason(index)}
+              >
+                <View style={[
+                    styles.radioButton, 
+                    selectedReason === index && { borderColor: '#F8D833' } // Highlight border when selected
+                ]}>
+                  {selectedReason === index ? (
+                    <View style={styles.radioButtonSelected} />
+                  ) : null}
+                </View>
+                <Text style={styles.radioLabel}>{reason}</Text>
+              </TouchableOpacity>
+            ))}
+
+          {/* Describe the Issue */}
+          <View style={styles.description}>
+            <Text style={styles.sectionTitle}>Describe the Issue</Text>
+
+            <TextInput
+              style={styles.textArea}
+              placeholder="Please provide details of your experience"
+              placeholderTextColor="#999"
+              value={issueDescription}
+              onChangeText={setIssueDescription}
+              multiline
+              numberOfLines={6}
+              textAlignVertical="top"
+            />
+          </View>
+          <View style={styles.btnContainer}>
+            {/* 3. Add onPress to trigger the modal */}
+            <Button title='Cancel Ride' onPress={handleCancelRide} />
+          </View>
+          </View>
+        </ScrollView>
+      </View>
+
+      {/* 4. Add the Modal component here */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+        }}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalContainer}>
+            <Image source={require("../../assets/images/sad.png")}/>
+            <Text style={styles.modalTitle}>We're so sad about your cancellation</Text>
+            <Text style={styles.modalSubtitle}>
+              We will continue to improve our service & satisfy you on the next trip.
+            </Text>
+            {/* <TouchableOpacity style={styles.modalButton} onPress={handleGoHome}>
+              <Text style={styles.modalButtonText}>Back Home</Text>
+            </TouchableOpacity> */}
+                     <View style={styles.btnContainer}>
+
+            <Button title='Back Home' onPress={handleGoHome}/>
+          </View>
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
+  );
+}
+
+// 5. Add new styles for the modal to your StyleSheet
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+  },
+  container: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+  },
+  header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#000',
+    },
+  scrollContent: {
+    paddingBottom: hp('2%'),
+  },
+  card: {
+    backgroundColor: '#fff',
+    marginHorizontal: wp('4%'),
+    marginTop: hp('2%'),
+    padding: wp('5%'),
+    paddingTop:hp(3),
+    borderRadius: wp('4%'),
+  },
+  sectionTitle: {
+    fontSize: wp('4%'),
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: hp('2%'),
+  },
+  radioOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: hp('1.5%'),
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  radioButton: {
+    width: wp('5.5%'),
+    height: wp('5.5%'),
+    borderRadius: wp('2.75%'),
+    borderWidth: 2,
+    borderColor: '#D0D0D0',
+    marginRight: wp('4%'),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  radioButtonSelected: {
+    width: wp('3%'),
+    height: wp('3%'),
+    borderRadius: wp('1.5%'),
+    backgroundColor: '#F8D833',
+  },
+  radioLabel: {
+    fontSize: wp('3.8%'),
+    color: '#333',
+    flex: 1,
+  },
+  textArea: {
+    backgroundColor: '#F8F8F8',
+    borderRadius: wp('3%'),
+    padding: wp('4%'),
+    fontSize: wp('3.8%'),
+    color: '#000',
+    minHeight: hp('15%'),
+    borderWidth:1,
+    borderColor:"#CFCFCF"
+  },
+  description:{
+    marginTop:hp(3)
+  },
+  btnContainer:{
+    marginTop:hp(3),
+    width:"100%"
+  },
+  // --- MODAL STYLES ---
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+  },
+  modalContainer: {
+    width: wp('85%'),
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 25,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+   
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    textAlign: 'center',
+    marginTop:15,
+    marginBottom: 10,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginBottom: 25,
+  },
+  modalButton: {
+    backgroundColor: '#F8D833',
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    width: '100%',
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: '#1F2937',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});

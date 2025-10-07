@@ -6,7 +6,8 @@ import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-nat
 import Icon from "react-native-vector-icons/Ionicons";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import UserHeader from "../../components/Header"
-export default function Home() {
+import { CommonActions } from '@react-navigation/native';
+export default function Home({navigation}) {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef(null);
 
@@ -83,12 +84,11 @@ export default function Home() {
         <Text style={styles.loyaltyPoints}>{item.points}</Text>
         <Text style={styles.loyaltySubtext}>{item.subtext}</Text>
       </View>
-      {/* <View style={styles.loyaltyRight}>
-        <Text style={styles.loyaltyRightText}>{item.rightText}</Text>
-        <Text style={styles.loyaltyRightSubtext}>{item.rightSubtext}</Text>
-      </View> */}
+       
     </View>
   );
+  
+ 
 
   return (
     <SafeAreaView style={{flex:1}}>

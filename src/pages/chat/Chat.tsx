@@ -1,0 +1,314 @@
+// @ts-nocheck
+import React, { useState, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from 'react-native-responsive-screen';
+
+export default function ChatScreen({ navigation }) {
+  const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      text: 'Good Evening!',
+      sender: 'driver',
+      time: '8:29 pm',
+      showAvatar: true,
+    },
+    {
+      id: 2,
+      text: 'Welcome to Car2go Customer Service',
+      sender: 'driver',
+      time: '8:29 pm',
+      showAvatar: false,
+    },
+    {
+      id: 3,
+      text: 'Thank you!',
+      sender: 'user',
+      time: '8:30 pm',
+    },
+  ]);
+
+  const scrollViewRef = useRef(null);
+
+  const handleSend = () => {
+    if (message.trim() === '') return;
+
+    const newMessage = {
+      id: Date.now(),
+      text: message.trim(),
+      sender: 'user',
+      time: 'Just Now',
+    };
+
+    setMessages((prev) => [...prev, newMessage]);
+    setMessage('');
+
+    // Scroll to bottom after short delay
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Icon name="arrow-left" size={24} color="#000" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Chat</Text>
+          <View style={{ width: 24 }} />
+        </View>
+
+        {/* Chat Messages */}
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.chatContainer}
+          contentContainerStyle={styles.chatContent}
+          showsVerticalScrollIndicator={false}
+          onContentSizeChange={() =>
+            scrollViewRef.current?.scrollToEnd({ animated: true })
+          }
+        >
+          {messages.map((msg) => (
+            <View key={msg.id} style={styles.messageWrapper}>
+              {msg.sender === 'driver' ? (
+                // Driver Message
+                <View style={styles.driverMessageContainer}>
+                  {msg.showAvatar ? (
+                    <View style={styles.avatar}>
+                      <View style={styles.avatarIcon}>
+                        <View style={styles.avatarHead} />
+                        <View style={styles.avatarBody} />
+                      </View>
+                    </View>
+                  ) : (
+                    <View style={styles.avatarPlaceholder} />
+                  )}
+                  <View style={styles.messageContent}>
+                    <View style={styles.driverBubble}>
+                      <Text style={styles.driverText}>{msg.text}</Text>
+                    </View>
+                    <Text style={styles.timeText}>{msg.time}</Text>
+                  </View>
+                </View>
+              ) : (
+                // User Message
+                <View style={styles.userMessageContainer}>
+                  <View style={styles.messageContent}>
+                    <View style={styles.userBubble}>
+                      <Text style={styles.userText}>{msg.text}</Text>
+                    </View>
+                    <View style={styles.timeRow}>
+                      <Ionicons
+                        name="checkmark-done"
+                        size={wp('4%')}
+                        color="#FFD700"
+                      />
+                      <Text style={styles.timeText}>{msg.time}</Text>
+                    </View>
+                  </View>
+                </View>
+              )}
+            </View>
+          ))}
+        </ScrollView>
+
+        {/* Input Box */}
+        <View style={styles.inputContainer}>
+          <TouchableOpacity style={styles.iconButton}>
+            <Ionicons name="add-circle-outline" size={wp('6.5%')} color="#888" />
+          </TouchableOpacity>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Type your message"
+            placeholderTextColor="#999"
+            value={message}
+            onChangeText={setMessage}
+            multiline
+          />
+
+          <TouchableOpacity style={styles.iconButton}>
+            <Ionicons name="happy-outline" size={wp('6%')} color="#888" />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+            <Ionicons name="send" size={wp('5%')} color="#FFD700" />
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'white',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  chatContainer: {
+    flex: 1,
+    backgroundColor: '#FAFAFA',
+  },
+  chatContent: {
+    padding: wp('4%'),
+    paddingBottom: hp('2%'),
+  },
+  messageWrapper: {
+    marginBottom: hp('2%'),
+  },
+  driverMessageContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: hp('1%'),
+  },
+  avatar: {
+    width: wp('10%'),
+    height: wp('10%'),
+    borderRadius: wp('5%'),
+    backgroundColor: '#E8F4FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: wp('2%'),
+  },
+  avatarIcon: {
+    alignItems: 'center',
+  },
+  avatarHead: {
+    width: wp('3%'),
+    height: wp('3%'),
+    borderRadius: wp('1.5%'),
+    backgroundColor: '#4A90E2',
+    marginBottom: 2,
+  },
+  avatarBody: {
+    width: wp('4%'),
+    height: wp('4%'),
+    borderRadius: wp('2%'),
+    backgroundColor: '#4A90E2',
+  },
+  avatarPlaceholder: {
+    width: wp('10%'),
+    marginRight: wp('2%'),
+  },
+  messageContent: {
+    flex: 1,
+  },
+  driverBubble: {
+    backgroundColor: '#FFD700',
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('1.5%'),
+    borderRadius: wp('4%'),
+    borderTopLeftRadius: wp('1%'),
+    maxWidth: '85%',
+    alignSelf: 'flex-start',
+  },
+  driverText: {
+    fontSize: wp('3.8%'),
+    color: '#000',
+    lineHeight: hp('2.5%'),
+  },
+  userMessageContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: hp('1%'),
+  },
+  userBubble: {
+    backgroundColor: '#fff',
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('1.5%'),
+    borderRadius: wp('4%'),
+    borderTopRightRadius: wp('1%'),
+    maxWidth: '85%',
+    alignSelf: 'flex-end',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  userText: {
+    fontSize: wp('3.8%'),
+    color: '#000',
+    lineHeight: hp('2.5%'),
+  },
+  timeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginTop: hp('0.5%'),
+    gap: wp('1%'),
+  },
+  timeText: {
+    fontSize: wp('3%'),
+    color: '#999',
+    marginTop: hp('0.5%'),
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('1.5%'),
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    gap: wp('2%'),
+    marginBottom: hp(10),
+  },
+  iconButton: {
+    padding: wp('1%'),
+  },
+  input: {
+    flex: 1,
+    backgroundColor: '#F8F8F8',
+    borderRadius: wp('6%'),
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('1.2%'),
+    fontSize: wp('3.8%'),
+    color: '#000',
+    maxHeight: hp('12%'),
+  },
+  sendButton: {
+    width: wp('10%'),
+    height: wp('10%'),
+    borderRadius: wp('5%'),
+    backgroundColor: '#F8F8F8',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

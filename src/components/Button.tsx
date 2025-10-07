@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
         borderRadius: wp(6),
         paddingVertical: hp(2),
         alignItems: 'center',
-        marginTop: hp(1),
+        marginTop: hp(0.1),
         marginBottom: hp(2.5),
         ...Platform.select({
             ios: {
@@ -55,7 +55,6 @@ const styles = StyleSheet.create({
     },
     signUpButtonText: {
         fontSize: fs(16),
-        fontWeight: '600',
         color: '#000',
     },
 })
