@@ -1,4 +1,5 @@
 //@ts-nocheck
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import React, { useRef, useState } from 'react'
 import {
   View,
@@ -94,19 +95,23 @@ function Splash_Screen({navigation}) {
   const flatListRef = useRef(null)
 
   // Function to scroll to the next slide
-  const scrollToNext = () => {
+  const scrollToNext = async() => {
     
     if (currentIndex < slides.length - 1) {
       flatListRef.current.scrollToIndex({ index: currentIndex + 1, animated: true })
     } else {
       console.log('Finished Onboarding! Navigate to Home.')
+      await AsyncStorage.setItem('splash_bypass', 'true');
+
       navigation.navigate('Signup')
     }
   }
 
   // Function to handle Skip (Jumps to main app flow)
-  const handleSkip = () => {
+  const handleSkip = async() => {
     console.log('Skipped Onboarding! Navigate to Home.')
+      await AsyncStorage.setItem('splash_bypass', 'true');
+
     navigation.navigate('Signup')
   }
 

@@ -28,7 +28,7 @@ const RideConfirmationScreen = ({ navigation, route }) => {
         rating: 4.98,
     };
 
- 
+
 
     useEffect(() => {
         const timer = setTimeout(async () => {
@@ -36,7 +36,7 @@ const RideConfirmationScreen = ({ navigation, route }) => {
                 const is_cancelRide = await AsyncStorage.getItem('CancelRide');
 
                 // AsyncStorage stores only strings — so compare to the string "true"
-                if ( !is_cancelRide ||is_cancelRide !== 'true') {
+                if (!is_cancelRide || is_cancelRide !== 'true') {
                     navigation.navigate('RideComplete');
                 }
             } catch (error) {
@@ -48,11 +48,11 @@ const RideConfirmationScreen = ({ navigation, route }) => {
         return () => clearTimeout(timer);
     }, []);
 
-    const handlePress = async () => {
+    const handlePress = async (path) => {
         try {
             // Always both key and value as strings
             await AsyncStorage.setItem('CancelRide', 'true');
-            navigation.navigate('CancelRide');
+            navigation.navigate(path);
         } catch (error) {
             console.log('Error saving AsyncStorage:', error);
         }
@@ -63,13 +63,10 @@ const RideConfirmationScreen = ({ navigation, route }) => {
     return (
         <SafeAreaView style={styles.container}>
             {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Icon name="arrow-left" size={24} color="#000" />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Your Ride is Confirmed!</Text>
-                <View style={{ width: 24 }} />
-            </View>
+
+
+            <TopHeader title='Your Ride is Confirmed!'  navigation={navigation}/>
+
 
             {/* Map Container View */}
             <View style={styles.mapContainer}>
@@ -125,10 +122,10 @@ const RideConfirmationScreen = ({ navigation, route }) => {
                 </View>
 
                 <View style={styles.actionButtons}>
-                    <TouchableOpacity onPress={handlePress} style={styles.cancelButton}>
+                    <TouchableOpacity onPress={() => handlePress('CancelRide')} style={styles.cancelButton}>
                         <Text style={styles.cancelButtonText}>Cancel Ride</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => navigation.navigate('Chat')} style={styles.contactButton}>
+                    <TouchableOpacity onPress={() => handlePress('Chat')} style={styles.contactButton}>
                         <Icon name="message-processing" size={20} color="#000" />
                         <Text style={styles.contactButtonText}>Contact Driver</Text>
                     </TouchableOpacity>

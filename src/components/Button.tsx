@@ -9,20 +9,22 @@ const fs = (size) => {
 };
 
 type ButtonProps = {
-  title: string;
-  onPress: () => void;
+    title: string;
+    onPress: () => void;
+    color: string;
+    textColor:string;
 };
 
-export default function Button({ title, onPress }: ButtonProps) {
+export default function Button({ title, onPress, color = "#FDD835" ,textColor = "#000"}: ButtonProps) {
 
     return (
         <View>
             <TouchableOpacity
-                style={styles.signUpButton}
+                style={[{ backgroundColor: color ? color : "#FDD835" }, styles.signUpButton]}
                 onPress={onPress}
                 activeOpacity={0.8}
             >
-                <Text style={styles.signUpButtonText}>{title}</Text>
+                <Text style={[{color: textColor ? textColor : "#000"},styles.signUpButtonText]}>{title}</Text>
             </TouchableOpacity>
 
         </View>
@@ -35,7 +37,6 @@ export default function Button({ title, onPress }: ButtonProps) {
 
 const styles = StyleSheet.create({
     signUpButton: {
-        backgroundColor: '#FDD835',
         borderRadius: wp(6),
         paddingVertical: hp(2),
         alignItems: 'center',
@@ -55,6 +56,5 @@ const styles = StyleSheet.create({
     },
     signUpButtonText: {
         fontSize: fs(16),
-        color: '#000',
     },
 })

@@ -15,6 +15,8 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import TimeIcon from 'react-native-vector-icons/Ionicons';
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from "react-native-responsive-screen";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import Button from '../../components/Button';
+import TopHeader from '../../components/TopHeader';
 
 
 
@@ -48,13 +50,8 @@ const ConfirmBooking = ({ navigation, route }) => {
     return (
         <SafeAreaView style={styles.container}>
             {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Icon name="arrow-left" size={24} color="#000" />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Confirm Booking</Text>
-                <View style={{ width: 24 }} />
-            </View>
+             
+            <TopHeader  title='Confirm Booking'  navigation={navigation} />
 
             <ScrollView
                 style={styles.scrollView}
@@ -231,17 +228,13 @@ const ConfirmBooking = ({ navigation, route }) => {
                     </View>
                 </View>
 
-            <View style={styles.bottomButtons}>
-                <TouchableOpacity
-                    style={styles.confirmButton}
-                    onPress={handleConfirmBooking}
-                >
-                    <Text style={styles.confirmButtonText}>Confirm Booking</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.cancelButton}>
-                    <Text style={styles.cancelButtonText}>Cancel / Change Driver</Text>
-                </TouchableOpacity>
-            </View>
+                <View style={styles.bottomButtons}>
+                    
+                    <Button title='Confirm Booking' onPress={handleConfirmBooking} />
+                    <TouchableOpacity style={styles.cancelButton}>
+                        <Text style={styles.cancelButtonText}>Cancel / Change Driver</Text>
+                    </TouchableOpacity>
+                </View>
             </ScrollView>
 
             {/* Bottom Buttons */}
@@ -502,8 +495,8 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     bottomButtons: {
-        marginTop:hp(5),
-        marginBottom:hp(13),
+        marginTop: hp(5),
+        marginBottom: hp(13),
     },
     confirmButton: {
         backgroundColor: '#F8D833',
@@ -525,7 +518,7 @@ const styles = StyleSheet.create({
     },
     cancelButtonText: {
         textAlign: 'center',
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: '600',
         color: '#000',
     },

@@ -5,22 +5,36 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
 
 export default function UserHeader() {
+
+
+  const hour = new Date().getHours();
+
+  // Determine greeting
+  let greeting = '';
+  if (hour < 12) {
+    greeting = 'Good morning';
+  } else if (hour < 18) {
+    greeting = 'Good afternoon';
+  } else {
+    greeting = 'Good evening';
+  }
+
   return (
     <View style={styles.header}>
-             <View>
-               <Text style={styles.greetingText}>Good afternoon</Text>
-               <Text style={styles.userName}>Welcome, John Doe</Text>
-             </View>
-             <TouchableOpacity style={styles.profileButton}>
-               <Icon name="notifications-outline" size={wp('6%')} color="#FFD700" />
-             </TouchableOpacity>
-           </View>
+      <View>
+        <Text style={styles.greetingText}>{greeting}</Text>
+        <Text style={styles.userName}>Welcome, John Doe</Text>
+      </View>
+      <TouchableOpacity style={styles.profileButton}>
+        <Icon name="notifications-outline" size={wp('6%')} color="#FFD700" />
+      </TouchableOpacity>
+    </View>
   )
 }
 
 
 const styles = StyleSheet.create({
-    header: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

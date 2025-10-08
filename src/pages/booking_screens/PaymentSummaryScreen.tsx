@@ -19,7 +19,9 @@ import {
     heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Feather from 'react-native-vector-icons/Feather';
 import Button from '../../components/Button';
+import TopHeader from '../../components/TopHeader';
 
 const { width, height } = Dimensions.get('window');
 
@@ -68,13 +70,9 @@ export default function PaymentSummaryScreen({ navigation }) {
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.container}>
                 {/* Header */}
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation?.navigate('Home')}>
-                        <Icon name="arrow-left" size={24} color="#000" />
-                    </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Ride Completed</Text>
-                    <View style={{ width: 24 }} />
-                </View>
+                
+                            <TopHeader  title='Ride Completed' navigation={navigation}/>
+                
 
                 <ScrollView
                     showsVerticalScrollIndicator={false}
@@ -102,8 +100,8 @@ export default function PaymentSummaryScreen({ navigation }) {
                         </View>
 
                         <TouchableOpacity style={styles.changeButton}>
-                            <Ionicons
-                                name="refresh-outline"
+                            <Feather
+                                name="plus-circle"
                                 size={wp('5%')}
                                 color="#000"
                                 style={styles.changeIcon}
@@ -248,6 +246,8 @@ const styles = StyleSheet.create({
         padding: wp('4%'),
         borderRadius: wp('3%'),
         marginBottom: hp('1.5%'),
+        borderWidth:1,
+        borderColor:"#FFD700"
     },
     paymentRow: {
         flexDirection: 'row',

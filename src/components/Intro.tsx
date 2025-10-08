@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import React, { useRef, useEffect } from 'react'
 import {
   View,
@@ -40,7 +41,7 @@ const LogoComponent = () => (
   </View>
 )
 
- 
+
 
 
 function Intro({ navigation }) {
@@ -48,18 +49,29 @@ function Intro({ navigation }) {
   const scaleAnim = useRef(new Animated.Value(0.5)).current // Start smaller
 
   useEffect(() => {
-    // Start the zoom-in animation
+    // Start a stronger, faster spring animation
     Animated.spring(scaleAnim, {
-      toValue: 1, // Zoom to 100% of the defined size
-      friction: 4, // Controls the bounciness (lower is bouncier)
-      tension: 60, // Controls the speed
-      useNativeDriver: true, // Use native thread for better performance
-    }).start()
+      toValue: 1,            // Final zoom scale
+      friction: 3,           // Lower friction = stronger bounce
+      tension: 100,          // Higher tension = faster spring
+      velocity: 2,           // Initial velocity for punchy start
+      delay: 100,            // Slight delay for visual pop
+      useNativeDriver: true, // Use native driver for performance
+    }).start();
 
-    setTimeout(()=>{
-        navigation.navigate('Splash')
-    },1000)
-  }, [scaleAnim])
+    // Navigate after short delay
+    const timer = setTimeout(async () => {
+      try {
+        const splash_bypass = await AsyncStorage.getItem('splash_bypass');
+        navigation.replace(splash_bypass === 'true' ? 'Login' : 'Splash');
+      } catch (err) {
+        console.error('Error reading splash_bypass:', err);
+      }
+    }, 1500); // Slightly longer delay for full animation feel
+
+    return () => clearTimeout(timer);
+  }, [scaleAnim]);
+
 
   // Apply the scale animation style
   const animatedStyle = {
@@ -75,14 +87,14 @@ function Intro({ navigation }) {
     <SafeAreaView style={styles.container}>
       {/* Set the status bar text/icons to dark (iOS) */}
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-      
+
       {/* Centered Animated View */}
       <View style={styles.centerContainer}>
         <Animated.View style={[styles.animatedView, animatedStyle]}>
           <Image source={require('../assets/images/logo.png')} style={styles.logoImage} />
         </Animated.View>
       </View>
-      
+
       {/* Optional: Placeholder for the Home Indicator Bar at the bottom (as seen in the image) */}
       <View style={styles.homeIndicatorPlaceholder} />
     </SafeAreaView>

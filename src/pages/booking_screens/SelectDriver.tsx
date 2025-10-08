@@ -6,12 +6,13 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
- 
+
   Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
+import TopHeader from '../../components/TopHeader';
 
 const { width } = Dimensions.get('window');
 
@@ -60,19 +61,16 @@ const SelectDriver = ({ navigation }) => {
   ];
 
   const handleSelectDriver = (driver) => {
-    navigation.navigate('ConfirmBooking',{driver});
+    navigation.navigate('ConfirmBooking', { driver });
   };
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="arrow-left" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Book Selected Driver</Text>
-        <View style={{ width: 24 }} />
-      </View>
+
+
+      <TopHeader title='Book Selected Driver' navigation={navigation}/>
+
 
       {/* Filter and Sort */}
       <View style={styles.filterContainer}>
@@ -87,7 +85,7 @@ const SelectDriver = ({ navigation }) => {
       </View>
 
       {/* Driver List */}
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
@@ -157,8 +155,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    justifyContent:"space-between",
-    gap:10
+    justifyContent: "space-between",
+    gap: 10
   },
   filterButton: {
     flexDirection: 'row',
@@ -169,7 +167,7 @@ const styles = StyleSheet.create({
     borderColor: '#D1D5DB',
     borderRadius: 12,
     gap: 8,
-    width:'45%'
+    width: '45%'
   },
   filterText: {
     fontSize: 14,
@@ -178,7 +176,7 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
     paddingHorizontal: 16,
-            marginBottom:hp(13)
+    marginBottom: hp(13)
 
   },
   driverCard: {
@@ -193,7 +191,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
-    
+
   },
   driverHeader: {
     flexDirection: 'row',

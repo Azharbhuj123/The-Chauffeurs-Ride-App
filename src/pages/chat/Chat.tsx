@@ -17,6 +17,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
+import TopHeader from '../../components/TopHeader';
 
 export default function ChatScreen({ navigation }) {
   const [message, setMessage] = useState('');
@@ -72,13 +73,7 @@ export default function ChatScreen({ navigation }) {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
         {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Icon name="arrow-left" size={24} color="#000" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Chat</Text>
-          <View style={{ width: 24 }} />
-        </View>
+       <TopHeader title='Chat' navigation={navigation}/>
 
         {/* Chat Messages */}
         <ScrollView

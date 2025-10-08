@@ -3,7 +3,7 @@
  * https://github.com/facebook/react-native
  *
  * @format
- */
+*/
 
 // App.tsx
 import React from "react";

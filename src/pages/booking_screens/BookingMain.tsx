@@ -21,7 +21,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Button from '../../components/Button';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { useFocusEffect } from '@react-navigation/native';
 
 // --- Responsive Utility Functions (Mocking Libraries like 'react-native-responsive-screen') ---
 const { width, height } = Dimensions.get('window');
@@ -150,7 +150,7 @@ const CarCard = ({ car, isSelected, onSelect }) => {
 
 
 // --- Main App Component ---
-export default function BookingMain({navigation}) {
+export default function BookingMain({ navigation }) {
     const [isScheduledRide, setIsScheduledRide] = useState(false);
     const [selectedClass, setSelectedClass] = useState('Luxury');
     const [selectedCar, setSelectedCar] = useState('Prestige Sedan');
@@ -207,15 +207,17 @@ export default function BookingMain({navigation}) {
         setShowPicker(true);
     };
 
-    useEffect(()=>{
-        const removeItem = async () =>{
 
-            await AsyncStorage.removeItem("CancelRide")
-        }
 
-        removeItem();
+    useFocusEffect(
+        useCallback(() => {
+            const removeItem = async () => {
+                await AsyncStorage.removeItem("CancelRide");
+            };
+            removeItem();
+        }, [])
+    );
 
-    },[])
     return (
         <SafeAreaView style={styles.safeArea}>
             <TouchableWithoutFeedback onPress={() => setShowPicker(false)}>
@@ -226,8 +228,8 @@ export default function BookingMain({navigation}) {
                 >
                     {/* --- White Section (main content) --- */}
                     <View style={styles.whiteContainer}>
-                        {/* User Header */}
                         <UserHeader />
+                        {/* User Header */}
 
                         {/* --- Location Section --- */}
                         <LocationInput
@@ -287,7 +289,7 @@ export default function BookingMain({navigation}) {
                                                 themeVariant="light"
                                                 minimumDate={new Date()} // ⛔ Prevent past date
                                                 style={{
-                                                    marginTop:10,
+                                                    marginTop: 10,
                                                     backgroundColor: '#f2f2f2',
                                                     borderRadius: 12,
                                                 }}
@@ -321,7 +323,7 @@ export default function BookingMain({navigation}) {
                                 <Text style={styles.starIcon}>★</Text>
                                 <Text style={styles.bookDriverText}>Book Selected Driver</Text>
                                 <TouchableOpacity
-                                onPress={()=>navigation.navigate('SelectDriver')}
+                                    onPress={() => navigation.navigate('SelectDriver')}
                                     style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}
                                 >
                                     <Text style={styles.viewDriverText}>View Driver</Text>
@@ -377,7 +379,7 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 25,
         borderTopRightRadius: 25,
         height: height * 0.3,
-        marginBottom:hp(3)
+        marginBottom: hp(3)
     },
 
 

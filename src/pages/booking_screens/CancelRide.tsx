@@ -19,12 +19,15 @@ import {
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import Button from '../../components/Button';
+import TopHeader from '../../components/TopHeader';
+import { useNavigation } from '@react-navigation/native';
 
 // Make sure to receive the navigation prop
-export default function CancelRide({ navigation }) { 
+export default function CancelRide({  headerShow = true, btnText = "Cancel Ride" }) {
   const [selectedReason, setSelectedReason] = useState(null);
   const [issueDescription, setIssueDescription] = useState('');
-  
+  const navigation = useNavigation(); // ✅ this gives you access to navigate()
+
   // 2. State to control the modal's visibility
   const [isModalVisible, setModalVisible] = useState(false);
 
@@ -55,20 +58,17 @@ export default function CancelRide({ navigation }) {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         {/* Header */}
-         <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Icon name="arrow-left" size={24} color="#000" />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Reason</Text>
-            <View style={{ width: 24 }} />
-        </View>
+        {headerShow && (
+          <TopHeader title="Reason" navigation={navigation} navigation={navigation} />
+        )}
+
 
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
           {/* Select Issue Category */}
-          <View style={styles.card}>
+          <View style={[{ marginTop: headerShow ? hp('2%') : 0 }, styles.card]}>
             <Text style={styles.sectionTitle}>Select Issue Category</Text>
 
             {reasons.map((reason, index) => (
@@ -78,8 +78,8 @@ export default function CancelRide({ navigation }) {
                 onPress={() => setSelectedReason(index)}
               >
                 <View style={[
-                    styles.radioButton, 
-                    selectedReason === index && { borderColor: '#F8D833' } // Highlight border when selected
+                  styles.radioButton,
+                  selectedReason === index && { borderColor: '#F8D833' } // Highlight border when selected
                 ]}>
                   {selectedReason === index ? (
                     <View style={styles.radioButtonSelected} />
@@ -89,25 +89,25 @@ export default function CancelRide({ navigation }) {
               </TouchableOpacity>
             ))}
 
-          {/* Describe the Issue */}
-          <View style={styles.description}>
-            <Text style={styles.sectionTitle}>Describe the Issue</Text>
+            {/* Describe the Issue */}
+            <View style={styles.description}>
+              <Text style={styles.sectionTitle}>Describe the Issue</Text>
 
-            <TextInput
-              style={styles.textArea}
-              placeholder="Please provide details of your experience"
-              placeholderTextColor="#999"
-              value={issueDescription}
-              onChangeText={setIssueDescription}
-              multiline
-              numberOfLines={6}
-              textAlignVertical="top"
-            />
-          </View>
-          <View style={styles.btnContainer}>
-            {/* 3. Add onPress to trigger the modal */}
-            <Button title='Cancel Ride' onPress={handleCancelRide} />
-          </View>
+              <TextInput
+                style={styles.textArea}
+                placeholder="Please provide details of your experience"
+                placeholderTextColor="#999"
+                value={issueDescription}
+                onChangeText={setIssueDescription}
+                multiline
+                numberOfLines={6}
+                textAlignVertical="top"
+              />
+            </View>
+            <View style={styles.btnContainer}>
+              {/* 3. Add onPress to trigger the modal */}
+              <Button title={btnText} onPress={handleCancelRide} />
+            </View>
           </View>
         </ScrollView>
       </View>
@@ -123,18 +123,16 @@ export default function CancelRide({ navigation }) {
       >
         <View style={styles.modalBackdrop}>
           <View style={styles.modalContainer}>
-            <Image source={require("../../assets/images/sad.png")}/>
-            <Text style={styles.modalTitle}>We're so sad about your cancellation</Text>
+            <Image source={require("../../assets/images/sad.png")} />
+            <Text style={styles.modalTitle}>{!headerShow ? "We're so sad about your complain" : "We're so sad about your cancellation"}</Text>
             <Text style={styles.modalSubtitle}>
               We will continue to improve our service & satisfy you on the next trip.
             </Text>
-            {/* <TouchableOpacity style={styles.modalButton} onPress={handleGoHome}>
-              <Text style={styles.modalButtonText}>Back Home</Text>
-            </TouchableOpacity> */}
-                     <View style={styles.btnContainer}>
+      
+            <View style={styles.btnContainer}>
 
-            <Button title='Back Home' onPress={handleGoHome}/>
-          </View>
+              <Button title='Back Home' onPress={handleGoHome} />
+            </View>
           </View>
         </View>
       </Modal>
@@ -153,26 +151,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
   },
   header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-    },
-    headerTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#000',
-    },
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+  },
   scrollContent: {
     paddingBottom: hp('2%'),
   },
   card: {
     backgroundColor: '#fff',
     marginHorizontal: wp('4%'),
-    marginTop: hp('2%'),
     padding: wp('5%'),
-    paddingTop:hp(3),
+    paddingTop: hp(3),
     borderRadius: wp('4%'),
   },
   sectionTitle: {
@@ -216,15 +213,15 @@ const styles = StyleSheet.create({
     fontSize: wp('3.8%'),
     color: '#000',
     minHeight: hp('15%'),
-    borderWidth:1,
-    borderColor:"#CFCFCF"
+    borderWidth: 1,
+    borderColor: "#CFCFCF"
   },
-  description:{
-    marginTop:hp(3)
+  description: {
+    marginTop: hp(3)
   },
-  btnContainer:{
-    marginTop:hp(3),
-    width:"100%"
+  btnContainer: {
+    marginTop: hp(3),
+    width: "100%"
   },
   // --- MODAL STYLES ---
   modalBackdrop: {
@@ -248,13 +245,13 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-   
+
   modalTitle: {
     fontSize: 22,
     fontWeight: 'bold',
     color: '#1F2937',
     textAlign: 'center',
-    marginTop:15,
+    marginTop: 15,
     marginBottom: 10,
   },
   modalSubtitle: {

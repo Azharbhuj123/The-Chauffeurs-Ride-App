@@ -16,6 +16,18 @@ import Chat from '../pages/chat/Chat';
 import RideCompletedScreen from "../pages/booking_screens/RideCompletedScreen"
 import PaymentSummaryScreen from '../pages/booking_screens/PaymentSummaryScreen';
 import CancelRide from '../pages/booking_screens/CancelRide';
+import   ProfileMainScreen  from '../pages/profile_screens/ProfileMain';
+import { EditProfileScreen } from '../pages/profile_screens/EditProfile';
+import { AddNewAddressScreen } from '../pages/profile_screens/AddNewAddressScreen';
+import { TripHistoryScreen } from '../pages/profile_screens/TripHistoryScreen';
+import { TripReceiptScreen } from '../pages/profile_screens/TripReceipt';
+import ReportIssue from '../pages/profile_screens/ReportIssue';
+import  {PaymentOptionsScreen}  from '../pages/profile_screens/PaymentOptionsScreen';
+import  {AddNewCardScreen}  from '../pages/profile_screens/AddNewCardScreen';
+import { AboutUsScreen } from '../pages/profile_screens/AboutUsScreen';
+import { SettingsScreen } from '../pages/profile_screens/SettingsScreen';
+import { HelpSupportScreen } from '../pages/profile_screens/HelpSupportScreen';
+import { LoyaltyRewardsScreen } from '../pages/loyality_screens/LoyaltyRewardsScreen';
 
 
 const Stack = createNativeStackNavigator();
@@ -36,16 +48,24 @@ function BookingStack() {
     );
 }
 
-const WalletScreen = () => (
-    <View style={styles.screen}>
-        <Text>Wallet</Text>
-    </View>
-);
-const ProfileScreen = () => (
-    <View style={styles.screen}>
-        <Text>Profile</Text>
-    </View>
-);
+function ProfileStack() {
+    return (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Profile" component={ProfileMainScreen} />
+            <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+            <Stack.Screen name="Address" component={AddNewAddressScreen} />
+            <Stack.Screen name="TripHistory" component={TripHistoryScreen} />
+            <Stack.Screen name="TripReceipt" component={TripReceiptScreen} />
+            <Stack.Screen name="ReportIssue" component={ReportIssue} />
+            <Stack.Screen name="Payment" component={PaymentOptionsScreen} />
+            <Stack.Screen name="AddNewCard" component={AddNewCardScreen} />
+            <Stack.Screen name="About" component={AboutUsScreen} />
+            <Stack.Screen name="Settings" component={SettingsScreen} />
+            <Stack.Screen name="Support" component={HelpSupportScreen} />
+        </Stack.Navigator>
+    );
+}
+ 
 
 const CustomTabBar = ({ state, descriptors, navigation }) => {
     return (
@@ -73,7 +93,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
                     } else if (route.name === "Bookings") {
                         iconName = "calendar";
                     } else if (route.name === "Wallet") {
-                        iconName = "home-outline";
+                        iconName = "gift";
                     } else if (route.name === "Profile") {
                         iconName = "person";
                     }
@@ -114,8 +134,8 @@ export default function BottomTabs() {
             <Tab.Screen name="Bookings" component={BookingStack} options={{
                 unmountOnBlur: true, // 👈 this line resets stack when you leave tab
             }} />
-            <Tab.Screen name="Wallet" component={WalletScreen} />
-            <Tab.Screen name="Profile" component={ProfileScreen} />
+            <Tab.Screen name="Wallet" component={LoyaltyRewardsScreen} />
+            <Tab.Screen name="Profile" component={ProfileStack} />
         </Tab.Navigator>
     )
 }

@@ -22,6 +22,7 @@ import {
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import Button from '../../components/Button';
+import TopHeader from '../../components/TopHeader';
 
 const { width } = Dimensions.get('window');
 
@@ -30,116 +31,110 @@ export default function RideCompletedScreen({ navigation }) {
   const [note, setNote] = useState('');
 
   return (
-        <KeyboardAvoidingView style={{flex: 1}}>
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Icon name="arrow-left" size={24} color="#000" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Ride Completed</Text>
-          <View style={{ width: 24 }} />
-        </View>
+    <KeyboardAvoidingView style={{ flex: 1 }}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.container}>
+          {/* Header */}
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          {/* Success Icon */}
-          <View style={styles.successContainer}>
-            <View style={styles.successIcon}>
-              <Ionicons name="checkmark" size={wp('15%')} color="#fff" />
-            </View>
-            <Text style={styles.successTitle}>You've Arrived!</Text>
-            <Text style={styles.successSubtitle}>
-              555 Luxury Tower, Cleanfield
-            </Text>
-          </View>
-
-          {/* Final Trip Summary */}
-          <View style={styles.summaryCard}>
-            <Text style={styles.sectionTitle}>Final Trip Summary</Text>
-
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Duration:</Text>
-              <Text style={styles.summaryValue}>29 min</Text>
-            </View>
-
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Distance:</Text>
-              <Text style={styles.summaryValue}>12.7 miles</Text>
-            </View>
-
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Base Fare:</Text>
-              <Text style={styles.summaryValue}>$70.00</Text>
-            </View>
-
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Taxes & Fees:</Text>
-              <Text style={styles.summaryValue}>$8.95</Text>
-            </View>
-
-            <View style={[styles.summaryRow, styles.totalRow]}>
-              <Text style={styles.totalLabel}>Total Charged:</Text>
-              <Text style={styles.totalValue}>$78.95</Text>
-            </View>
-          </View>
-
-          {/* Rate Your Chauffeur */}
-          <View style={styles.ratingCard}>
-            <Text style={styles.sectionTitle}>Rate Your Chauffeur</Text>
-
-            <View style={styles.driverInfo}>
-              <View style={styles.driverAvatar}>
-                <Text style={styles.driverInitials}>JD</Text>
+          <TopHeader title='Ride Completed' navigation={navigation} />
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+          >
+            {/* Success Icon */}
+            <View style={styles.successContainer}>
+              <View style={styles.successIcon}>
+                <Ionicons name="checkmark" size={wp('15%')} color="#fff" />
               </View>
-              <View style={styles.driverDetails}>
-                <Text style={styles.driverName}>John Davis</Text>
-                <Text style={styles.driverCar}>Mercedes S-Class · CHZ-1234</Text>
+              <Text style={styles.successTitle}>You've Arrived!</Text>
+              <Text style={styles.successSubtitle}>
+                555 Luxury Tower, Cleanfield
+              </Text>
+            </View>
+
+            {/* Final Trip Summary */}
+            <View style={styles.summaryCard}>
+              <Text style={styles.sectionTitle}>Final Trip Summary</Text>
+
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Duration:</Text>
+                <Text style={styles.summaryValue}>29 min</Text>
+              </View>
+
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Distance:</Text>
+                <Text style={styles.summaryValue}>12.7 miles</Text>
+              </View>
+
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Base Fare:</Text>
+                <Text style={styles.summaryValue}>$70.00</Text>
+              </View>
+
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Taxes & Fees:</Text>
+                <Text style={styles.summaryValue}>$8.95</Text>
+              </View>
+
+              <View style={[styles.summaryRow, styles.totalRow]}>
+                <Text style={styles.totalLabel}>Total Charged:</Text>
+                <Text style={styles.totalValue}>$78.95</Text>
               </View>
             </View>
 
-            {/* Star Rating */}
-            <View style={styles.starsContainer}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <TouchableOpacity
-                  key={star}
-                  onPress={() => setRating(star)}
-                  style={styles.starButton}
-                >
-                  <Ionicons
-                    name={star <= rating ? 'star' : 'star-outline'}
-                    size={wp('8%')}
-                    color="#FFD700"
-                  />
-                </TouchableOpacity>
-              ))}
+            {/* Rate Your Chauffeur */}
+            <View style={styles.ratingCard}>
+              <Text style={styles.sectionTitle}>Rate Your Chauffeur</Text>
+
+              <View style={styles.driverInfo}>
+                <View style={styles.driverAvatar}>
+                  <Text style={styles.driverInitials}>JD</Text>
+                </View>
+                <View style={styles.driverDetails}>
+                  <Text style={styles.driverName}>John Davis</Text>
+                  <Text style={styles.driverCar}>Mercedes S-Class · CHZ-1234</Text>
+                </View>
+              </View>
+
+              {/* Star Rating */}
+              <View style={styles.starsContainer}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <TouchableOpacity
+                    key={star}
+                    onPress={() => setRating(star)}
+                    style={styles.starButton}
+                  >
+                    <Ionicons
+                      name={star <= rating ? 'star' : 'star-outline'}
+                      size={wp('8%')}
+                      color="#FFD700"
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Optional Note */}
+              <TextInput
+                style={styles.noteInput}
+                placeholder="Add Optional Note"
+                placeholderTextColor="#999"
+                value={note}
+                onChangeText={setNote}
+                multiline
+              />
             </View>
+          </ScrollView>
 
-            {/* Optional Note */}
-            <TextInput
-              style={styles.noteInput}
-              placeholder="Add Optional Note"
-              placeholderTextColor="#999"
-              value={note}
-              onChangeText={setNote}
-              multiline
-            />
+          {/* Pay Now Button */}
+          <View style={styles.bottomContainer}>
+            <Button title='Pay Now' onPress={() => navigation.navigate('PaymentSummaryScreen')} />
+
+
+
           </View>
-        </ScrollView>
-
-        {/* Pay Now Button */}
-        <View style={styles.bottomContainer}>
-          <Button title='Pay Now'  onPress={()=>navigation.navigate('PaymentSummaryScreen')}/>
-
-     
-
         </View>
-      </View>
-    </SafeAreaView>
-        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -301,7 +296,7 @@ const styles = StyleSheet.create({
     paddingTop: hp('1%'),
     marginBottom: hp(10),
     width: '100%',
- paddingHorizontal: 16,
+    paddingHorizontal: 16,
     paddingVertical: 12,
   },
   payButton: {

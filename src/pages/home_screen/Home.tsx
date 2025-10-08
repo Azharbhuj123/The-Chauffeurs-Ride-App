@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList } from 'react-native'
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, StatusBar } from 'react-native'
 import React, { useRef, useState } from 'react'
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import Icon from "react-native-vector-icons/Ionicons";
@@ -91,9 +91,9 @@ export default function Home({navigation}) {
  
 
   return (
-    <SafeAreaView style={{flex:1}}>
+    <SafeAreaView style={{flex:1,backgroundColor:"#fff"}}>
     <View style={styles.container}>
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
