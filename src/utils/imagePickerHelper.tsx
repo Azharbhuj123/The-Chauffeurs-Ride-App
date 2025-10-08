@@ -1,5 +1,5 @@
 // @ts-nocheck
-import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 
 export const pickImageFromCamera = async () => {
   return new Promise((resolve, reject) => {

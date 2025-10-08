@@ -100,20 +100,19 @@ function Splash_Screen({navigation}) {
     if (currentIndex < slides.length - 1) {
       flatListRef.current.scrollToIndex({ index: currentIndex + 1, animated: true })
     } else {
-      console.log('Finished Onboarding! Navigate to Home.')
+      console.log('Finished Onboarding! Navigate to Signup.')
       await AsyncStorage.setItem('splash_bypass', 'true');
-
       navigation.navigate('Signup')
     }
-  }
+  };
 
   // Function to handle Skip (Jumps to main app flow)
   const handleSkip = async() => {
-    console.log('Skipped Onboarding! Navigate to Home.')
-      await AsyncStorage.setItem('splash_bypass', 'true');
+    console.log('Skipped Onboarding! Navigate to Signup.')
+    await AsyncStorage.setItem('splash_bypass', 'true');
 
     navigation.navigate('Signup')
-  }
+  };
 
   // Update current index when the user swipes
   const onViewableItemsChanged = useRef(({ viewableItems }) => {
