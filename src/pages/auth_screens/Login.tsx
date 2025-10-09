@@ -12,6 +12,8 @@ import {
     Platform,
     KeyboardAvoidingView,
     ScrollView,
+    TouchableWithoutFeedback,
+    Keyboard,
 
 } from 'react-native';
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
@@ -54,6 +56,9 @@ function Login({ navigation }) {
 
         // style={{ flex: 1,backgroundColor:"#FDD835"}}
         // >
+        <TouchableWithoutFeedback
+            onPress={Keyboard.dismiss}
+            >
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.container}
@@ -147,6 +152,7 @@ function Login({ navigation }) {
                 </View>
             </ScrollView>
         </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
         // </SafeAreaView>
     );
 }

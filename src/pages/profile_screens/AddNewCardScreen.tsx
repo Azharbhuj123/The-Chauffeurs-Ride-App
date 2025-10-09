@@ -7,6 +7,8 @@ import {
   StatusBar,
   Alert,
   TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -31,6 +33,9 @@ export const AddNewCardScreen = ({ navigation }) => {
   };
 
   return (
+    <TouchableWithoutFeedback
+    onPress={Keyboard.dismiss}
+    >
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <TopHeader title="Add New Card" navigation={navigation}/>
@@ -94,6 +99,7 @@ export const AddNewCardScreen = ({ navigation }) => {
         </View>
       </View>
     </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 };
 

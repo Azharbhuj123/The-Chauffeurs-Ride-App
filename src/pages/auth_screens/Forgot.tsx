@@ -69,6 +69,10 @@ function Forgot({ navigation }) {
             >
                 {/* Header Section */}
                 <View style={styles.header}>
+                         <TouchableOpacity onPress={() => navigation.navigate("Login")} style={styles.backButton}>
+                              <Icon name="chevron-back" size={wp(6)} color="#000" />
+                              <Text style={styles.backText}>Back</Text>
+                            </TouchableOpacity>
                     <View style={styles.logoContainer}>
                         <Image
                             source={require('../../assets/images/headLogo.png')}
@@ -138,11 +142,20 @@ const styles = StyleSheet.create({
         paddingTop: Platform.OS === 'ios' ? hp(6) : hp(4),
         paddingHorizontal: wp(4),
     },
+      backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: hp(2),
+  },
+    backText: {
+        fontSize: fs(16),
+        color: '#000',
+        marginLeft: wp(1),
+      },
     logoContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        flex: 1,
-    },
+    alignItems: 'center',
+    flex: 1,
+  },
     logo: {
     },
     formContainer: {

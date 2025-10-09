@@ -16,7 +16,6 @@ type ButtonProps = {
 };
 
 export default function Button({ title, onPress, color = "#FDD835" ,textColor = "#000"}: ButtonProps) {
-
     return (
         <View>
             <TouchableOpacity
@@ -29,9 +28,6 @@ export default function Button({ title, onPress, color = "#FDD835" ,textColor = 
 
         </View>
     )
-
-
-
 }
 
 
