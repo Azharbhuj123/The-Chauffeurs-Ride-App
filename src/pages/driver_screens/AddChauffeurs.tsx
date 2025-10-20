@@ -30,7 +30,7 @@ import { Checkbox } from 'react-native-paper';
 // import TopHeader from './TopHeader';
 // import Button from './Button';
 
-export default function VehicleRegistration({ navigation }) {
+export default function ChauffeursRegistration({ navigation }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [checked, setChecked] = useState(false);
   const [documents, setDocuments] = useState({
@@ -72,13 +72,13 @@ export default function VehicleRegistration({ navigation }) {
 
   const renderStep1 = () => (
     <View>
-      <Text style={styles.stepTitle}>Step 1: Vehicle Info Form</Text>
+      <Text style={styles.stepTitle}>Step 1: Personal Info</Text>
 
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>Vehicle Make</Text>
+        <Text style={styles.label}>Full Name</Text>
         <TextInput
           style={styles.input}
-          placeholder="e.g. Mercedes"
+          placeholder="e.g, Jane Doe"
           placeholderTextColor="#999"
           // value={formData.vehicleMake}
           // onChangeText={text => updateFormData('vehicleMake', text)}
@@ -89,7 +89,7 @@ export default function VehicleRegistration({ navigation }) {
         <Text style={styles.label}>Model</Text>
         <TextInput
           style={styles.input}
-          placeholder="e.g. E-class"
+          placeholder="e.g, S-class"
           placeholderTextColor="#999"
           // value={formData.model}
           // onChangeText={text => updateFormData('model', text)}
@@ -109,10 +109,10 @@ export default function VehicleRegistration({ navigation }) {
       </View>
 
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>License Plate Number</Text>
+        <Text style={styles.label}>Phone Number</Text>
         <TextInput
           style={styles.input}
-          placeholder="e.g. ABC-123"
+          placeholder="e.g, (555) 123 4567"
           placeholderTextColor="#999"
           // value={formData.licensePlateNumber}
           // onChangeText={text => updateFormData('licensePlateNumber', text)}
@@ -120,12 +120,14 @@ export default function VehicleRegistration({ navigation }) {
       </View>
 
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>Vehicle Class</Text>
-        <View style={styles.pickerContainer}>
-          {/* <Text style={styles.pickerText}>{formData.vehicleClass}</Text> */}
-          <Text style={styles.pickerText}>vehicleClass</Text>
-          <Icon name="chevron-down" size={wp(5)} color="#666" />
-        </View>
+        <Text style={styles.label}>Email Address</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="e.g, janedoe12@mail.com"
+          placeholderTextColor="#999"
+          // value={formData.licensePlateNumber}
+          // onChangeText={text => updateFormData('licensePlateNumber', text)}
+        />
       </View>
     </View>
   );
@@ -236,101 +238,96 @@ export default function VehicleRegistration({ navigation }) {
         <Text style={styles.stepTitle}>Step 2: Upload Documents</Text>
 
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Vehicle Documents</Text>
+          <Text style={styles.sectionTitle}>Required Documents</Text>
         </View>
 
         <DocumentUploadItem
-          title="Vehicle Registration"
+          title="Driving License"
           // uploaded={formData.documents.vehicleRegistration}
         />
         <DocumentUploadItem
-          title="Insurance Papers"
+          title="National ID/Passport"
           // uploaded={formData.documents.insurancePapers}
         />
         <DocumentUploadItem
-          title="Roadworthiness/Permit Plate"
+          title="Commercial Insurance"
           // uploaded={formData.documents.roadworthiness}
         />
-
-        <View style={[styles.sectionHeader, { marginTop: hp(3) }]}>
-          <Text style={styles.sectionTitle}>Vehicle Documents</Text>
-        </View>
-
-        <View style={styles.photoGrid}>
-          <PhotoUploadBox label="Front View" />
-          <PhotoUploadBox label="Back View" />
-        </View>
-        <View style={styles.photoGrid}>
-          <PhotoUploadBox label="Side View" />
-          <PhotoUploadBox label="Interior View" />
-        </View>
       </View>
     );
   };
 
   const renderStep3 = () => (
     <View>
-      <Text style={styles.stepTitle}>Step 3: Assign Chauffeur</Text>
-      <Text style={styles.subtitle}>
-        Assign the vehicle to a company driver or indicate if it's for
-        self-driving/personal use
-      </Text>
+      <Text style={styles.stepTitle}>Step 3: Assign Vehicle/Avail.</Text>
 
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>Select Chauffeur</Text>
+        <Text style={styles.label}>Assign Vehicle (Optional)</Text>
         <View style={styles.pickerContainer}>
-          <Text style={styles.pickerText}>Chauffeur</Text>
+          <Text style={styles.pickerText}>
+            No Chauffeur Assigned (Self Drive)
+          </Text>
+          <Text style={styles.pickerText}></Text>
           <Icon name="chevron-down" size={wp(5)} color="#666" />
         </View>
       </View>
 
-      {/* ✅ Replaced icon with checkbox */}
-      <TouchableOpacity
-        style={styles.linkContainer}
-        onPress={() => setChecked(!checked)}
-      >
-        <Checkbox
-          value={checked}
-          onValueChange={setChecked}
-          tintColors={{ true: '#007bff', false: '#666' }}
-        />
-        <Text style={styles.linkText}>
-          Invite a New Driver (You send email to mail)
+      <Text style={styles.subtitle}>Only "Available" vehicles are shown.</Text>
+
+      <View style={styles.card1}>
+        {/* Header Row */}
+        <View style={styles.headerRow1}>
+          <View style={styles.headerLeft1}>
+            <Icon name="calendar" size={wp(5)} color="#000" />
+            <Text style={styles.headerText1}>Initial Availability</Text>
+          </View>
+          <Icon name="chevron-down" size={wp(5)} color="#000" />
+        </View>
+
+        {/* Subtitle */}
+        <Text style={styles.subtitle1}>
+          This will open a calendar interface in a production app.
         </Text>
-      </TouchableOpacity>
+
+        {/* Button */}
+        <TouchableOpacity style={styles.button1}>
+          <Text style={styles.buttonText1}>Set Default Shifts</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
   const renderStep4 = () => (
     <View>
-      <Text style={styles.stepTitle}>Step 4: Assign Chauffeur</Text>
+      <Text style={styles.stepTitle}>Step 4: Review & Submit</Text>
       <View style={styles.container}>
         {/* ✅ Vehicle Info */}
         <View style={styles.card}>
           <Text style={styles.vehicleName}>Mercedes</Text>
-          <Text style={styles.vehicleInfo}>Plate: ABC 123</Text>
-          <Text style={styles.vehicleInfo}>Class: Sedan (2022)</Text>
+          <View style={styles.flexbox}>
+            <Image source={require('../../assets/images/name.png')} />
+            <Text style={styles.vehicleInfo}> Jane Doe</Text>
+          </View>
+           <View style={styles.flexbox}>
+          <Image source={require('../../assets/images/mail.png')} />{' '}
+          <Text style={styles.vehicleInfo}> Janedoe12@mail.com</Text>
+          </View>
         </View>
 
         {/* ✅ Assignment Status */}
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Assignment Status</Text>
+          <Text style={styles.sectionTitle}>Vehicle Assignment</Text>
           <View style={styles.row}>
-            <Icon
-              name="checkmark-circle-outline"
-              size={18}
-              color="#6b7280"
-              style={{ marginRight: 6 }}
-            />
-            <Text style={styles.statusText}>
-              Chauffeur: None (Self-driving)
-            </Text>
+              <View style={styles.flexbox}>
+          <Image source={require('../../assets/images/caricon.png')} />{' '}
+          <Text style={styles.vehicleInfo}> No vehicle assigned yet.</Text>
+          </View>
           </View>
         </View>
 
         {/* ✅ Documents & Photos */}
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Documents & Photos</Text>
+          <Text style={styles.sectionTitle}>Documents Status</Text>
 
           <View style={styles.row}>
             <Icon
@@ -339,19 +336,7 @@ export default function VehicleRegistration({ navigation }) {
               color="#10B981"
               style={{ marginRight: 6 }}
             />
-            <Text style={styles.successText}>Documents: All Uploaded</Text>
-          </View>
-
-          <View style={[styles.row, { marginTop: 4 }]}>
-            <Icon
-              name="images-outline"
-              size={18}
-              color="#10B981"
-              style={{ marginRight: 6 }}
-            />
-            <Text style={styles.successText}>
-              Photos: All Required Uploaded
-            </Text>
+            <Text style={styles.successText}> Documents: All Uploaded</Text>
           </View>
         </View>
       </View>
@@ -361,7 +346,7 @@ export default function VehicleRegistration({ navigation }) {
   const renderStep5 = () => (
     <View style={styles.successContainer}>
       <View style={styles.successIcon}>
-    <Image source={require('../../assets/images/submit.png')} />
+        <Image source={require('../../assets/images/submit.png')} />
       </View>
       <Text style={styles.successTitle}>Submission Complete!</Text>
       <Text style={styles.successSubtitle}>
@@ -470,6 +455,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
     borderRadius: hp(0.3),
   },
+
   progressBarActive: {
     backgroundColor: '#FDD835',
   },
@@ -645,7 +631,7 @@ const styles = StyleSheet.create({
     color: '#000',
     marginBottom: hp(1),
   },
- successSubtitle: {
+  successSubtitle: {
     fontSize: wp(3.5), // responsive text (~16px)
     color: '#947C00',
     paddingHorizontal: wp(2),
@@ -653,11 +639,11 @@ const styles = StyleSheet.create({
     borderRadius: wp(3.5),
     borderWidth: 1, // ✅ you need this for borderColor to show
     borderColor: 'rgba(248, 216, 51, 0.20)',
-        backgroundColor: 'rgba(248, 216, 51, 0.20)', // ✅ corrected property name
+    backgroundColor: 'rgba(248, 216, 51, 0.20)', // ✅ corrected property name
     width: '100%',
-    textAlign:'center',
-    marginTop:wp(3.5),
-    marginBottom:wp(3.5),
+    textAlign: 'center',
+    marginTop: wp(3.5),
+    marginBottom: wp(3.5),
   },
   successMessage: {
     fontSize: wp(3.2),
@@ -746,5 +732,59 @@ const styles = StyleSheet.create({
     fontSize: wp(3.6),
     color: '#047857',
     fontWeight: '500',
+  },
+
+  card1: {
+    backgroundColor: '#fff',
+    borderRadius: wp(3),
+    padding: wp(4),
+    marginVertical: hp(1.5),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  headerRow1: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: hp(1),
+  },
+  headerLeft1: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerText1: {
+    fontSize: wp(4.2),
+    fontWeight: '600',
+    color: '#111827',
+    marginLeft: wp(2),
+  },
+  subtitle1: {
+    fontSize: wp(3.5),
+    color: '#6B7280',
+    marginBottom: hp(2),
+  },
+  button1: {
+    borderWidth: 1,
+    borderColor: '#FDD835',
+    borderRadius: wp(2),
+    paddingVertical: hp(1.3),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonText1: {
+    color: '#000',
+    fontSize: wp(3.8),
+    fontWeight: '500',
+  },
+
+    flexbox: {
+display:'flex',
+alignItems:'center',
+gap:wp(1),
+flexDirection:'row',
+paddingTop:wp(3),
   },
 });

@@ -71,7 +71,7 @@ export default function PaymentSummaryScreen({ navigation }) {
             <View style={styles.container}>
                 {/* Header */}
                 
-                            <TopHeader  title='Ride Completed' navigation={navigation}/>
+                            <TopHeader  title='Ride Completed' navigation={navigation }/>
                 
 
                 <ScrollView

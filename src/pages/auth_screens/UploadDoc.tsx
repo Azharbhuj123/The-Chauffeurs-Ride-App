@@ -150,14 +150,14 @@ export default function UploadDoc({navigation}) {
 
   const handleSubmit = () => {
     // Check if all documents are uploaded
-    if (
-      !documents.driverLicense ||
-      !documents.vehicleInsurance ||
-      !documents.vehicleRegistration
-    ) {
-      Alert.alert('Error', 'Please upload all required documents');
-      return;
-    }
+    // if (
+    //   !documents.driverLicense ||
+    //   !documents.vehicleInsurance ||
+    //   !documents.vehicleRegistration
+    // ) {
+    //   Alert.alert('Error', 'Please upload all required documents');
+    //   return;
+    // }
 
     console.log('Submitting documents:', documents);
     // Add your submission logic here

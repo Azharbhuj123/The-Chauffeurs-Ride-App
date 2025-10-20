@@ -19,7 +19,7 @@ import {
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 import Home from '../pages/home_screen/Home';
- 
+
 import BookingMain from '../pages/booking_screens/BookingMain';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SelectDriver from '../pages/booking_screens/SelectDriver';
@@ -44,6 +44,17 @@ import { LoyaltyRewardsScreen } from '../pages/loyality_screens/LoyaltyRewardsSc
 import { useStore } from '../stores/useStore';
 import Driver_Home from '../pages/driver_screens/Home';
 import VehicleRegistration from '../pages/driver_screens/AddVechile';
+import ChauffeursRegistration from '../pages/driver_screens/AddChauffeurs';
+import ChauffeurBookingScreen from '../pages/driver_screens/Chauffeurs';
+import EarningsCommissions from '../pages/driver_screens/EarningsCommissions';
+import DetailedRevenue from '../pages/driver_screens/DetailedRevenue';
+import CustomerProfile from '../pages/driver_screens/CustomerProfile';
+import OwnershipList from '../pages/driver_screens/OwnershipList';
+import Operations from '../pages/driver_screens/Operations';
+import RatingsReviewsScreen from '../pages/driver_screens/RatingsReviewsScreen';
+import ReviewList from '../pages/driver_screens/ReviewList';
+import DynamicPricingTool from '../pages/driver_screens/DynamicPricingTool';
+import NotificationsAlerts from '../pages/driver_screens/NotificationsAlerts';
 
 const Stack = createNativeStackNavigator();
 
@@ -86,21 +97,54 @@ function ProfileStack() {
   );
 }
 
-
 function DriverHomeStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="DriverHome" component={Driver_Home} />
       <Stack.Screen name="AddVehicle" component={VehicleRegistration} />
+      <Stack.Screen name="AddChauffeurs" component={ChauffeursRegistration} />
+
+      <Stack.Screen name="Chauffeur" component={ChauffeurBookingScreen} />
     </Stack.Navigator>
-  )
+  );
 }
 
+function EarningsStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen
+        name="EarningsCommissions"
+        component={EarningsCommissions}
+      />
+      <Stack.Screen name="DetailedRevenue" component={DetailedRevenue} />
+    </Stack.Navigator>
+  );
+}
 
+function OwnershipStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="OwnershipList" component={OwnershipList} />
+      <Stack.Screen name="CustomerProfile" component={CustomerProfile} />
+    </Stack.Navigator>
+  );
+}
 
+function OperationsStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Operations" component={Operations} />
 
-
-
+      <Stack.Screen
+        name="RatingsReviewsScreen"
+        component={RatingsReviewsScreen}
+      />
+      <Stack.Screen name="ReviewList" component={ReviewList} />
+      <Stack.Screen name="DynamicPricingTool" component={DynamicPricingTool} />
+      <Stack.Screen name="NotificationsAlerts" component={NotificationsAlerts} />
+    </Stack.Navigator>
+  );
+}
 
 const CustomTabBar = ({ state, descriptors, navigation }) => {
   return (
@@ -173,13 +217,13 @@ const CustomDriverTabBar = ({ state, descriptors, navigation }) => {
           };
 
           // ...inside the map function
-         let iconSource;
+          let iconSource;
 
           if (route.name === 'Home') {
             iconSource = isFocused
               ? require('../assets/images/car-focus.png')
               : require('../assets/images/car.png');
-          } else if (route.name === 'Bookings') {
+          } else if (route.name === 'Earning') {
             iconSource = isFocused
               ? require('../assets/images/money-focus.png')
               : require('../assets/images/money.png');
@@ -199,7 +243,7 @@ const CustomDriverTabBar = ({ state, descriptors, navigation }) => {
               onPress={onPress}
               style={[styles.tabButton, isFocused && styles.tabButtonActive]}
             >
-              <Image source={iconSource}  /> 
+              <Image source={iconSource} />
             </TouchableOpacity>
           );
         })}
@@ -235,12 +279,13 @@ export default function BottomTabs() {
         >
           <Tab.Screen name="Home" component={DriverHomeStack} />
           <Tab.Screen
-            name="Bookings"
-            component={BookingStack}
+            name="Earning"
+            component={EarningsStack}
             options={{ unmountOnBlur: true }}
           />
-          <Tab.Screen name="Loyalty" component={LoyaltyRewardsScreen} />
-          <Tab.Screen name="Profile" component={ProfileStack} />
+          <Tab.Screen name="Loyalty" component={OwnershipStack} />
+
+          <Tab.Screen name="Profile" component={OperationsStack} />
         </Tab.Navigator>
       )}
     </>

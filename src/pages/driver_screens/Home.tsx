@@ -28,7 +28,7 @@ const fs = size => {
   return Math.sqrt(height * height + width * width) * (size / 1000);
 };
 
-export default function HomeScreen({navigation}) {
+export default function HomeScreen({ navigation }) {
   const [showRejectPopup, setShowRejectPopup] = useState(false);
   const [selectedRide, setSelectedRide] = useState(null);
 
@@ -92,7 +92,8 @@ export default function HomeScreen({navigation}) {
 
   const handleManageChauffeur = () => {
     console.log('Manage Chauffeur pressed');
-    // navigation.navigate('ManageChauffeur');
+    navigation.navigate('AddChauffeurs');
+    // navigation.navigate('Chauffeur');
   };
 
   const handleAccept = ride => {
@@ -177,69 +178,70 @@ export default function HomeScreen({navigation}) {
           ))}
         </View>
 
-          <View style={styles.incomingRideContainer}>
-        <Text style={styles.sectionTitle}>Incoming Ride Requests (Queue)</Text>
+        <View style={styles.incomingRideContainer}>
+          <Text style={styles.sectionTitle}>
+            Incoming Ride Requests (Queue)
+          </Text>
 
-        {/* Ride Request Cards */}
-        {rideRequests.map(ride => (
-          <View key={ride.id} style={styles.rideCard}>
-            {/* Pickup Location */}
-            <View style={styles.locationRow1}>
-              <Icon name="location" size={20} color="#000" />
-              <Text style={[styles.locationText1]}>{ride.pickupAddress}</Text>
-            <Text style={styles.priceText}>{ride.price}</Text>
+          {/* Ride Request Cards */}
+          {rideRequests.map(ride => (
+            <View key={ride.id} style={styles.rideCard}>
+              {/* Pickup Location */}
+              <View style={styles.locationRow1}>
+                <Icon name="location" size={20} color="#000" />
+                <Text style={[styles.locationText1]}>{ride.pickupAddress}</Text>
+                <Text style={styles.priceText}>{ride.price}</Text>
+              </View>
 
+              {/* Dropoff Location */}
+              <View style={styles.locationRow}>
+                <Fontisto name="arrow-right-l" size={20} color="#11111180" />
+                <Text style={styles.locationText}>{ride.dropoffAddress}</Text>
+              </View>
+
+              {/* Date & Time */}
+              <View style={styles.detailRow}>
+                <Icon name="calendar-outline" size={16} color="#11111180" />
+                <Text style={styles.detailText}>{ride.date}</Text>
+              </View>
+
+              {/* Distance */}
+              <View style={styles.detailRow}>
+                <Icon name="navigate-outline" size={16} color="#11111180" />
+                <Text style={styles.detailText}>
+                  Percentage: {ride.distance}
+                </Text>
+              </View>
+
+              {/* Price */}
+
+              {/* Action Buttons */}
+              <View style={styles.actionButtons}>
+                <TouchableOpacity
+                  style={styles.acceptButton}
+                  onPress={() => handleAccept(ride)}
+                >
+                  <Icon name="checkmark" size={20} color="#000" />
+                  <Text style={styles.acceptText}>Accept</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.rejectButton}
+                  onPress={() => handleReject(ride)}
+                >
+                  <Icon name="close" size={20} color="#11111180" />
+                  <Text style={styles.rejectText}>Reject</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-
-            {/* Dropoff Location */}
-            <View style={styles.locationRow}>
-              <Fontisto name="arrow-right-l" size={20} color="#11111180" />
-              <Text style={styles.locationText}>{ride.dropoffAddress}</Text>
-            </View>
-
-            {/* Date & Time */}
-            <View style={styles.detailRow}>
-              <Icon name="calendar-outline" size={16} color="#11111180" />
-              <Text style={styles.detailText}>{ride.date}</Text>
-            </View>
-
-            {/* Distance */}
-            <View style={styles.detailRow}>
-              <Icon name="navigate-outline" size={16} color="#11111180" />
-              <Text style={styles.detailText}>Percentage: {ride.distance}</Text>
-            </View>
-
-            {/* Price */}
-
-            {/* Action Buttons */}
-            <View style={styles.actionButtons}>
-              <TouchableOpacity
-                style={styles.acceptButton}
-                onPress={() => handleAccept(ride)}
-              >
-                <Icon name="checkmark" size={20} color="#000" />
-                <Text style={styles.acceptText}>Accept</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.rejectButton}
-                onPress={() => handleReject(ride)}
-              >
-                <Icon name="close" size={20} color="#11111180" />
-                <Text style={styles.rejectText}>Reject</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ))}
-
+          ))}
         </View>
-
 
         {/* Reject Popup Modal */}
         <Modal
           visible={showRejectPopup}
           transparent={true}
-        animationType="fade"
+          animationType="fade"
           onRequestClose={() => setShowRejectPopup(false)}
         >
           <View style={styles.modalOverlay}>
@@ -278,13 +280,11 @@ export default function HomeScreen({navigation}) {
                   style={styles.assignButton}
                   onPress={handleAssignToPartner}
                 >
-                  
-                  <Button  title='Assign Ride to Partner' onPress={()=>setShowRejectPopup(false)}/> 
+                  <Button
+                    title="Assign Ride to Partner"
+                    onPress={() => setShowRejectPopup(false)}
+                  />
                 </TouchableOpacity>
-
-                
-
-               
               </ScrollView>
             </View>
           </View>
@@ -496,12 +496,11 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
-  incomingRideContainer:{
-    backgroundColor:"#fff",
-        padding: wp(4),
+  incomingRideContainer: {
+    backgroundColor: '#fff',
+    padding: wp(4),
     borderRadius: wp(3),
     marginBottom: hp(2),
-
   },
 
   sectionTitle: {
@@ -511,9 +510,8 @@ const styles = StyleSheet.create({
     marginBottom: hp(2),
   },
   rideCard: {
-    borderWidth:1,
-    borderColor:'rgba(17, 17, 17, 0.02)',
-
+    borderWidth: 1,
+    borderColor: 'rgba(17, 17, 17, 0.02)',
 
     backgroundColor: 'rgba(17, 17, 17, 0.02)',
     borderRadius: wp(3),
@@ -536,13 +534,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: hp(2),
   },
-   locationRow: {
+  locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: hp(1),
   },
-  locationText1:{
-     fontSize: fs(16),
+  locationText1: {
+    fontSize: fs(16),
     color: '#333',
     marginLeft: wp(2),
     flex: 1,
@@ -573,7 +571,7 @@ const styles = StyleSheet.create({
   actionButtons: {
     flexDirection: 'row',
     gap: wp(3),
-    marginTop:hp(2)
+    marginTop: hp(2),
   },
   acceptButton: {
     flex: 1,
@@ -616,7 +614,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
   },
   modalContent: {
-   width: wp('85%'),
+    width: wp('85%'),
     backgroundColor: 'white',
     borderRadius: 20,
     padding: 25,
@@ -672,13 +670,10 @@ const styles = StyleSheet.create({
     marginBottom: hp(2),
     textAlign: 'center',
   },
-  assignButton: {
-  },
+  assignButton: {},
   assignButtonText: {
     fontSize: fs(15),
     fontWeight: '600',
     color: '#000',
   },
- 
-  
 });
