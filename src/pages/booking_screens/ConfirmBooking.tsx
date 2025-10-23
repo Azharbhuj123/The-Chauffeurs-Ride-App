@@ -253,11 +253,15 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 16,
         paddingVertical: 16,
+       fontFamily:"SF Pro"
+
     },
     headerTitle: {
         fontSize: 18,
         fontWeight: '600',
         color: '#000',
+       fontFamily:"SF Pro"
+
     },
     scrollView: {
         flex: 1,
@@ -271,6 +275,8 @@ const styles = StyleSheet.create({
         boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
         padding: 16,
         borderRadius: 20,
+       fontFamily:"SF Pro"
+
 
 
     },
@@ -282,6 +288,8 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#6B7280',
         marginBottom: 8,
+       fontFamily:"SF Pro"
+
     },
     sectionTitle: {
         fontSize: 16,
@@ -290,7 +298,9 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         borderBottomWidth: 1,
         borderBottomColor: 'rgba(17, 17, 17, 0.10)',
-        paddingBottom: 10
+        paddingBottom: 10,
+       fontFamily:"SF Pro"
+
 
     },
     driverCard: {
@@ -318,11 +328,15 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '600',
         color: '#000',
+       fontFamily:"SF Pro"
+
     },
     driverName: {
         fontSize: 16,
         fontWeight: '600',
         color: '#000',
+       fontFamily:"SF Pro"
+
     },
     ratingContainer: {
         flexDirection: 'row',
@@ -354,9 +368,13 @@ const styles = StyleSheet.create({
     carText: {
         fontSize: 14,
         color: '#000',
+       fontFamily:"SF Pro"
+
     },
     licenseText: {
         fontSize: 14,
+       fontFamily:"SF Pro",
+
         color: '#6B7280',
     },
     amenities: {
@@ -382,6 +400,8 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 14,
         color: '#000',
+       fontFamily:"SF Pro"
+
     },
     dateTimeContainer: {
         flexDirection: "row",
@@ -402,16 +422,22 @@ const styles = StyleSheet.create({
         backgroundColor: "#FFFFFF",
         width: wp(40),
         elevation: 1,
+       fontFamily:"SF Pro"
+
     },
     textValue: {
         color: "#111827",
         fontSize: wp(4),
+       fontFamily:"SF Pro"
+
     },
     textInput: {
         flex: 1,
         color: "#111827",
         fontSize: wp(4),
         marginRight: wp(2),
+       fontFamily:"SF Pro"
+
     },
     pickerOverlay: {
         position: 'absolute',
@@ -431,11 +457,15 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         borderRadius: 20,
         marginTop: 20,
+       fontFamily:"SF Pro"
+
     },
     pickerCloseButtonText: {
         fontSize: 16,
         fontWeight: '600',
         color: '#000',
+       fontFamily:"SF Pro"
+
     },
     paymentContainer: {
         flexDirection: 'row',
@@ -451,6 +481,8 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#E5E7EB',
         gap: 8,
+       fontFamily:"SF Pro"
+
     },
     paymentButtonActive: {
         backgroundColor: '#F8D833',
@@ -460,6 +492,8 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '500',
         color: '#000',
+       fontFamily:"SF Pro"
+
     },
     fareCard: {
         backgroundColor: '#F8D833',
@@ -475,11 +509,15 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#000',
         marginBottom: 4,
+       fontFamily:"SF Pro"
+
     },
     fareAmount: {
         fontSize: 32,
         fontWeight: '700',
         color: '#000',
+       fontFamily:"SF Pro"
+
     },
     fareDetails: {
         alignItems: 'flex-end',
@@ -497,30 +535,40 @@ const styles = StyleSheet.create({
     bottomButtons: {
         marginTop: hp(5),
         marginBottom: hp(13),
+       fontFamily:"SF Pro"
+
     },
     confirmButton: {
         backgroundColor: '#F8D833',
         paddingVertical: 16,
         borderRadius: 24,
         marginBottom: 12,
+       fontFamily:"SF Pro"
+
     },
     confirmButtonText: {
         textAlign: 'center',
         fontSize: 16,
         fontWeight: '600',
         color: '#000',
+       fontFamily:"SF Pro"
+
     },
     cancelButton: {
         borderWidth: 1,
         borderColor: '#D1D5DB',
         paddingVertical: 16,
         borderRadius: 24,
+       fontFamily:"SF Pro"
+
     },
     cancelButtonText: {
         textAlign: 'center',
         fontSize: 15,
         fontWeight: '600',
         color: '#000',
+       fontFamily:"SF Pro"
+
     },
 });
 

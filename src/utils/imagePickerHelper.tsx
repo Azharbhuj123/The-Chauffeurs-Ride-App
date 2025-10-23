@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
-import DocumentPicker from 'react-native-document-picker';
+import { pick, types, isCancel } from '@react-native-documents/picker';
 
 export const pickImageFromCamera = async () => {
   return new Promise((resolve, reject) => {
@@ -51,18 +51,21 @@ export const pickImageFromGallery = async () => {
     });
   });
 };
-
 export const pickFile = async () => {
   try {
-    const res = await DocumentPicker.pick({
-      type: [DocumentPicker.types.allFiles],
+    const results = await pick({
+      type: [types.allFiles],
+      allowMultiSelection: false,
     });
-    return res[0]; // return the first selected file
-  } catch (err) {
-    if (DocumentPicker.isCancel(err)) {
-      return null;
-    } else {
-      throw err;
+
+    if (results && results.length > 0) {
+      return results[0]; // return the first file only
     }
+    return null;
+  } catch (err) {
+    if (isCancel(err)) {
+      return null;
+    }
+    throw err;
   }
 };

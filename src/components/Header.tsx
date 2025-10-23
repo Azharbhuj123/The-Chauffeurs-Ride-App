@@ -46,9 +46,10 @@ const styles = StyleSheet.create({
     marginBottom: hp('0.5%'),
   },
   userName: {
-    fontSize: wp('5%'),
-    fontWeight: 'bold',
+    fontSize: wp('6%'),
+    fontWeight: '590',
     color: '#000',
+    fontFamily:'SF Pro Display'
   },
   profileButton: {
     width: wp('10%'),

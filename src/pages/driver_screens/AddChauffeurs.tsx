@@ -25,6 +25,7 @@ import {
   pickImageFromGallery,
 } from '../../utils/imagePickerHelper';
 import { Checkbox } from 'react-native-paper';
+import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 
 // Import your existing components
 // import TopHeader from './TopHeader';
@@ -44,6 +45,8 @@ export default function ChauffeursRegistration({ navigation }) {
     interiorView: null,
   });
 
+      const tabBarHeight = useTabBarHeightHelper();
+  
   const updateFormData = (field, value) => {
     setFormData({ ...formData, [field]: value });
   };
@@ -309,7 +312,7 @@ export default function ChauffeursRegistration({ navigation }) {
             <Text style={styles.vehicleInfo}> Jane Doe</Text>
           </View>
            <View style={styles.flexbox}>
-          <Image source={require('../../assets/images/mail.png')} />{' '}
+          <Image source={require('../../assets/images/mail.png')} />
           <Text style={styles.vehicleInfo}> Janedoe12@mail.com</Text>
           </View>
         </View>
@@ -319,7 +322,7 @@ export default function ChauffeursRegistration({ navigation }) {
           <Text style={styles.sectionTitle}>Vehicle Assignment</Text>
           <View style={styles.row}>
               <View style={styles.flexbox}>
-          <Image source={require('../../assets/images/caricon.png')} />{' '}
+          <Image source={require('../../assets/images/caricon.png')} />
           <Text style={styles.vehicleInfo}> No vehicle assigned yet.</Text>
           </View>
           </View>
@@ -364,11 +367,13 @@ export default function ChauffeursRegistration({ navigation }) {
     <SafeAreaView style={styles.container}>
       {/* TopHeader Component */}
 
-      <TopHeader title="Register New Vehicle" navigation={navigation} />
+      <TopHeader title="Add Chauffeurs" navigation={navigation} />
 
       {currentStep < 5 && renderProgressBar()}
       <ScrollView
         style={styles.formContainer}
+        contentContainerStyle={[styles.scrollContent,{ paddingBottom: tabBarHeight }]}
+
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.content}>

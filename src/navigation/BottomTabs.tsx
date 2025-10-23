@@ -7,8 +7,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  Keyboard,
 } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 const { width } = Dimensions.get('window');
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -55,6 +56,7 @@ import RatingsReviewsScreen from '../pages/driver_screens/RatingsReviewsScreen';
 import ReviewList from '../pages/driver_screens/ReviewList';
 import DynamicPricingTool from '../pages/driver_screens/DynamicPricingTool';
 import NotificationsAlerts from '../pages/driver_screens/NotificationsAlerts';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Stack = createNativeStackNavigator();
 
@@ -141,14 +143,37 @@ function OperationsStack() {
       />
       <Stack.Screen name="ReviewList" component={ReviewList} />
       <Stack.Screen name="DynamicPricingTool" component={DynamicPricingTool} />
-      <Stack.Screen name="NotificationsAlerts" component={NotificationsAlerts} />
+      <Stack.Screen
+        name="NotificationsAlerts"
+        component={NotificationsAlerts}
+      />
     </Stack.Navigator>
   );
 }
 
 const CustomTabBar = ({ state, descriptors, navigation }) => {
+  const insets = useSafeAreaInsets();
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
+  // Hide tab bar when keyboard is open
+  if (isKeyboardVisible) return null;
+
   return (
-    <View style={styles.tabBarContainer}>
+    <View style={[styles.tabBarContainer, { paddingBottom: insets.bottom }]}>
       <View style={styles.tabBar}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
@@ -167,15 +192,10 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
           };
 
           let iconName = '';
-          if (route.name === 'Home') {
-            iconName = 'home';
-          } else if (route.name === 'Bookings') {
-            iconName = 'calendar';
-          } else if (route.name === 'Loyalty') {
-            iconName = 'gift';
-          } else if (route.name === 'Profile') {
-            iconName = 'person';
-          }
+          if (route.name === 'Home') iconName = 'home';
+          else if (route.name === 'Bookings') iconName = 'calendar';
+          else if (route.name === 'Loyalty') iconName = 'gift';
+          else if (route.name === 'Profile') iconName = 'person';
 
           return (
             <TouchableOpacity
@@ -196,9 +216,30 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
   );
 };
 
+
 const CustomDriverTabBar = ({ state, descriptors, navigation }) => {
+  const insets = useSafeAreaInsets();
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
+  // Hide tab bar when keyboard is open
+  if (isKeyboardVisible) return null;
+
   return (
-    <View style={styles.tabBarContainer}>
+    <View style={[styles.tabBarContainer, { paddingBottom: insets.bottom }]}>
       <View style={styles.tabBar}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
@@ -216,9 +257,8 @@ const CustomDriverTabBar = ({ state, descriptors, navigation }) => {
             }
           };
 
-          // ...inside the map function
+          // Select icon based on route and focus state
           let iconSource;
-
           if (route.name === 'Home') {
             iconSource = isFocused
               ? require('../assets/images/car-focus.png')
@@ -252,6 +292,7 @@ const CustomDriverTabBar = ({ state, descriptors, navigation }) => {
   );
 };
 
+
 export default function BottomTabs() {
   const Tab = createBottomTabNavigator();
   const { role } = useStore();
@@ -261,7 +302,10 @@ export default function BottomTabs() {
       {role === 'user' ? (
         <Tab.Navigator
           tabBar={props => <CustomTabBar {...props} />}
-          screenOptions={{ headerShown: false }}
+          screenOptions={{
+            headerShown: false,
+            tabBarHideOnKeyboard: true, // 👈 this one line fixes it
+          }}
         >
           <Tab.Screen name="Home" component={Home} />
           <Tab.Screen
@@ -275,7 +319,10 @@ export default function BottomTabs() {
       ) : (
         <Tab.Navigator
           tabBar={props => <CustomDriverTabBar {...props} />}
-          screenOptions={{ headerShown: false }}
+          screenOptions={{
+            headerShown: false,
+            tabBarHideOnKeyboard: true, // 👈 this one line fixes it
+          }}
         >
           <Tab.Screen name="Home" component={DriverHomeStack} />
           <Tab.Screen

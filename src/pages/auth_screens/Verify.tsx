@@ -14,15 +14,17 @@ import {
   Animated,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from 'react-native-responsive-screen';
 import { useStore } from '../../stores/useStore';
 import Button from '../../components/Button';
 
 const { width, height } = Dimensions.get('window');
 
-
-const fs = (size) => {
-  return Math.sqrt((height * height) + (width * width)) * (size / 1000);
+const fs = size => {
+  return Math.sqrt(height * height + width * width) * (size / 1000);
 };
 
 export default function Verify({ navigation }) {
@@ -32,7 +34,6 @@ export default function Verify({ navigation }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const { isForgot } = useStore();
-
 
   const handleCodeChange = (text, index) => {
     const newCode = [...code];
@@ -52,9 +53,8 @@ export default function Verify({ navigation }) {
   };
 
   const handleVerify = () => {
-
     if (isForgot) {
-      navigation.navigate("SetPass");
+      navigation.navigate('SetPass');
       return;
     }
     // Add your verification logic here
@@ -84,19 +84,18 @@ export default function Verify({ navigation }) {
   };
 
   if (isVerified && !isForgot) {
-
     setTimeout(() => {
-      navigation.navigate("MainTabs")
-    }, [3000])
+      navigation.navigate('MainTabs');
+    }, [3000]);
     return (
       <View style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor="#FDD835" />
 
         {/* Header Section */}
         <View style={styles.header}>
-          <View style={[{ justifyContent: "center" }, styles.logoContainer]}>
+          <View style={[{ justifyContent: 'center' }, styles.logoContainer]}>
             <Image
-              source={require("../../assets/images/headLogo.png")}
+              source={require('../../assets/images/headLogo.png')}
               style={styles.logo}
               resizeMode="contain"
             />
@@ -104,7 +103,9 @@ export default function Verify({ navigation }) {
         </View>
 
         {/* Congratulations Section */}
-        <Animated.View style={[styles.congratsContainer, { opacity: fadeAnim }]}>
+        <Animated.View
+          style={[styles.congratsContainer, { opacity: fadeAnim }]}
+        >
           <View style={styles.congratsContent}>
             {/* Success Icon/Image */}
             <View style={styles.successIconContainer}>
@@ -121,7 +122,8 @@ export default function Verify({ navigation }) {
 
             <Text style={styles.congratsTitle}>Congratulations</Text>
             <Text style={styles.congratsText}>
-              Your account is ready to use. You will be redirected to the Home Page in a few seconds.
+              Your account is ready to use. You will be redirected to the Home
+              Page in a few seconds.
             </Text>
           </View>
         </Animated.View>
@@ -135,7 +137,10 @@ export default function Verify({ navigation }) {
 
       {/* Header Section */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate("Login")} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Login')}
+          style={styles.backButton}
+        >
           <Icon name="chevron-back" size={wp(6)} color="#000" />
           <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
@@ -162,11 +167,11 @@ export default function Verify({ navigation }) {
           {code.map((digit, index) => (
             <TextInput
               key={index}
-              ref={(ref) => (inputRefs.current[index] = ref)}
+              ref={ref => (inputRefs.current[index] = ref)}
               style={styles.otpInput}
               value={digit}
-              onChangeText={(text) => handleCodeChange(text, index)}
-              onKeyPress={(e) => handleKeyPress(e, index)}
+              onChangeText={text => handleCodeChange(text, index)}
+              onKeyPress={e => handleKeyPress(e, index)}
               keyboardType="number-pad"
               maxLength={1}
               selectTextOnFocus
@@ -182,9 +187,7 @@ export default function Verify({ navigation }) {
           </TouchableOpacity>
         </View>
 
-      
-                            <Button title="Verify Now"  onPress={handleVerify}/>
-        
+        <Button title="Verify Now" onPress={handleVerify} />
       </View>
     </View>
   );
@@ -204,7 +207,7 @@ const styles = StyleSheet.create({
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: hp(2),
+    paddingTop: hp(Platform.OS === 'ios' ? 2 : 0),
   },
   backText: {
     fontSize: fs(16),
@@ -215,8 +218,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  logo: {
-  },
+  logo: {},
   formContainer: {
     flex: 1,
     backgroundColor: '#FFF',
@@ -343,9 +345,10 @@ const styles = StyleSheet.create({
   },
   congratsTitle: {
     fontSize: fs(30),
-    fontWeight: 'bold',
+    fontWeight: '500',
     color: '#000',
     marginBottom: hp(2),
+    fontFamily:"Poppins-Regular"
   },
   congratsText: {
     fontSize: fs(14),
@@ -353,5 +356,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: fs(22),
     paddingHorizontal: wp(4),
+    fontFamily:"Inter_28pt-Regular"
+
   },
 });

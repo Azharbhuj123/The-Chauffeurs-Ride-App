@@ -21,6 +21,7 @@ import Fontisto from 'react-native-vector-icons/Fontisto';
 import UserHeader from '../../components/Header';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/Button';
+import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 
 const { width, height } = Dimensions.get('window');
 
@@ -31,6 +32,8 @@ const fs = size => {
 export default function HomeScreen({ navigation }) {
   const [showRejectPopup, setShowRejectPopup] = useState(false);
   const [selectedRide, setSelectedRide] = useState(null);
+    const tabBarHeight = useTabBarHeightHelper();
+  
 
   const [fleetStatus] = useState([
     {
@@ -121,7 +124,8 @@ export default function HomeScreen({ navigation }) {
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+                contentContainerStyle={[styles.scrollContent,{ paddingBottom: tabBarHeight + 40 }]}
+
       >
         <UserHeader />
 
@@ -293,9 +297,7 @@ export default function HomeScreen({ navigation }) {
         {/* City Driver & Positioning Section */}
         <View style={styles.mapSection}>
           <Text style={styles.sectionTitle}>City Driver & Positioning</Text>
-          <View style={styles.mapPlaceholder}>
-            <Image source={require('../../assets/images/map2.png')} />
-          </View>
+            <Image style={{width:'100%'}} source={require('../../assets/images/map2.png')} />
           {/* Manual Repositioning */}
           <View style={styles.repositioningSection}>
             <Text style={styles.repositioningTitle}>Manual Repositioning</Text>
@@ -304,7 +306,6 @@ export default function HomeScreen({ navigation }) {
         </View>
 
         {/* Bottom Spacing */}
-        <View style={{ height: hp(10) }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -313,7 +314,7 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#fff',
   },
   scrollView: {
     flex: 1,
@@ -368,17 +369,9 @@ const styles = StyleSheet.create({
     borderRadius: wp(3),
     padding: wp(4),
     marginBottom: hp(1.5),
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
+     
+ 
+    boxShadow:'0 0 50px 0 rgba(0, 0, 0, 0.08)'
   },
   sectionTitle: {
     fontSize: fs(18),
@@ -393,17 +386,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: hp(1.5),
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
+    borderWidth:1,
+    borderColor:'1px solid rgba(17, 17, 17, 0.10)',
   },
   fleetCardLast: {
     marginBottom: 0,
@@ -439,50 +423,29 @@ const styles = StyleSheet.create({
     color: '#FFF',
   },
   mapSection: {
-    marginBottom: hp(2),
     backgroundColor: '#FFF',
     borderRadius: wp(3),
-    padding: wp(4),
+      padding: wp(4),
+
     paddingTop: hp(3),
     paddingBottom: hp(3),
     marginBottom: hp(1.5),
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
+    
+    boxShadow:'0 0 50px 0 rgba(0, 0, 0, 0.08)'
   },
   mapPlaceholder: {
     justifyContent: 'center',
     alignItems: 'center',
+
   },
-  mapPlaceholderText: {
-    fontSize: fs(14),
-    color: '#999',
-    marginTop: hp(1),
-  },
+  
   repositioningSection: {
     borderRadius: wp(3),
     padding: wp(4),
     marginTop: 10,
     alignItems: 'center',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
+    
+ 
   },
   repositioningTitle: {
     fontSize: fs(16),
@@ -501,6 +464,9 @@ const styles = StyleSheet.create({
     padding: wp(4),
     borderRadius: wp(3),
     marginBottom: hp(2),
+    //  borderWidth:1,
+    // borderColor:'1px solid rgba(17, 17, 17, 0.10)',
+    boxShadow:'0 0 50px 0 rgba(0, 0, 0, 0.08)'
   },
 
   sectionTitle: {
@@ -517,17 +483,8 @@ const styles = StyleSheet.create({
     borderRadius: wp(3),
     padding: wp(4),
     marginBottom: hp(2),
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
+       borderWidth:1,
+    borderColor:'1px solid rgba(17, 17, 17, 0.10)',
   },
   locationRow1: {
     flexDirection: 'row',
@@ -632,7 +589,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   modalTitle: {
-    fontSize: fs(20),
+    fontSize: fs(25),
     fontWeight: 'bold',
     color: '#000',
     marginBottom: hp(0.5),

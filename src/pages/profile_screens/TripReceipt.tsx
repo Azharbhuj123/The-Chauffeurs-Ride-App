@@ -19,8 +19,11 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import TopHeader from '../../components/TopHeader';
 import Button from '../../components/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 
 export const TripReceiptScreen = ({ navigation }) => {
+      const tabBarHeight = useTabBarHeightHelper();
+    
     // Helper component for Fare Breakdown and Trip Summary rows
     const DetailRow = ({ label, value, valueStyle }) => (
         <View style={styles.detailRow}>
@@ -36,7 +39,8 @@ export const TripReceiptScreen = ({ navigation }) => {
 
             <ScrollView
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.scrollContent}>
+         contentContainerStyle={[styles.scrollContent,{ paddingBottom: tabBarHeight + 50 }]}
+                >
 
                 {/* Top Payment Card */}
                 <View style={styles.paymentCard}>

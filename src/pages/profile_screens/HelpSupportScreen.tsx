@@ -28,7 +28,7 @@ export const HelpSupportScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#f8f8f8" />
-      <TopHeader title="Help & Support" />
+      <TopHeader title="Help & Support" navigation={navigation} />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Quick Help Topics */}

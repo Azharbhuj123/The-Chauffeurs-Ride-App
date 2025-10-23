@@ -1,18 +1,18 @@
 // @ts-nocheck
 
-
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  Dimensions, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
   ScrollView,
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import TopHeader from '../../components/TopHeader';
@@ -22,19 +22,20 @@ import {
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import Button from '../../components/Button';
+import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 
 const { width, height } = Dimensions.get('window');
 
-const fs = (size) => {
-  return Math.sqrt((height * height) + (width * width)) * (size / 1000);
+const fs = size => {
+  return Math.sqrt(height * height + width * width) * (size / 1000);
 };
-
 
 export default function DynamicPricingTool({ navigation }) {
   const [baseFare, setBaseFare] = useState('3.3');
   const [ratePerMile, setRatePerMile] = useState('3.3');
   const [ratePerMinute, setRatePerMinute] = useState('0.25');
   const [surgeMultiplier, setSurgeMultiplier] = useState(1.0);
+  const tabBarHeight = useTabBarHeightHelper();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -43,15 +44,22 @@ export default function DynamicPricingTool({ navigation }) {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-          <TopHeader title="Operations Overview" navigation={navigation} />
+        <TopHeader title="Operations Overview" navigation={navigation} />
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={[
+              styles.scrollContent,
+              {
+                paddingBottom: tabBarHeight,
+              },
+            ]}
           >
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { fontSize: 18 }]}>Dynamic Pricing Tool</Text>
+              <Text style={[styles.sectionTitle, { fontSize: 18 }]}>
+                Dynamic Pricing Tool
+              </Text>
             </View>
 
             <View style={styles.section}>
@@ -106,9 +114,13 @@ export default function DynamicPricingTool({ navigation }) {
 
             {/* Surge Multiplier */}
             <View style={styles.surgeSection}>
-              <Text style={styles.sectionTitle}>Surge Multiplier (Demand/Time-Based)</Text>
+              <Text style={styles.sectionTitle}>
+                Surge Multiplier (Demand/Time-Based)
+              </Text>
               <View style={styles.surgeContainer}>
-                <Text style={styles.surgeValue}>{surgeMultiplier.toFixed(2)}x</Text>
+                <Text style={styles.surgeValue}>
+                  {surgeMultiplier.toFixed(2)}x
+                </Text>
                 <Slider
                   style={styles.slider}
                   minimumValue={1.0}
@@ -168,8 +180,8 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-   borderWidth:1,
-   borderColor: '#ECECEC',
+    borderWidth: 1,
+    borderColor: '#ECECEC',
     borderRadius: wp(4.5),
     paddingHorizontal: wp(4),
     height: hp(6),
@@ -196,14 +208,13 @@ const styles = StyleSheet.create({
     marginTop: hp(2),
     marginBottom: hp(3),
   },
-  surgeContainer:{
-    backgroundColor:'#fff',
+  surgeContainer: {
+    backgroundColor: '#fff',
     boxShadow: '0 0 20px 0 rgba(0, 0, 0, 0.10)',
-    padding:wp(6),
-    marginTop:hp(3),
-    borderRadius:wp(3),
-    marginBottom:hp(5)
-
+    padding: wp(6),
+    marginTop: hp(3),
+    borderRadius: wp(3),
+    marginBottom: hp(5),
   },
   surgeValue: {
     fontSize: fs(32),
@@ -230,7 +241,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   saveButton: {
-    width:"100%",
+    width: '100%',
     marginTop: hp(2),
   },
   saveButtonText: {

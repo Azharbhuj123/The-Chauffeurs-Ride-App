@@ -8,6 +8,9 @@ import {
     StyleSheet,
     Image,
     Dimensions,
+    ScrollView,
+    StatusBar,
+    
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -15,11 +18,14 @@ import Ionicon from 'react-native-vector-icons/Ionicons';
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from "react-native-responsive-screen";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import TopHeader from '../../components/TopHeader';
+import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 
 // Get screen dimensions
 const { width, height } = Dimensions.get('window');
 
 const RideConfirmationScreen = ({ navigation, route }) => {
+      const tabBarHeight = useTabBarHeightHelper();
+    
     // Dummy driver data. In a real app, this would come from `route.params`
     const driver = {
         name: 'John Davis',
@@ -62,78 +68,97 @@ const RideConfirmationScreen = ({ navigation, route }) => {
 
 
     return (
-        <SafeAreaView style={styles.container}>
-            {/* Header */}
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <TopHeader title="Your Ride is Confirmed!" navigation={navigation} />
 
+      {/* 👇 Wrap the content in ScrollView to allow scrolling if screen overflows */}
+      <ScrollView
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* --- Map Container View --- */}
+        <View style={styles.mapContainer}>
+          <Image
+            style={styles.mapImage}
+            source={require('../../assets/images/newmap.png')}
+          />
 
-            <TopHeader title='Your Ride is Confirmed!'  navigation={navigation}/>
+          {/* ETA Banner */}
+          <View style={styles.etaContainer}>
+            <Icon name="clock-time-three-outline" size={20} color="#333" />
+            <Text style={styles.etaTextBold}>Driver En Route</Text>
+            <Text style={styles.etaText}>5 min ETA</Text>
+          </View>
 
+          {/* Pickup Location Marker */}
+          <View style={styles.pickupMarkerContainer}>
+            <View style={styles.pickupPin}>
+              <View style={styles.pickupIcon}>
+                <Ionicon name="man" size={20} color="white" />
+              </View>
+              <View style={styles.pickupAddressBox}>
+                <Text style={styles.pickupLabel}>PICK UP AT</Text>
+                <Text style={styles.pickupAddress}>325 5th Ave, NY...</Text>
+              </View>
+              <Icon
+                name="chevron-right"
+                size={22}
+                color="#888"
+                style={{ alignSelf: 'center' }}
+              />
+            </View>
+            <View style={styles.pinCircle} />
+          </View>
 
-            {/* Map Container View */}
-            <View style={styles.mapContainer}>
-                {/* Map Background Image */}
-                <Image style={styles.mapImage} source={require("../../assets/images/newmap.png")} />
+          {/* Static route line */}
+          <Image
+            source={require('../../assets/images/route-line.png')}
+            style={styles.routeLine}
+          />
+        </View>
 
-                {/* --- Map Overlays --- */}
-
-                {/* ETA Banner */}
-                <View style={styles.etaContainer}>
-                    <Icon name="clock-time-three-outline" size={20} color="#333" />
-                    <Text style={styles.etaTextBold}>Driver En Route</Text>
-                    <Text style={styles.etaText}>5 min ETA</Text>
-                </View>
-
-                {/* Pickup Location Marker */}
-                <View style={styles.pickupMarkerContainer}>
-                    <View style={styles.pickupPin}>
-                        <View style={styles.pickupIcon}>
-                            <Ionicon name="man" size={20} color="white" />
-                        </View>
-                        <View style={styles.pickupAddressBox}>
-                            <Text style={styles.pickupLabel}>PICK UP AT</Text>
-                            <Text style={styles.pickupAddress}>325 5th Ave, NY...</Text>
-                        </View>
-                        <Icon name="chevron-right" size={22} color="#888" style={{ alignSelf: 'center' }} />
-                    </View>
-                    {/* The pin itself */}
-                    <View style={styles.pinCircle} />
-                </View>
-
-                {/* Route Line Image (Static example) */}
-                <Image
-                    source={require('../../assets/images/route-line.png')} // NOTE: You need to create this dashed line image
-                    style={styles.routeLine}
-                />
+        {/* --- Driver Info Card --- */}
+        <View style={styles.driverCard}>
+          <View style={styles.driverInfo}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{driver.initials}</Text>
             </View>
 
-            {/* Driver Info Card */}
-            <View style={styles.driverCard}>
-                <View style={styles.driverInfo}>
-                    <View style={styles.avatar}>
-                        <Text style={styles.avatarText}>{driver.initials}</Text>
-                    </View>
-                    <View style={styles.driverDetails}>
-                        <Text style={styles.driverName}>{driver.name}</Text>
-                        <Text style={styles.carDetails}>{driver.carModel} <Text style={styles.licensePlate}>{driver.licensePlate}</Text></Text>
-                    </View>
-                    <View style={styles.ratingContainer}>
-                        <Icon name="star" size={20} color="#FFD700" />
-                        <Text style={styles.ratingText}>{driver.rating}</Text>
-                    </View>
-                </View>
-
-                <View style={styles.actionButtons}>
-                    <TouchableOpacity onPress={() => handlePress('CancelRide')} style={styles.cancelButton}>
-                        <Text style={styles.cancelButtonText}>Cancel Ride</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handlePress('Chat')} style={styles.contactButton}>
-                        <Icon name="message-processing" size={20} color="#000" />
-                        <Text style={styles.contactButtonText}>Contact Driver</Text>
-                    </TouchableOpacity>
-                </View>
+            <View style={styles.driverDetails}>
+              <Text style={styles.driverName}>{driver.name}</Text>
+              <Text style={styles.carDetails}>
+                {driver.carModel}{' '}
+                <Text style={styles.licensePlate}>{driver.licensePlate}</Text>
+              </Text>
             </View>
-        </SafeAreaView>
-    );
+
+            <View style={styles.ratingContainer}>
+              <Icon name="star" size={20} color="#FFD700" />
+              <Text style={styles.ratingText}>{driver.rating}</Text>
+            </View>
+          </View>
+
+          <View style={styles.actionButtons}>
+            <TouchableOpacity
+              onPress={() => handlePress('CancelRide')}
+              style={styles.cancelButton}
+            >
+              <Text style={styles.cancelButtonText}>Cancel Ride</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => handlePress('Chat')}
+              style={styles.contactButton}
+            >
+              <Icon name="message-processing" size={20} color="#000" />
+              <Text style={styles.contactButtonText}>Contact Driver</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -153,6 +178,8 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: '#000',
+       fontFamily:"SF Pro"
+
     },
     mapContainer: {
         flex: 1, // Takes up remaining space
@@ -185,12 +212,16 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#333',
         fontSize: 16,
+       fontFamily:"SF Pro"
+
     },
     etaText: {
         marginLeft: 'auto', // Pushes it to the right
         fontWeight: 'bold',
         color: '#333',
         fontSize: 16,
+       fontFamily:"SF Pro"
+
     },
     pickupMarkerContainer: {
         position: 'absolute',
@@ -225,6 +256,8 @@ const styles = StyleSheet.create({
         color: '#6B7280',
         fontSize: 12,
         fontWeight: '500',
+       fontFamily:"SF Pro"
+
     },
     pickupAddress: {
         color: '#1F2937',
@@ -265,6 +298,8 @@ const styles = StyleSheet.create({
     driverInfo: {
         flexDirection: 'row',
         alignItems: 'center',
+       fontFamily:"SF Pro"
+
     },
     avatar: {
         width: 60,
@@ -279,6 +314,8 @@ const styles = StyleSheet.create({
         color: '#000', // Darker yellow
         fontSize: 20,
         fontWeight: 'bold',
+       fontFamily:"SF Pro"
+
     },
     driverDetails: {
         flex: 1,
@@ -287,6 +324,8 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: '#000',
+       fontFamily:"SF Pro"
+
     },
     carDetails: {
         fontSize: 14,
@@ -295,7 +334,9 @@ const styles = StyleSheet.create({
     licensePlate: {
         color: 'gray',
         borderLeftWidth: 1,
-        borderLeftColor: "gray"
+        borderLeftColor: "gray",
+       fontFamily:"SF Pro"
+
     },
     ratingContainer: {
         flexDirection: 'row',
@@ -305,6 +346,8 @@ const styles = StyleSheet.create({
         marginLeft: 5,
         fontSize: 16,
         fontWeight: 'bold',
+       fontFamily:"SF Pro",
+
         color: '#FDD835',
     },
     actionButtons: {
@@ -323,11 +366,15 @@ const styles = StyleSheet.create({
         paddingVertical: 14,
         alignItems: 'center',
         marginRight: 10,
+       fontFamily:"SF Pro"
+
     },
     cancelButtonText: {
         fontSize: 16,
         fontWeight: '600',
         color: '#1F2937',
+       fontFamily:"SF Pro"
+
     },
     contactButton: {
         flex: 1,
@@ -338,12 +385,16 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginLeft: 10,
+       fontFamily:"SF Pro"
+
     },
     contactButtonText: {
         fontSize: 16,
         fontWeight: '600',
         color: '#000',
         marginLeft: 8,
+       fontFamily:"SF Pro"
+
     },
 });
 

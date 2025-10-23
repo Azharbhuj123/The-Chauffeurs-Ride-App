@@ -70,6 +70,9 @@ function Signup({ navigation }) {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          bounces={true}
+          // Remove problematic props
         >
           {/* Header Section */}
           <View style={styles.header}>

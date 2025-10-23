@@ -16,8 +16,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import TopHeader from '../../components/TopHeader';
 import Button from '../../components/Button';
+import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 
 export const TripHistoryScreen = ({ navigation }) => {
+      const tabBarHeight = useTabBarHeightHelper();
+    
     const [trips] = useState([
         {
             id: 1,
@@ -58,7 +61,9 @@ export const TripHistoryScreen = ({ navigation }) => {
 
             <ScrollView
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.scrollContent}>
+                       contentContainerStyle={[styles.scrollContent,{ paddingBottom: tabBarHeight + 50 }]}
+                       >
+
                 {trips.map(trip => (
                     <View key={trip.id} style={styles.tripCard}>
                         {/* Card Header */}
@@ -133,12 +138,16 @@ const styles = StyleSheet.create({
     dateText: {
         fontSize: wp(3),
         color: '#666',
+    fontFamily: 'SF Pro',
+
     },
     priceText: {
         fontSize: wp(5),
         fontWeight: 'bold',
         color: '#000',
         marginTop: hp(0.5),
+    fontFamily: 'SF Pro',
+
     },
     statusBadge: {
         backgroundColor: '#e0f8e9',
@@ -150,6 +159,8 @@ const styles = StyleSheet.create({
         color: '#4caf50',
         fontSize: wp(3),
         fontWeight: '500',
+    fontFamily: 'SF Pro',
+
     },
     itineraryContainer: {
         flexDirection: 'row',
@@ -185,6 +196,8 @@ const styles = StyleSheet.create({
         fontSize: wp(3.8),
         color: '#333',
         fontWeight: '500',
+    fontFamily: 'SF Pro',
+
     },
     locationSub: {
         fontSize: wp(3.5),
@@ -199,5 +212,7 @@ const styles = StyleSheet.create({
         fontSize: wp(4),
         color: '#000',
         fontWeight: '600',
+    fontFamily: 'SF Pro',
+
     },
 });

@@ -25,6 +25,7 @@ import {
   pickImageFromGallery,
 } from '../../utils/imagePickerHelper';
 import { Checkbox } from 'react-native-paper';
+import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 
 // Import your existing components
 // import TopHeader from './TopHeader';
@@ -43,6 +44,8 @@ export default function VehicleRegistration({ navigation }) {
     sideView: null,
     interiorView: null,
   });
+    const tabBarHeight = useTabBarHeightHelper();
+  
 
   const updateFormData = (field, value) => {
     setFormData({ ...formData, [field]: value });
@@ -384,6 +387,8 @@ export default function VehicleRegistration({ navigation }) {
       {currentStep < 5 && renderProgressBar()}
       <ScrollView
         style={styles.formContainer}
+        contentContainerStyle={[styles.scrollContent,{ paddingBottom: tabBarHeight }]}
+
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.content}>

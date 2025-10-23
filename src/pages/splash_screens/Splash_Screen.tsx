@@ -232,7 +232,9 @@ const onboardingStyles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#ffffff',
     lineHeight: width * 0.08,
-    textAlign:"center"
+    textAlign:"center",
+    fontFamily:"SFPRODISPLAYREGULAR"
+
   },
   description: {
     fontSize: width * 0.038, 
@@ -240,6 +242,7 @@ const onboardingStyles = StyleSheet.create({
     lineHeight: width * 0.055,
     textAlign:"center",
     paddingBottom: TEXT_PADDING * 1.2,
+    fontFamily:"SF Pro Display"
 
   },
   
@@ -259,6 +262,8 @@ const onboardingStyles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    fontFamily:"SF Pro Display"
+
   },
   skipText: {
     color: '#ffffff',

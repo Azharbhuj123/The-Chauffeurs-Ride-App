@@ -18,6 +18,7 @@ import {
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import TopHeader from '../../components/TopHeader';
+import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 
 export default function ChatScreen({ navigation }) {
   const [message, setMessage] = useState('');
@@ -43,6 +44,8 @@ export default function ChatScreen({ navigation }) {
       time: '8:30 pm',
     },
   ]);
+    const tabBarHeight = useTabBarHeightHelper();
+  
 
   const scrollViewRef = useRef(null);
 
@@ -79,7 +82,7 @@ export default function ChatScreen({ navigation }) {
         <ScrollView
           ref={scrollViewRef}
           style={styles.chatContainer}
-          contentContainerStyle={styles.chatContent}
+          contentContainerStyle={[styles.chatContent,{paddingBottom:tabBarHeight}]}
           showsVerticalScrollIndicator={false}
           onContentSizeChange={() =>
             scrollViewRef.current?.scrollToEnd({ animated: true })
@@ -178,6 +181,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#000',
+    fontFamily: 'SF Pro',
   },
   chatContainer: {
     flex: 1,
@@ -240,6 +244,7 @@ const styles = StyleSheet.create({
     fontSize: wp('3.8%'),
     color: '#000',
     lineHeight: hp('2.5%'),
+    fontFamily: 'SF Pro',
   },
   userMessageContainer: {
     flexDirection: 'row',
@@ -261,6 +266,7 @@ const styles = StyleSheet.create({
     fontSize: wp('3.8%'),
     color: '#000',
     lineHeight: hp('2.5%'),
+    fontFamily: 'SF Pro',
   },
   timeRow: {
     flexDirection: 'row',
@@ -273,6 +279,7 @@ const styles = StyleSheet.create({
     fontSize: wp('3%'),
     color: '#999',
     marginTop: hp('0.5%'),
+    fontFamily: 'SF Pro',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -283,7 +290,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#f0f0f0',
     gap: wp('2%'),
-    marginBottom: hp(10),
+    marginBottom: hp(15),
   },
   iconButton: {
     padding: wp('1%'),
@@ -297,6 +304,7 @@ const styles = StyleSheet.create({
     fontSize: wp('3.8%'),
     color: '#000',
     maxHeight: hp('12%'),
+    fontFamily: 'SF Pro',
   },
   sendButton: {
     width: wp('10%'),
@@ -307,3 +315,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
+

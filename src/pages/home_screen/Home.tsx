@@ -1,15 +1,28 @@
 // @ts-nocheck
 
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, StatusBar } from 'react-native'
-import React, { useRef, useState } from 'react'
-import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
-import Icon from "react-native-vector-icons/Ionicons";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  FlatList,
+  StatusBar,
+} from 'react-native';
+import React, { useRef, useState } from 'react';
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from 'react-native-responsive-screen';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import UserHeader from "../../components/Header"
+import UserHeader from '../../components/Header';
 import { CommonActions } from '@react-navigation/native';
-export default function Home({navigation}) {
+import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
+export default function Home({ navigation }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef(null);
+  const tabBarHeight = useTabBarHeightHelper();
 
   const loyaltyData = [
     {
@@ -18,7 +31,7 @@ export default function Home({navigation}) {
       points: '1,500 Points',
       subtext: 'Earn a free upgrade on your next ride!',
       rightText: 'First',
-      rightSubtext: 'Value on'
+      rightSubtext: 'Value on',
     },
     {
       id: '2',
@@ -26,7 +39,7 @@ export default function Home({navigation}) {
       points: '2,800 Points',
       subtext: 'Get 20% off on your next 3 rides!',
       rightText: 'Premium',
-      rightSubtext: 'Rewards'
+      rightSubtext: 'Rewards',
     },
     {
       id: '3',
@@ -34,44 +47,44 @@ export default function Home({navigation}) {
       points: '5,000 Points',
       subtext: 'Unlock exclusive benefits and perks!',
       rightText: 'Elite',
-      rightSubtext: 'Status'
+      rightSubtext: 'Status',
     },
   ];
 
   const quick_Destinations = [
     {
-        id:1,
-        title:"The Grand Hyatt Hotel",
-        subTitle:"East trip: Yesterday | 10.2 mi",
+      id: 1,
+      title: 'The Grand Hyatt Hotel',
+      subTitle: 'East trip: Yesterday | 10.2 mi',
     },
-      {
-        id:2,
-        title:"The Grand Hyatt Hotel",
-        subTitle:"East trip: Yesterday | 10.2 mi",
+    {
+      id: 2,
+      title: 'The Grand Hyatt Hotel',
+      subTitle: 'East trip: Yesterday | 10.2 mi',
     },
-      {
-        id:3,
-        title:"The Grand Hyatt Hotel",
-        subTitle:"East trip: Yesterday | 10.2 mi",
+    {
+      id: 3,
+      title: 'The Grand Hyatt Hotel',
+      subTitle: 'East trip: Yesterday | 10.2 mi',
     },
-      {
-        id:4,
-        title:"The Grand Hyatt Hotel",
-        subTitle:"East trip: Yesterday | 10.2 mi",
+    {
+      id: 4,
+      title: 'The Grand Hyatt Hotel',
+      subTitle: 'East trip: Yesterday | 10.2 mi',
     },
-      {
-        id:5,
-        title:"The Grand Hyatt Hotel",
-        subTitle:"East trip: Yesterday | 10.2 mi",
+    {
+      id: 5,
+      title: 'The Grand Hyatt Hotel',
+      subTitle: 'East trip: Yesterday | 10.2 mi',
     },
-      {
-        id:6,
-        title:"The Grand Hyatt Hotel",
-        subTitle:"East trip: Yesterday | 10.2 mi",
+    {
+      id: 6,
+      title: 'The Grand Hyatt Hotel',
+      subTitle: 'East trip: Yesterday | 10.2 mi',
     },
-  ]
+  ];
 
-  const onScroll = (event) => {
+  const onScroll = event => {
     const slideSize = wp('90%');
     const index = Math.round(event.nativeEvent.contentOffset.x / slideSize);
     setActiveIndex(index);
@@ -84,85 +97,97 @@ export default function Home({navigation}) {
         <Text style={styles.loyaltyPoints}>{item.points}</Text>
         <Text style={styles.loyaltySubtext}>{item.subtext}</Text>
       </View>
-       
     </View>
   );
-  
- 
 
   return (
-    <SafeAreaView style={{flex:1,backgroundColor:"#fff"}}>
-    <View style={styles.container}>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header */}
-       <UserHeader />
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+      <View style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-        {/* Yellow CTA Card */}
-        <TouchableOpacity style={styles.ctaCard}>
-          <View>
-            <Text style={styles.ctaTitle}>Book a Chauffeur</Text>
-            <Text style={styles.ctaSubtitle}>Instant or Scheduled Luxury</Text>
-          </View>
-          <Icon name="chevron-forward" size={wp('8%')} color="#000" />
-        </TouchableOpacity>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: tabBarHeight + 10 },
+          ]}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header */}
+          <UserHeader />
 
-        {/* Current Ride Status */}
-        <View style={styles.rideStatusCard}>
-          <Text style={styles.sectionTitle}>Current Ride Status</Text>
-          <View style={styles.statusRow}>
-            <Icon name="time-outline" size={wp('5%')} color="#666" />
-            <Text style={styles.statusText}>No active trip currently booked</Text>
-          </View>
-        </View>
-
-        {/* Loyalty & Offers - Slider */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Loyalty & Offers</Text>
-          <FlatList
-            ref={flatListRef}
-            data={loyaltyData}
-            renderItem={renderLoyaltyCard}
-            keyExtractor={(item) => item.id}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onScroll={onScroll}
-            scrollEventThrottle={16}
-            snapToInterval={wp('90%')}
-            decelerationRate="fast"
-            contentContainerStyle={styles.sliderContainer}
-          />
-           
-        </View>
-
-        {/* Quick Destinations */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Destinations</Text>
-          {Array.isArray(quick_Destinations) && quick_Destinations?.map((des)=>(
-
-          <TouchableOpacity key={des?.id} style={styles.destinationCard}>
+          {/* Yellow CTA Card */}
+          <TouchableOpacity style={styles.ctaCard}>
             <View>
-              <Text style={styles.destinationTitle}>{des?.title}</Text>
-              <Text style={styles.destinationSubtitle}>{des?.subTitle}</Text>
+              <Text style={styles.ctaTitle}>Book a Chauffeur</Text>
+              <Text style={styles.ctaSubtitle}>
+                Instant or Scheduled Luxury
+              </Text>
             </View>
-            {/* <Icon name="chevron-forward" size={wp('5%')} color="#666" /> */}
-            <Text style={{fontSize:14,color:"#FFD700"}}>Book Again</Text>
-            </TouchableOpacity>
-          ))}
+            <Icon name="chevron-forward" size={wp('8%')} color="#000" />
+          </TouchableOpacity>
 
-           
-        </View>
-     
-        {/* Bottom spacing to prevent content hiding behind tab bar */}
-        <View style={styles.bottomSpacer} />
-      </ScrollView>
-    </View>
+          {/* Current Ride Status */}
+          <View style={styles.rideStatusCard}>
+            <Text style={styles.sectionTitle}>Current Ride Status</Text>
+            <View style={styles.statusRow}>
+              <Icon name="time-outline" size={wp('5%')} color="#666" />
+              <Text style={styles.statusText}>
+                No active trip currently booked
+              </Text>
+            </View>
+          </View>
+
+          {/* Loyalty & Offers - Slider */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Loyalty & Offers</Text>
+            <FlatList
+              ref={flatListRef}
+              data={loyaltyData}
+              renderItem={renderLoyaltyCard}
+              keyExtractor={item => item.id}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onScroll={onScroll}
+              scrollEventThrottle={16}
+              snapToInterval={wp('90%')}
+              decelerationRate="fast"
+              contentContainerStyle={styles.sliderContainer}
+            />
+          </View>
+
+          {/* Quick Destinations */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Quick Destinations</Text>
+            {Array.isArray(quick_Destinations) &&
+              quick_Destinations?.map(des => (
+                <TouchableOpacity key={des?.id} style={styles.destinationCard}>
+                  <View>
+                    <Text style={styles.destinationTitle}>{des?.title}</Text>
+                    <Text style={styles.destinationSubtitle}>
+                      {des?.subTitle}
+                    </Text>
+                  </View>
+                  {/* <Icon name="chevron-forward" size={wp('5%')} color="#666" /> */}
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      color: '#FFD700',
+                      fontFamily: 'Poppins',
+                    }}
+                  >
+                    Book Again
+                  </Text>
+                </TouchableOpacity>
+              ))}
+          </View>
+
+          {/* Bottom spacing to prevent content hiding behind tab bar */}
+        </ScrollView>
+      </View>
     </SafeAreaView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -177,10 +202,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp('5%'),
     paddingTop: hp('3%'),
   },
-  
+
   ctaCard: {
     backgroundColor: '#FFD700',
     borderRadius: wp('4%'),
+    borderWidth: 1,
+    borderColor: '1px solid rgba(17, 17, 17, 0.10)',
     padding: wp('5%'),
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -189,18 +216,23 @@ const styles = StyleSheet.create({
   },
   ctaTitle: {
     fontSize: wp('4.5%'),
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#000',
     marginBottom: hp('0.5%'),
+    fontFamily: 'Poppins',
   },
   ctaSubtitle: {
     fontSize: wp('3.5%'),
     color: '#000',
+    fontWeight: '400',
+
+    fontFamily: 'Poppins',
   },
   rideStatusCard: {
     backgroundColor: '#fff',
     boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
-
+    borderWidth: 1,
+    borderColor: '1px solid rgba(17, 17, 17, 0.10)',
     borderRadius: wp('4%'),
     padding: wp('4%'),
     marginBottom: hp('2%'),
@@ -210,6 +242,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000',
     marginBottom: hp('1.5%'),
+    fontFamily: 'Poppins',
   },
   statusRow: {
     flexDirection: 'row',
@@ -219,9 +252,10 @@ const styles = StyleSheet.create({
     fontSize: wp('3.5%'),
     color: '#666',
     marginLeft: wp('2%'),
+    fontFamily: 'Poppins',
   },
   section: {
-    marginTop: hp('0.7%'),
+    marginTop: hp('2%'),
     marginBottom: hp('2%'),
   },
   sliderContainer: {
@@ -236,6 +270,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: wp('85%'),
     marginRight: wp('3%'),
+    fontFamily: 'Poppins',
   },
   loyaltyContent: {
     flex: 1,
@@ -245,16 +280,19 @@ const styles = StyleSheet.create({
     color: '#FFD700',
     marginBottom: hp('1%'),
     fontWeight: '600',
+    fontFamily: 'Poppins',
   },
   loyaltyPoints: {
     fontSize: wp('6%'),
     fontWeight: 'bold',
     color: '#fff',
+    fontFamily: 'Poppins',
     marginBottom: hp('0.5%'),
   },
   loyaltySubtext: {
     fontSize: wp('3%'),
-    color: '#999',
+    color: '#fff',
+    fontFamily: 'Poppins',
   },
   loyaltyRight: {
     backgroundColor: '#fff',
@@ -266,10 +304,12 @@ const styles = StyleSheet.create({
     fontSize: wp('4%'),
     fontWeight: 'bold',
     color: '#000',
+    fontFamily: 'Poppins',
   },
   loyaltyRightSubtext: {
     fontSize: wp('2.5%'),
-    color: '#666',
+    color: '#fff',
+    fontFamily: 'Poppins',
   },
   pagination: {
     flexDirection: 'row',
@@ -291,25 +331,26 @@ const styles = StyleSheet.create({
   destinationCard: {
     backgroundColor: '#fff',
     boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
-
+    borderWidth: 1,
+    borderColor: '1px solid rgba(17, 17, 17, 0.10)',
     borderRadius: wp('4%'),
     padding: wp('4%'),
     marginBottom: wp('3%'),
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    fontFamily: 'Poppins',
   },
   destinationTitle: {
     fontSize: wp('4%'),
     fontWeight: '600',
     color: '#000',
     marginBottom: hp('0.5%'),
+    fontFamily: 'Poppins',
   },
   destinationSubtitle: {
     fontSize: wp('3%'),
     color: '#666',
-  },
-  bottomSpacer: {
-    height: hp('12%'),
+    fontFamily: 'Poppins',
   },
 });

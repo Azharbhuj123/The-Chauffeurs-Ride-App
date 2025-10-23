@@ -11,9 +11,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import TopHeader from '../../components/TopHeader';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import Button from '../../components/Button';
+import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 
 const EarningsCommissions = ({ navigation }) => {
   const [selectedTab, setSelectedTab] = useState('Ride Revenue');
+  const tabBarHeight = useTabBarHeightHelper();
 
   // === Tab Data ===
   const rideRevenueClients = [
@@ -79,7 +81,10 @@ const EarningsCommissions = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <TopHeader title="Earnings & Commissions" navigation={navigation} />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false}
+        contentContainerStyle={[{ paddingBottom: tabBarHeight - 50 }]}
+      
+      >
         {/* Header Section */}
         <View style={styles.headerCard}>
           <View style={styles.headerTop}>
@@ -311,7 +316,6 @@ cardsContainer: {
   shadowOpacity: 0.08,
   shadowRadius: 50,
   padding: 20,
-  elevation: 5,
   marginBottom: 20,
 },
 sectionTitle: {

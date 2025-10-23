@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import TopHeader from '../../components/TopHeader';
@@ -15,6 +16,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
+import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 
 const reviews = [
   {
@@ -49,10 +51,12 @@ const reviews = [
     comment: 'Prompt, friendly driver and a very clean car!',
     date: '2 weeks ago',
   },
+   
 ];
 
 const RatingsReviewsScreen = ({ navigation }) => {
   const [active, setActive] = useState(1);
+  const tabBarHeight = useTabBarHeightHelper();
 
   const renderStars = rating => {
     const stars = [];
@@ -89,12 +93,13 @@ const RatingsReviewsScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-               <TopHeader title="Operations Overview" navigation={navigation} />
-     
+      <TopHeader title="Operations Overview" navigation={navigation} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 30 }}
+        contentContainerStyle={{
+          paddingBottom: tabBarHeight + (Platform.OS === 'ios' ? 55 : 20),
+        }}
       >
         {/* Header */}
         <Text style={styles.title}>Ratings & Reviews</Text>

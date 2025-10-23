@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   Image,
   TextInput,
-
   StatusBar,
   Platform,
   Modal,
@@ -22,11 +21,13 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/Button';
+import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 
 // ProfileMainScreen Component
 export const ProfileMainScreen = ({ navigation }) => {
-    const [isModalVisible, setModalVisible] = useState(false);
-  
+  const [isModalVisible, setModalVisible] = useState(false);
+  const tabBarHeight = useTabBarHeightHelper();
+
   const menuItems = [
     { id: 1, icon: 'user', label: 'Edit Profile', screen: 'EditProfile' },
     { id: 2, icon: 'map-pin', label: 'Address', screen: 'Address' },
@@ -35,20 +36,27 @@ export const ProfileMainScreen = ({ navigation }) => {
     { id: 5, icon: 'credit-card', label: 'Payment Options', screen: 'Payment' },
     { id: 6, icon: 'info', label: 'About Us', screen: 'About' },
     { id: 7, icon: 'settings', label: 'Settings', screen: 'Settings' },
-    { id: 8, icon: 'help-circle', label: 'Help and Support', screen: 'Support' },
+    {
+      id: 8,
+      icon: 'help-circle',
+      label: 'Help and Support',
+      screen: 'Support',
+    },
   ];
 
-
-  const handleLogout = ()=>{
-    setModalVisible(false)
-    navigation.navigate("Login")
-  }
+  const handleLogout = () => {
+    setModalVisible(false);
+    navigation.navigate('Login');
+  };
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-    
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[{ paddingBottom: tabBarHeight + 50 }]}
+      >
         {/* Profile Section */}
         <View style={styles.profileSection}>
           <View style={styles.profileImageContainer}>
@@ -66,7 +74,7 @@ export const ProfileMainScreen = ({ navigation }) => {
 
         {/* Menu Items */}
         <View style={styles.menuContainer}>
-          {menuItems.map((item) => (
+          {menuItems.map(item => (
             <TouchableOpacity
               key={item.id}
               style={styles.menuItem}
@@ -84,7 +92,11 @@ export const ProfileMainScreen = ({ navigation }) => {
           ))}
 
           {/* Logout Button */}
-          <TouchableOpacity  onPress={()=>setModalVisible(true)} style={styles.menuItem} activeOpacity={0.7}>
+          <TouchableOpacity
+            onPress={() => setModalVisible(true)}
+            style={styles.menuItem}
+            activeOpacity={0.7}
+          >
             <View style={styles.menuLeft}>
               <View style={styles.iconContainer}>
                 <Feather name="log-out" size={wp(5)} color="#FF3B30" />
@@ -93,33 +105,41 @@ export const ProfileMainScreen = ({ navigation }) => {
             </View>
           </TouchableOpacity>
         </View>
-
-        <View style={{ height: hp(10) }} />
       </ScrollView>
 
       <Modal
-              animationType="fade"
-              transparent={true}
-              visible={isModalVisible}
-              onRequestClose={() => {
-                setModalVisible(false);
-              }}
-            >
-              <View style={styles.modalBackdrop}>
-                <View style={styles.modalContainer}>
-                  <Image source={require("../../assets/images/logout.png")} />
-                  <Text style={styles.modalTitle}>Confirm Logout</Text>
-                  <Text style={styles.modalSubtitle}>
-Are you sure you want to log out of your PrimeRide account? You will need to sign in again to book a ride.                  </Text>
-            
-                  <View style={styles.btnContainer}>
-      
-                    <Button title='Logout'  textColor='white' color='#FF3A2F' onPress={handleLogout}/>
-                    <Button title='Cancel' onPress={()=>setModalVisible(false)}   color='#F1F1F1'/>
-                  </View>
-                </View>
-              </View>
-            </Modal>
+        animationType="fade"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+        }}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalContainer}>
+            <Image source={require('../../assets/images/logout.png')} />
+            <Text style={styles.modalTitle}>Confirm Logout</Text>
+            <Text style={styles.modalSubtitle}>
+              Are you sure you want to log out of your PrimeRide account? You
+              will need to sign in again to book a ride.{' '}
+            </Text>
+
+            <View style={styles.btnContainer}>
+              <Button
+                title="Logout"
+                textColor="white"
+                color="#FF3A2F"
+                onPress={handleLogout}
+              />
+              <Button
+                title="Cancel"
+                onPress={() => setModalVisible(false)}
+                color="#F1F1F1"
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -146,7 +166,6 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-
   },
   // Profile Main Screen Styles
   profileSection: {
@@ -156,10 +175,9 @@ const styles = StyleSheet.create({
   profileImageContainer: {
     position: 'relative',
     marginBottom: hp(2),
-    borderWidth:2,
-    borderColor:'#F8D833',
+    borderWidth: 2,
+    borderColor: '#F8D833',
     borderRadius: wp(12.5),
-
   },
   profileImage: {
     width: wp(25),
@@ -184,10 +202,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000',
     marginBottom: hp(0.5),
+    fontFamily: 'SF Pro',
   },
   profileEmail: {
     fontSize: wp(3.5),
     color: '#666',
+    fontFamily: 'SF Pro',
   },
   menuContainer: {
     paddingHorizontal: wp(5),
@@ -197,12 +217,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: hp(1),
-    paddingRight:10,
-    paddingLeft:5,
-    backgroundColor:"#F5F5F5",
-    marginBottom:hp(2),
-    borderRadius:6
-     
+    paddingRight: 10,
+    paddingLeft: 5,
+    backgroundColor: '#F5F5F5',
+    marginBottom: hp(2),
+    borderRadius: 6,
   },
   menuLeft: {
     flexDirection: 'row',
@@ -221,6 +240,7 @@ const styles = StyleSheet.create({
     fontSize: wp(4),
     color: '#000',
     fontWeight: '500',
+    fontFamily: 'SF Pro',
   },
   logoutButton: {
     flexDirection: 'row',
@@ -232,6 +252,7 @@ const styles = StyleSheet.create({
     fontSize: wp(4),
     color: '#FF3B30',
     fontWeight: '500',
+    fontFamily: 'SF Pro',
   },
   // Edit Profile Screen Styles
   editProfileImageSection: {
@@ -277,11 +298,13 @@ const styles = StyleSheet.create({
     borderRadius: wp(2),
     alignItems: 'center',
     marginBottom: hp(2),
+    fontFamily: 'SF Pro',
   },
   saveButtonText: {
     fontSize: wp(4.5),
     fontWeight: '600',
     color: '#000',
+    fontFamily: 'SF Pro',
   },
   deleteButton: {
     backgroundColor: '#FF3B30',
@@ -294,6 +317,7 @@ const styles = StyleSheet.create({
     fontSize: wp(4.5),
     fontWeight: '600',
     color: '#fff',
+    fontFamily: 'SF Pro',
   },
   // Add Address Screen Styles
   addAddressButton: {
@@ -303,12 +327,14 @@ const styles = StyleSheet.create({
     paddingVertical: hp(2),
     paddingHorizontal: wp(5),
     marginBottom: hp(2),
+    fontFamily: 'SF Pro',
   },
   addAddressText: {
     fontSize: wp(4),
     color: '#666',
     marginLeft: wp(2),
     fontWeight: '500',
+    fontFamily: 'SF Pro',
   },
   addressListContainer: {
     backgroundColor: '#fff',
@@ -349,13 +375,13 @@ const styles = StyleSheet.create({
     fontSize: wp(3.3),
     color: '#666',
     lineHeight: wp(4.5),
+    fontFamily: 'SF Pro',
+
   },
-
-
 
   // Model
 
-    modalBackdrop: {
+  modalBackdrop: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -382,6 +408,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1F2937',
     textAlign: 'center',
+    fontFamily: 'Poppins',
+
     marginTop: 15,
     marginBottom: 10,
   },
@@ -389,6 +417,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
+    fontFamily: 'Poppins',
+
     marginBottom: 25,
   },
   modalButton: {
@@ -398,14 +428,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     width: '100%',
     alignItems: 'center',
+    fontFamily: 'Poppins',
+
   },
   modalButtonText: {
     color: '#1F2937',
     fontSize: 16,
     fontWeight: '600',
+    fontFamily: 'Poppins',
+    
   },
-   btnContainer: {
-    width: "100%"
+  btnContainer: {
+    width: '100%',
   },
 });
 

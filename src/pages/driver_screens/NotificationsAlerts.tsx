@@ -15,6 +15,7 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
+import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 
 const { width, height } = Dimensions.get('window');
 
@@ -28,6 +29,7 @@ export default function NotificationsAlerts({ navigation }) {
   const [rideCancellations, setRideCancellations] = useState(true);
   const [paymentUpdates, setPaymentUpdates] = useState(true);
   const [systemAnnouncements, setSystemAnnouncements] = useState(true);
+  const tabBarHeight = useTabBarHeightHelper();
 
   const alertHistory = [
     {
@@ -64,7 +66,12 @@ export default function NotificationsAlerts({ navigation }) {
       <TopHeader title="Notifications & Alerts" navigation={navigation} />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+              styles.scrollContent,
+              {
+                paddingBottom: tabBarHeight,
+              },
+            ]}
       >
         {/* Notification Channels */}
         <View style={styles.section}>

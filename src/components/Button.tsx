@@ -49,6 +49,8 @@ const styles = StyleSheet.create({
                 elevation: 3,
             },
         }),
+       fontFamily:"SF Pro"
+
     },
     signUpButtonText: {
         fontSize: fs(16),

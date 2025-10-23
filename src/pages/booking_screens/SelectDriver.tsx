@@ -13,10 +13,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import TopHeader from '../../components/TopHeader';
+import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 
 const { width } = Dimensions.get('window');
 
 const SelectDriver = ({ navigation }) => {
+    const tabBarHeight = useTabBarHeightHelper();
+  
   const drivers = [
     {
       id: 1,
@@ -58,6 +61,7 @@ const SelectDriver = ({ navigation }) => {
       trips: '1,094 Trips',
       price: 'Premium Ride',
     },
+    
   ];
 
   const handleSelectDriver = (driver) => {
@@ -87,6 +91,8 @@ const SelectDriver = ({ navigation }) => {
       {/* Driver List */}
       <ScrollView
         style={styles.scrollView}
+        contentContainerStyle={[{ paddingBottom: tabBarHeight + 10 }]}
+
         showsVerticalScrollIndicator={false}
       >
         {drivers.map((driver) => (
@@ -150,6 +156,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#000',
+       fontFamily:"SF Pro"
+
   },
   filterContainer: {
     flexDirection: 'row',
@@ -167,7 +175,9 @@ const styles = StyleSheet.create({
     borderColor: '#D1D5DB',
     borderRadius: 12,
     gap: 8,
-    width: '45%'
+    width: '45%',
+       fontFamily:"SF Pro"
+
   },
   filterText: {
     fontSize: 14,
@@ -176,7 +186,6 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
     paddingHorizontal: 16,
-    marginBottom: hp(13)
 
   },
   driverCard: {
@@ -201,6 +210,8 @@ const styles = StyleSheet.create({
   driverInfo: {
     flexDirection: 'row',
     gap: 12,
+       fontFamily:"SF Pro"
+
   },
   avatar: {
     width: 48,
@@ -214,11 +225,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#000',
+       fontFamily:"SF Pro"
+
   },
   driverName: {
     fontSize: 16,
     fontWeight: '600',
     color: '#000',
+       fontFamily:"SF Pro"
+
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -243,11 +258,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#000',
+       fontFamily:"SF Pro"
+
   },
   carPrice: {
     fontSize: 12,
     color: '#9CA3AF',
     marginTop: 2,
+       fontFamily:"SF Pro"
+
   },
   driverFooter: {
     flexDirection: 'row',
@@ -268,12 +287,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#000',
+       fontFamily:"SF Pro"
+
   },
   scrollText: {
     textAlign: 'center',
     color: '#9CA3AF',
     fontSize: 14,
     marginVertical: 16,
+       fontFamily:"SF Pro"
+
   },
 });
 

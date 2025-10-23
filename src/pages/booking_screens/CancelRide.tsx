@@ -23,7 +23,10 @@ import TopHeader from '../../components/TopHeader';
 import { useNavigation } from '@react-navigation/native';
 
 // Make sure to receive the navigation prop
-export default function CancelRide({  headerShow = true, btnText = "Cancel Ride" }) {
+export default function CancelRide({
+  headerShow = true,
+  btnText = 'Cancel Ride',
+}) {
   const [selectedReason, setSelectedReason] = useState(null);
   const [issueDescription, setIssueDescription] = useState('');
   const navigation = useNavigation(); // ✅ this gives you access to navigate()
@@ -42,7 +45,10 @@ export default function CancelRide({  headerShow = true, btnText = "Cancel Ride"
   // Function to handle the final cancellation
   const handleCancelRide = () => {
     // Here you would typically send the cancellation reason to your server
-    console.log('Ride cancelled. Reason:', selectedReason !== null ? reasons[selectedReason] : 'N/A');
+    console.log(
+      'Ride cancelled. Reason:',
+      selectedReason !== null ? reasons[selectedReason] : 'N/A',
+    );
     console.log('Description:', issueDescription);
     // Then, show the confirmation modal
     setModalVisible(true);
@@ -52,16 +58,19 @@ export default function CancelRide({  headerShow = true, btnText = "Cancel Ride"
     setModalVisible(false);
     // Navigate to the Home screen or any other screen as needed
     navigation.navigate('Home');
-  }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         {/* Header */}
         {headerShow && (
-          <TopHeader title="Reason" navigation={navigation} navigation={navigation} />
+          <TopHeader
+            title="Reason"
+            navigation={navigation}
+            navigation={navigation}
+          />
         )}
-
 
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -77,10 +86,12 @@ export default function CancelRide({  headerShow = true, btnText = "Cancel Ride"
                 style={styles.radioOption}
                 onPress={() => setSelectedReason(index)}
               >
-                <View style={[
-                  styles.radioButton,
-                  selectedReason === index && { borderColor: '#F8D833' } // Highlight border when selected
-                ]}>
+                <View
+                  style={[
+                    styles.radioButton,
+                    selectedReason === index && { borderColor: '#F8D833' }, // Highlight border when selected
+                  ]}
+                >
                   {selectedReason === index ? (
                     <View style={styles.radioButtonSelected} />
                   ) : null}
@@ -123,15 +134,19 @@ export default function CancelRide({  headerShow = true, btnText = "Cancel Ride"
       >
         <View style={styles.modalBackdrop}>
           <View style={styles.modalContainer}>
-            <Image source={require("../../assets/images/sad.png")} />
-            <Text style={styles.modalTitle}>{!headerShow ? "We're so sad about your complain" : "We're so sad about your cancellation"}</Text>
-            <Text style={styles.modalSubtitle}>
-              We will continue to improve our service & satisfy you on the next trip.
+            <Image source={require('../../assets/images/sad.png')} />
+            <Text style={styles.modalTitle}>
+              {!headerShow
+                ? "We're so sad about your complain"
+                : "We're so sad about your cancellation"}
             </Text>
-      
-            <View style={styles.btnContainer}>
+            <Text style={styles.modalSubtitle}>
+              We will continue to improve our service & satisfy you on the next
+              trip.
+            </Text>
 
-              <Button title='Back Home' onPress={handleGoHome} />
+            <View style={styles.btnContainer}>
+              <Button title="Back Home" onPress={handleGoHome} />
             </View>
           </View>
         </View>
@@ -161,6 +176,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#000',
+    fontFamily: 'SF Pro',
   },
   scrollContent: {
     paddingBottom: hp('2%'),
@@ -177,6 +193,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000',
     marginBottom: hp('2%'),
+    fontFamily: 'SF Pro',
   },
   radioOption: {
     flexDirection: 'row',
@@ -194,6 +211,7 @@ const styles = StyleSheet.create({
     marginRight: wp('4%'),
     justifyContent: 'center',
     alignItems: 'center',
+    fontFamily: 'SF Pro',
   },
   radioButtonSelected: {
     width: wp('3%'),
@@ -214,14 +232,16 @@ const styles = StyleSheet.create({
     color: '#000',
     minHeight: hp('15%'),
     borderWidth: 1,
-    borderColor: "#CFCFCF"
+    borderColor: '#CFCFCF',
+    fontFamily: 'SF Pro',
   },
   description: {
-    marginTop: hp(3)
+    marginTop: hp(3),
+    fontFamily: 'SF Pro',
   },
   btnContainer: {
     marginTop: hp(3),
-    width: "100%"
+    width: '100%',
   },
   // --- MODAL STYLES ---
   modalBackdrop: {
@@ -253,12 +273,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 15,
     marginBottom: 10,
+
+    fontFamily: 'SF Pro',
   },
   modalSubtitle: {
     fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
     marginBottom: 25,
+
+    fontFamily: 'SF Pro',
   },
   modalButton: {
     backgroundColor: '#F8D833',
@@ -271,6 +295,8 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: '#1F2937',
     fontSize: 16,
+    fontFamily: 'SF Pro',
+
     fontWeight: '600',
   },
 });

@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
         width: '100%',
         paddingHorizontal: 16,
         paddingVertical: 12,
-        marginBottom: hp(8),
+        marginBottom: hp(12),
 
     },
     processButton: {

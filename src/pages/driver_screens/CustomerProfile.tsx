@@ -7,6 +7,11 @@ import {
   TextInput,
   StyleSheet,
   Image,
+  StatusBar,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
 } from 'react-native';
 import {
   widthPercentageToDP as wp,
@@ -16,11 +21,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import TopHeader from '../../components/TopHeader';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Button from '../../components/Button';
+import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 
 const CustomerProfile = ({ navigation }) => {
   const [notes, setNotes] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const tabBarHeight = useTabBarHeightHelper();
 
   const handleSaveNotes = () => setShowModal(true);
   const handleConfirm = () => {
@@ -31,119 +38,141 @@ const CustomerProfile = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <TopHeader title="John Williams" navigation={navigation} />
 
-      <ScrollView
-        style={styles.bottomSpacing}
-        showsVerticalScrollIndicator={false}
+      {/* 👇 KeyboardAvoidingView should wrap TouchableWithoutFeedback + ScrollView */}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
       >
-        {/* Contact & Loyalty Info */}
-        <Text style={styles.contactHeading}>Contact & Loyalty Info</Text>
-        <View style={styles.card}>
-          <View style={styles.headerRow}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>JD</Text>
-            </View>
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={styles.name}>John Williams</Text>
-              <View style={styles.loyaltyTag}>
-                <Text style={styles.loyaltyText}>Platinum</Text>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView
+            contentContainerStyle={{
+              paddingBottom: tabBarHeight + (Platform.OS === 'ios' ? 30 : 20),
+            }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* Contact & Loyalty Info */}
+            <Text style={styles.contactHeading}>Contact & Loyalty Info</Text>
+            <View style={styles.card}>
+              <View style={styles.headerRow}>
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarText}>JD</Text>
+                </View>
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={styles.name}>John Williams</Text>
+                  <View style={styles.loyaltyTag}>
+                    <Text style={styles.loyaltyText}>Platinum</Text>
+                  </View>
+                </View>
+                <View style={styles.ratingBox}>
+                  <Icon name="star" size={20} color="#F8D833" />
+                  <Text style={styles.ratingValue}>4.9</Text>
+                </View>
+              </View>
+
+              <View style={styles.infoRowBox}>
+                <View style={styles.infoRow}>
+                  <Image
+                    source={require('../../assets/images/phone.png')}
+                    style={styles.infoLabel}
+                  />
+                  <Text style={styles.infoText}>+1 987 654 3210</Text>
+                </View>
+
+                <View style={styles.infoRow}>
+                  <Image
+                    source={require('../../assets/images/date.png')}
+                    style={styles.infoLabel}
+                  />
+                  <Text style={styles.infoText}>Last: Oct 5, 2025</Text>
+                </View>
+              </View>
+
+              <View style={styles.infoRowBox}>
+                <View style={styles.infoRow}>
+                  <Image
+                    source={require('../../assets/images/caricon1.png')}
+                    style={styles.infoLabel}
+                  />
+                  <Text style={styles.infoText}>12 Total Rides</Text>
+                </View>
+
+                <View style={styles.infoRow}>
+                  <Image
+                    source={require('../../assets/images/Loyalty.png')}
+                    style={styles.infoLabel}
+                  />
+                  <Text style={styles.infoText}>85% Loyalty</Text>
+                </View>
               </View>
             </View>
-            <View style={styles.ratingBox}>
-              <Text style={styles.ratingStar}>
-                <Icon name="star" size={20} color="#F8D833" />
-              </Text>
-              <Text style={styles.ratingValue}>4.9</Text>
-            </View>
-          </View>
-          <View style={styles.infoRowBox}>
-            <View style={styles.infoRow}>
-              <Image
-                source={require('../../assets/images/phone.png')}
-                style={styles.infoLabel}
-              />
-              <Text style={styles.infoText}>+1 987 654 3210</Text>
-            </View>
 
-            <View style={styles.infoRow}>
-              <Image
-                source={require('../../assets/images/date.png')}
-                style={styles.infoLabel}
-              />
-              <Text style={styles.infoText}>Last: Oct 5, 2025</Text>
-            </View>
-          </View>
-
-          <View style={styles.infoRowBox}>
-            <View style={styles.infoRow}>
-              <Image
-                source={require('../../assets/images/caricon1.png')}
-                style={styles.infoLabel}
-              />
-              <Text style={styles.infoText}>12 Total Rides</Text>
-            </View>
-
-            <View style={styles.infoRow}>
-              <Image
-                source={require('../../assets/images/Loyalty.png')}
-                style={styles.infoLabel}
-              />
-              <Text style={styles.infoText}>85% Loyalty</Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.sectionBox}>
-          {/* Booking History */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Booking History</Text>
-            <TouchableOpacity style={styles.filterButton}>
-              <Text style={styles.filterText}>All Time ▼</Text>
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.totalRides}>Total Rides: 12</Text>
-
-          {[
-            { date: 'Oct 5, 25', route: 'Home → Airport', price: '$85.00' },
-            { date: 'Sep 28, 25', route: 'Office → Driver', price: '$45.00' },
-            { date: 'Sep 10, 25', route: 'Hotel → Meeting', price: '$120.00' },
-          ].map((item, idx) => (
-            <View style={styles.bookingCard} key={idx}>
-              <View>
-                <Text style={styles.bookingDate}>{item.date}</Text>
-                <Text style={styles.bookingRoute}>{item.route}</Text>
+            {/* Booking History */}
+            <View style={styles.sectionBox}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Booking History</Text>
+                <TouchableWithoutFeedback>
+                  <View style={styles.filterButton}>
+                    <Text style={styles.filterText}>All Time ▼</Text>
+                  </View>
+                </TouchableWithoutFeedback>
               </View>
-              <Text style={styles.bookingPrice}>{item.price}</Text>
-            </View>
-          ))}
-        </View>
-        {/* Operator Notes */}
+              <Text style={styles.totalRides}>Total Rides: 12</Text>
 
-        <View style={styles.sectionBox}>
-          <View style={styles.notesSection}>
-            <Text style={styles.sectionTitle}>Operator Notes</Text>
-            <Text style={styles.notesSectionPara}>
-              Saved locally in client ledger.
-            </Text>
+              {[
+                { date: 'Oct 5, 25', route: 'Home → Airport', price: '$85.00' },
+                {
+                  date: 'Sep 28, 25',
+                  route: 'Office → Driver',
+                  price: '$45.00',
+                },
+                {
+                  date: 'Sep 10, 25',
+                  route: 'Hotel → Meeting',
+                  price: '$120.00',
+                },
+              ].map((item, idx) => (
+                <View style={styles.bookingCard} key={idx}>
+                  <View>
+                    <Text style={styles.bookingDate}>{item.date}</Text>
+                    <Text style={styles.bookingRoute}>{item.route}</Text>
+                  </View>
+                  <Text style={styles.bookingPrice}>{item.price}</Text>
+                </View>
+              ))}
+            </View>
 
-            <View style={styles.sectionTextBox}>
-              <TextInput
-                style={styles.notesSectionPara}
-                value={notes}
-                onChangeText={setNotes}
-                placeholder="Prefers Mercedes S-Class, always airport pickups."
-                placeholderTextColor="#666" // 👈 darker placeholder
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top" // keeps text starting from top
-              />
+            {/* Operator Notes */}
+            <View style={styles.sectionBox}>
+              <View style={styles.notesSection}>
+                <Text style={styles.sectionTitle}>Operator Notes</Text>
+                <Text style={styles.notesSectionPara}>
+                  Saved locally in client ledger.
+                </Text>
+
+                <View style={styles.sectionTextBox}>
+                  <TextInput
+                    style={styles.notesSectionPara}
+                    value={notes}
+                    onChangeText={setNotes}
+                    placeholder="Prefers Mercedes S-Class, always airport pickups."
+                    placeholderTextColor="#666"
+                    multiline
+                    numberOfLines={4}
+                    textAlignVertical="top"
+                  />
+                </View>
+
+                <Button title="Save Notes" onPress={handleSaveNotes} />
+              </View>
             </View>
-            <View>
-              <Button title="Save Notes" onPress={handleSaveNotes} />
-            </View>
-          </View>
-        </View>
-      </ScrollView>
+          </ScrollView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -227,8 +256,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.1,
     shadowRadius: 30,
-    elevation: 5, // for Android shadow
     paddingHorizontal: 20,
+
     paddingVertical: 10,
   },
 
@@ -244,6 +273,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginTop: 10,
     borderWidth: 1,
+
     borderColor: 'rgba(17, 17, 17, 0.02)',
     backgroundColor: 'rgba(17, 17, 17, 0.02)',
     flexDirection: 'row',
@@ -341,7 +371,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.08,
     shadowRadius: 50,
-    elevation: 5, // for Android shadow
     marginHorizontal: 16,
     marginBottom: 20,
   },

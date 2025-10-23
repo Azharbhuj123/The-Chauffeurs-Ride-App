@@ -27,7 +27,7 @@ export const SettingsScreen = ({ navigation }) => {
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle="dark-content" backgroundColor="#f8f8f8" />
-            <TopHeader title="Settings" />
+            <TopHeader title="Settings" navigation={navigation}/>
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 {/* App Preferences */}

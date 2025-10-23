@@ -158,9 +158,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#000',
+       fontFamily:"SF Pro"
+
   },
   backButton: {
     marginRight: wp('3%'),
+       fontFamily:"SF Pro"
+
   },
 
   scrollContent: {
@@ -184,10 +188,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#000',
     marginBottom: hp('0.5%'),
+       fontFamily:"SF Pro"
+
   },
   successSubtitle: {
     fontSize: wp('3.5%'),
     color: '#888',
+       fontFamily:"SF Pro"
+
   },
   summaryCard: {
     backgroundColor: '#fff',
@@ -201,6 +209,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000',
     marginBottom: hp('2%'),
+       fontFamily:"SF Pro"
+
   },
   summaryRow: {
     flexDirection: 'row',
@@ -211,11 +221,15 @@ const styles = StyleSheet.create({
   summaryLabel: {
     fontSize: wp('3.8%'),
     color: '#888',
+       fontFamily:"SF Pro"
+
   },
   summaryValue: {
     fontSize: wp('3.8%'),
     color: '#000',
     fontWeight: '500',
+       fontFamily:"SF Pro"
+
   },
   totalRow: {
     borderTopWidth: 1,
@@ -227,11 +241,15 @@ const styles = StyleSheet.create({
     fontSize: wp('4.2%'),
     fontWeight: '600',
     color: '#000',
+       fontFamily:"SF Pro"
+
   },
   totalValue: {
     fontSize: wp('4.2%'),
     fontWeight: '700',
     color: '#000',
+       fontFamily:"SF Pro"
+
   },
   ratingCard: {
     backgroundColor: '#fff',
@@ -267,6 +285,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000',
     marginBottom: hp('0.3%'),
+       fontFamily:"SF Pro"
+
   },
   driverCar: {
     fontSize: wp('3.3%'),
@@ -290,6 +310,8 @@ const styles = StyleSheet.create({
     color: '#000',
     marginTop: hp('1%'),
     minHeight: hp('6%'),
+       fontFamily:"SF Pro"
+
   },
   bottomContainer: {
     backgroundColor: '#F5F5F5',
@@ -305,12 +327,16 @@ const styles = StyleSheet.create({
     paddingVertical: hp('2%'),
     borderRadius: wp('8%'),
     alignItems: 'center',
+       fontFamily:"SF Pro",
+
     marginBottom: hp('1.5%'),
   },
   payButtonText: {
     fontSize: wp('4%'),
     fontWeight: '700',
     color: '#000',
+       fontFamily:"SF Pro"
+
   },
   bottomNav: {
     flexDirection: 'row',
@@ -322,14 +348,20 @@ const styles = StyleSheet.create({
     borderRadius: wp('8%'),
     justifyContent: 'space-around',
     alignItems: 'center',
+       fontFamily:"SF Pro"
+
   },
   navItem: {
     padding: wp('2%'),
+       fontFamily:"SF Pro"
+
   },
   navItemActive: {
     backgroundColor: '#FFD700',
     borderRadius: wp('3%'),
     paddingHorizontal: wp('5%'),
     paddingVertical: wp('2%'),
+       fontFamily:"SF Pro"
+
   },
 });
