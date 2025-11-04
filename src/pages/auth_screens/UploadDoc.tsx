@@ -32,6 +32,8 @@ import {
   pickImageFromGallery,
 } from '../../utils/imagePickerHelper';
 import Button from '../../components/Button';
+import { showToast } from '../../utils/toastHelper';
+import useActionMutation from '../../queryFunctions/useActionMutation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -39,7 +41,7 @@ const fs = size => {
   return Math.sqrt(height * height + width * width) * (size / 1000);
 };
 
-export default function UploadDoc({navigation}) {
+export default function UploadDoc({route, navigation }) {
   const [documents, setDocuments] = useState({
     driverLicense: null,
     vehicleInsurance: null,
@@ -47,6 +49,7 @@ export default function UploadDoc({navigation}) {
   });
 
   const insets = useSafeAreaInsets();
+  const { contact } = route.params || {};
 
   const handleImageSelection = documentType => {
     const isFileAllowed = [
@@ -148,20 +151,71 @@ export default function UploadDoc({navigation}) {
     );
   };
 
+  const { triggerMutation, loading } = useActionMutation({
+    onSuccessCallback: async (data) => {
+  if (data?.documentsUploaded) {
+    navigation.navigate('MainTabs', {
+      screen: 'Home', // the tab inside MainTabs
+      params: {
+        screen: 'AddVehicle', // the screen inside DriverHomeStack
+        params: { activeStep: 5 },
+      },
+    });
+  }
+},
+
+      
+    onErrorCallback: errmsg => {
+      showToast({
+        type: 'error',
+        title: 'Upload Failed',
+        message: errmsg || 'Please Try again!',
+      });
+    },
+  });
   const handleSubmit = () => {
     // Check if all documents are uploaded
-    // if (
-    //   !documents.driverLicense ||
-    //   !documents.vehicleInsurance ||
-    //   !documents.vehicleRegistration
-    // ) {
-    //   Alert.alert('Error', 'Please upload all required documents');
-    //   return;
-    // }
+    if (
+      !documents.driverLicense ||
+      !documents.vehicleInsurance ||
+      !documents.vehicleRegistration
+    ) {
+      showToast({
+        type: 'error',
+        title: 'Upload Failed',
+        message: 'Please upload all required documents',
+      });
+      return;
+    }
+    const form_data = new FormData();
+    form_data.append("contact",contact)
+    form_data.append('driver_License', {
+      uri: documents.driverLicense.uri,
+      type: documents.driverLicense.type,
+      name: documents.driverLicense.name || 'driverLicense.jpg',
+    });
 
-    console.log('Submitting documents:', documents);
-    // Add your submission logic here
-    navigation.navigate('Verify');
+    form_data.append('vehicle_Insurance_Proof', {
+      uri: documents.vehicleInsurance.uri,
+      type: documents.vehicleInsurance.type,
+      name: documents.vehicleInsurance.name || 'vehicleInsurance.jpg',
+    });
+
+    form_data.append('vehicle_Registration', {
+      uri: documents.vehicleRegistration.uri,
+      type: documents.vehicleRegistration.type,
+      name: documents.vehicleRegistration.name || 'vehicleRegistration.jpg',
+    });
+
+    triggerMutation({
+      endPoint: '/auth/upload-documents',
+      body: form_data,
+      method: 'post',
+    });
+
+    // console.log('Submitting documents:', documents);
+    // // Add your submission logic here
+    // navigation.navigate('Verify');
   };
 
   const renderUploadBox = (documentType, title) => {
@@ -253,7 +307,11 @@ export default function UploadDoc({navigation}) {
             'Vehicle Registration/Permit',
           )}
 
-          <Button title="Submit Document" onPress={handleSubmit} />
+          <Button
+            isLoading={loading}
+            title="Submit Document"
+            onPress={handleSubmit}
+          />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -349,11 +407,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderRadius: 12,
   },
-  filePreview:{
-    justifyContent:"center",
-    alignItems:"center"
+  filePreview: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  fileName:{
-    paddingTop:hp(1)
-  }
+  fileName: {
+    paddingTop: hp(1),
+  },
 });

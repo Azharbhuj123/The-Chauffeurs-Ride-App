@@ -42,7 +42,7 @@ import { AboutUsScreen } from '../pages/profile_screens/AboutUsScreen';
 import { SettingsScreen } from '../pages/profile_screens/SettingsScreen';
 import { HelpSupportScreen } from '../pages/profile_screens/HelpSupportScreen';
 import { LoyaltyRewardsScreen } from '../pages/loyality_screens/LoyaltyRewardsScreen';
-import { useStore } from '../stores/useStore';
+ 
 import Driver_Home from '../pages/driver_screens/Home';
 import VehicleRegistration from '../pages/driver_screens/AddVechile';
 import ChauffeursRegistration from '../pages/driver_screens/AddChauffeurs';
@@ -57,6 +57,7 @@ import ReviewList from '../pages/driver_screens/ReviewList';
 import DynamicPricingTool from '../pages/driver_screens/DynamicPricingTool';
 import NotificationsAlerts from '../pages/driver_screens/NotificationsAlerts';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useUserStore } from '../stores/useUserStore';
 
 const Stack = createNativeStackNavigator();
 
@@ -295,11 +296,11 @@ const CustomDriverTabBar = ({ state, descriptors, navigation }) => {
 
 export default function BottomTabs() {
   const Tab = createBottomTabNavigator();
-  const { role } = useStore();
+  const { role } = useUserStore();
 
   return (
     <>
-      {role === 'user' ? (
+      {role === 'User' ? (
         <Tab.Navigator
           tabBar={props => <CustomTabBar {...props} />}
           screenOptions={{

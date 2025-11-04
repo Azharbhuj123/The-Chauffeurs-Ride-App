@@ -20,6 +20,13 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Icon from 'react-native-vector-icons/Ionicons';
 import SocialBtns from '../../components/SocialBtns';
 import Button from '../../components/Button';
+import { error_msg } from '../../utils/Enums';
+import { set_pass_schema } from '../../utils/Schema';
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import useActionMutation from '../../queryFunctions/useActionMutation';
+import { showToast } from '../../utils/toastHelper';
+
 
 const { width, height } = Dimensions.get('window');
 
@@ -29,118 +36,168 @@ const fs = (size) => {
     return Math.sqrt((height * height) + (width * width)) * (size / 1000);
 };
 
-function SetPass({ navigation }) {
-    const [userType, setUserType] = useState('user');
-    const [name, setName] = useState('');
-    const [emailOrPhone, setEmailOrPhone] = useState('');
-    const [password, setPassword] = useState('');
-    const [conPassword, setConPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [showPassword1, setShowPassword1] = useState(false);
+export default function SetPass({ route, navigation }) {
+  const insets = useSafeAreaInsets();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword1, setShowPassword1] = useState(false);
+  const { contact } = route.params || {};
 
-    const insets = useSafeAreaInsets(); // ✅ handle top/bottom safe area
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset
+  } = useForm({
+    resolver: yupResolver(set_pass_schema),
+    mode: "onChange",
+  });
 
-    const handleSetPass = () => {
-        console.log('Signing up as:', userType);
-        console.log('Name:', name);
-        console.log('Email/Phone:', emailOrPhone);
-        console.log('Password:', password);
-        // Add your Sign in logic here
-        navigation.navigate("MainTabs")
+  const { triggerMutation, loading } = useActionMutation({
+    onSuccessCallback: async data => {
+      if (data?.reset) {
+        navigation.navigate("Login")
+      }
+    },
+    onErrorCallback: errmsg => {
+      showToast({
+        type: 'error',
+        title: 'Verification Failed',
+        message: errmsg || 'Please Try again!',
+      });
+    },
+  });
+
+  const onSubmit = (data) => {
+    const endPoint = '/auth/reset-password';
+    const final_body = {
+        ...data,
+        contact,
+        actionStep:2
     };
+    triggerMutation({
+      endPoint,
+      body: final_body,
+      method: 'post',
+    });
+  };
 
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
+      <StatusBar barStyle="dark-content" backgroundColor="#FDD835" />
 
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Header Section */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Login")}
+            style={styles.backButton}
+          >
+            <Icon name="chevron-back" size={24} color="#000" />
+            <Text style={styles.backText}>Back</Text>
+          </TouchableOpacity>
 
-    return (
-        // <SafeAreaView
+          <View style={styles.logoContainer}>
+            <Image
+              source={require("../../assets/images/headLogo.png")}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
+        </View>
 
-        // style={{ flex: 1,backgroundColor:"#FDD835"}}
-        // >
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.container}
-        >
+        {/* Form Section */}
+        <View style={styles.formContainer}>
+          <Text style={styles.title}>Set New Password</Text>
+          <Text style={styles.subtitle}>Reset your password and continue</Text>
 
-            <StatusBar barStyle="dark-content" backgroundColor='#FDD835' />
+          {/* ✅ Password Field */}
+          <View style={styles.inputContainer}>
+            <Icon
+              name="lock-closed-outline"
+              size={24}
+              color="#999"
+              style={styles.iconStyle}
+            />
 
-            <ScrollView
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.scrollContent}
-            >
-                {/* Header Section */}
-                <View style={styles.header}>
-                          <TouchableOpacity onPress={()=>navigation.navigate("Login")} style={styles.backButton}>
-                                <Icon name="chevron-back" size={wp(6)} color="#000" />
-                                <Text style={styles.backText}>Back</Text>
-                              </TouchableOpacity>
-                    <View style={styles.logoContainer}>
-                        <Image
-                            source={require('../../assets/images/headLogo.png')}
-                            style={styles.logo}
-                            resizeMode="contain"
-                        />
-                    </View>
-                </View>
+            <Controller
+              control={control}
+              name="password"
+              defaultValue=""
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter Password"
+                  placeholderTextColor="#999"
+                  secureTextEntry={!showPassword}
+                  value={value}
+                  onChangeText={onChange}
+                />
+              )}
+            />
 
-                {/* Form Section */}
-                <View style={styles.formContainer}>
-                    <Text style={styles.title}>Set New Password</Text>
-                    <Text style={styles.subtitle}>Reset your password and continue</Text>
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+              <Icon
+                name={showPassword ? "eye-outline" : "eye-off-outline"}
+                size={24}
+                color="#999"
+              />
+            </TouchableOpacity>
+          </View>
+          {errors.password && (
+            <Text style={styles.errorText}>{errors.password.message}</Text>
+          )}
 
-              
+          {/* ✅ Confirm Password Field */}
+          <View style={styles.inputContainer}>
+            <Icon
+              name="lock-closed-outline"
+              size={24}
+              color="#999"
+              style={styles.iconStyle}
+            />
 
+            <Controller
+              control={control}
+              name="confirm_password"
+              defaultValue=""
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  style={styles.input}
+                  placeholder="Confirm Password"
+                  placeholderTextColor="#999"
+                  secureTextEntry={!showPassword1}
+                  value={value}
+                  onChangeText={onChange}
+                />
+              )}
+            />
 
-                    {/* Email/Phone Input */}
-                    <View style={styles.inputContainer}>
-                        <Icon name="lock-closed-outline" size={wp(5)} color="#999" style={styles.iconStyle} />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Enter your password"
-                            placeholderTextColor="#999"
-                            value={password}
-                            onChangeText={setPassword}
-                            secureTextEntry={!showPassword}
-                        />
-                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                            <Icon
-                                name={showPassword ? 'eye-outline' : 'eye-off-outline'}
-                                size={wp(5)}
-                                color="#999"
-                            />
-                        </TouchableOpacity>
-                    </View>
+            <TouchableOpacity onPress={() => setShowPassword1(!showPassword1)}>
+              <Icon
+                name={showPassword1 ? "eye-outline" : "eye-off-outline"}
+                size={24}
+                color="#999"
+              />
+            </TouchableOpacity>
+          </View>
+          {errors.confirm_password && (
+            <Text style={styles.errorText}>
+              {errors.confirm_password.message}
+            </Text>
+          )}
 
-                    {/* Password Input */}
-                    <View style={styles.inputContainer}>
-                        <Icon name="lock-closed-outline" size={wp(5)} color="#999" style={styles.iconStyle} />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Confirm Password"
-                            placeholderTextColor="#999"
-                            value={conPassword}
-                            onChangeText={setConPassword}
-                            secureTextEntry={!showPassword1}
-                        />
-                        <TouchableOpacity onPress={() => setShowPassword1(!showPassword1)}>
-                            <Icon
-                                name={showPassword1 ? 'eye-outline' : 'eye-off-outline'}
-                                size={wp(5)}
-                                color="#999"
-                            />
-                        </TouchableOpacity>
-                    </View>
-
-         
-                    
-                            <Button title="Save"  onPress={handleSetPass}/>
-
-                    
-                  
-                </View>
-            </ScrollView>
-        </KeyboardAvoidingView>
-        // </SafeAreaView>
-    );
+          {/* ✅ Submit Button */}
+          <Button isLoading={loading} title="Save" onPress={handleSubmit(onSubmit)} />
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -149,6 +206,7 @@ const styles = StyleSheet.create({
 
         backgroundColor: '#FDD835',
     },
+    errorText:error_msg,
     scrollContent: {
         flexGrow: 1,
     },
@@ -341,4 +399,4 @@ const styles = StyleSheet.create({
         textAlign:"right"
     }
 });
-export default SetPass;
+ 

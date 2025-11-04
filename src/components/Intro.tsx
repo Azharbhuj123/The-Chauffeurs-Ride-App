@@ -1,5 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import React, { useRef, useEffect } from 'react'
+// @ts-nocheck
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useRef, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -8,14 +9,15 @@ import {
   Animated,
   StatusBar,
   Text,
-  SafeAreaView
-} from 'react-native'
+  SafeAreaView,
+} from 'react-native';
+import { useUserStore } from '../stores/useUserStore';
 
 // Get screen dimensions for responsive sizing
-const { width, height } = Dimensions.get('window')
+const { width, height } = Dimensions.get('window');
 
 // The size for the square logo container (e.g., 25% of the screen width)
-const LOGO_SIZE = width * 0.35 // Adjust this value to change the logo size
+const LOGO_SIZE = width * 0.35; // Adjust this value to change the logo size
 
 // Placeholder for your local logo image
 // You will need to replace this with the actual import of your image file:
@@ -39,44 +41,48 @@ const LogoComponent = () => (
       <Text style={styles.textBottom}>ASSURANCE</Text>
     </View>
   </View>
-)
-
-
-
+);
 
 function Intro({ navigation }) {
   // Animated value for the scale transform
-  const scaleAnim = useRef(new Animated.Value(0.5)).current // Start smaller
+  const scaleAnim = useRef(new Animated.Value(0.5)).current; // Start smaller
+  const { token, hydrated, loadStoredData } = useUserStore();
 
   useEffect(() => {
-    // Start a stronger, faster spring animation
-    Animated.spring(scaleAnim, {
-      toValue: 1,            // Final zoom scale
-      friction: 3,           // Lower friction = stronger bounce
-      tension: 100,          // Higher tension = faster spring
-      velocity: 2,           // Initial velocity for punchy start
-      delay: 100,            // Slight delay for visual pop
-      useNativeDriver: true, // Use native driver for performance
-    }).start();
+    const runStartup = async () => {
+      await loadStoredData(); // ✅ load data first
+    };
+    runStartup();
+  }, []); // runs only once on mount
 
-    // Navigate after short delay
-    const timer = setTimeout(async () => {
-      try {
-        const splash_bypass = await AsyncStorage.getItem('splash_bypass');
-        navigation.replace(splash_bypass === 'true' ? 'Login' : 'Splash');
-      } catch (err) {
-        console.error('Error reading splash_bypass:', err);
-      }
-    }, 1500); // Slightly longer delay for full animation feel
+  // ✅ When hydrated becomes true, run animation + navigate
+  useEffect(() => {
+    if (!hydrated) return; // wait until Zustand finished loading
 
-    return () => clearTimeout(timer);
-  }, [scaleAnim]);
+    const animateAndNavigate = async () => {
+      const splash_bypass = await AsyncStorage.getItem('splash_bypass');
 
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 3,
+        tension: 100,
+        velocity: 2,
+        useNativeDriver: true,
+      }).start(() => {
+        console.log('✅ TOKEN AFTER HYDRATION:', token);
+
+        const where_to_go = token ? 'MainTabs' : 'Login';
+        navigation.replace(splash_bypass === 'true' ? where_to_go : 'Splash');
+      });
+    };
+
+    animateAndNavigate();
+  }, [hydrated]); // ✅ triggers only when storage is done
 
   // Apply the scale animation style
   const animatedStyle = {
     transform: [{ scale: scaleAnim }],
-  }
+  };
 
   // To achieve the exact design shown (full-screen white background)
   // and the status bar appearance (black time/battery icons), we'll
@@ -91,14 +97,17 @@ function Intro({ navigation }) {
       {/* Centered Animated View */}
       <View style={styles.centerContainer}>
         <Animated.View style={[styles.animatedView, animatedStyle]}>
-          <Image source={require('../assets/images/logo.png')} style={styles.logoImage} />
+          <Image
+            source={require('../assets/images/logo.png')}
+            style={styles.logoImage}
+          />
         </Animated.View>
       </View>
 
       {/* Optional: Placeholder for the Home Indicator Bar at the bottom (as seen in the image) */}
       <View style={styles.homeIndicatorPlaceholder} />
     </SafeAreaView>
-  )
+  );
 }
 
 // --- Styles ---
@@ -194,7 +203,7 @@ const styles = StyleSheet.create({
     right: 0,
     height: height > 800 ? 34 : 0, // Height for notched devices
     backgroundColor: 'transparent',
-  }
-})
+  },
+});
 
-export default Intro
+export default Intro;

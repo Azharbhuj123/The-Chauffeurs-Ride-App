@@ -55,8 +55,8 @@
 		<string>Zocial.ttf</string>
 		<string>Fontisto.ttf</string>
 		<string>Poppins-Regular.ttf</string>
-		<string>Inter_28pt-Regular.ttf</string>
 		<string>SF-Pro.ttf</string>
+		<string>Inter 28pt.ttf</string>
 	</array>
 	<key>RCTNewArchEnabled</key>
 	<true/>

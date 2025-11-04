@@ -19,10 +19,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import UserHeader from '../../components/Header';
 import { CommonActions } from '@react-navigation/native';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
+import { useUserStore } from '../../stores/useUserStore';
 export default function Home({ navigation }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef(null);
   const tabBarHeight = useTabBarHeightHelper();
+  const {token } = useUserStore();
+  console.log(token,"useUserStore token");
+  
 
   const loyaltyData = [
     {

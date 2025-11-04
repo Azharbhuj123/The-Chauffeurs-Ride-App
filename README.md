@@ -10,3 +10,13 @@ macmini@Macs-Mac-mini The-Chauffeurs-Ride-App % fc-scan assets/fonts/SFPRODISPLA
 
 
         fc-scan assets/fonts/SF-Pro.ttf | grep family
+
+
+
+
+ <!-- auto cleaning         -->
+
+ npm install -g react-native-clean-project
+
+<!-- Run -->
+react-native clean-project-auto

@@ -31,8 +31,10 @@ import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 // import TopHeader from './TopHeader';
 // import Button from './Button';
 
-export default function VehicleRegistration({ navigation }) {
-  const [currentStep, setCurrentStep] = useState(1);
+export default function VehicleRegistration({ route, navigation }) {
+  const { activeStep } = route.params || {};
+
+  const [currentStep, setCurrentStep] = useState(activeStep ? activeStep : 1);
   const [checked, setChecked] = useState(false);
   const [documents, setDocuments] = useState({
     driverLicense: null,
@@ -44,8 +46,7 @@ export default function VehicleRegistration({ navigation }) {
     sideView: null,
     interiorView: null,
   });
-    const tabBarHeight = useTabBarHeightHelper();
-  
+  const tabBarHeight = useTabBarHeightHelper();
 
   const updateFormData = (field, value) => {
     setFormData({ ...formData, [field]: value });
@@ -364,7 +365,7 @@ export default function VehicleRegistration({ navigation }) {
   const renderStep5 = () => (
     <View style={styles.successContainer}>
       <View style={styles.successIcon}>
-    <Image source={require('../../assets/images/submit.png')} />
+        <Image source={require('../../assets/images/submit.png')} />
       </View>
       <Text style={styles.successTitle}>Submission Complete!</Text>
       <Text style={styles.successSubtitle}>
@@ -387,8 +388,10 @@ export default function VehicleRegistration({ navigation }) {
       {currentStep < 5 && renderProgressBar()}
       <ScrollView
         style={styles.formContainer}
-        contentContainerStyle={[styles.scrollContent,{ paddingBottom: tabBarHeight }]}
-
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: tabBarHeight },
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.content}>
@@ -650,7 +653,7 @@ const styles = StyleSheet.create({
     color: '#000',
     marginBottom: hp(1),
   },
- successSubtitle: {
+  successSubtitle: {
     fontSize: wp(3.5), // responsive text (~16px)
     color: '#947C00',
     paddingHorizontal: wp(2),
@@ -658,11 +661,11 @@ const styles = StyleSheet.create({
     borderRadius: wp(3.5),
     borderWidth: 1, // ✅ you need this for borderColor to show
     borderColor: 'rgba(248, 216, 51, 0.20)',
-        backgroundColor: 'rgba(248, 216, 51, 0.20)', // ✅ corrected property name
+    backgroundColor: 'rgba(248, 216, 51, 0.20)', // ✅ corrected property name
     width: '100%',
-    textAlign:'center',
-    marginTop:wp(3.5),
-    marginBottom:wp(3.5),
+    textAlign: 'center',
+    marginTop: wp(3.5),
+    marginBottom: wp(3.5),
   },
   successMessage: {
     fontSize: wp(3.2),

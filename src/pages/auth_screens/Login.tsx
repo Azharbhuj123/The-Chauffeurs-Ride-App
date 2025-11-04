@@ -29,6 +29,13 @@ import SocialBtns from '../../components/SocialBtns';
 import Button from '../../components/Button';
 import { useFocusEffect } from '@react-navigation/native';
 import { useStore } from '../../stores/useStore';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { login_schema } from '../../utils/Schema';
+import { error_msg } from '../../utils/Enums';
+import useActionMutation from '../../queryFunctions/useActionMutation';
+import { showToast } from '../../utils/toastHelper';
+import { useUserStore } from '../../stores/useUserStore';
 
 const { width, height } = Dimensions.get('window');
 
@@ -37,22 +44,47 @@ const fs = size => {
 };
 
 function Login({ navigation }) {
-  const [userType, setUserType] = useState('user');
-  const [name, setName] = useState('');
-  const [emailOrPhone, setEmailOrPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-
-  const insets = useSafeAreaInsets(); // ✅ handle top/bottom safe area
   const { resetForgotTrue } = useStore();
+  const insets = useSafeAreaInsets();
+  const [showPassword, setShowPassword] = useState(false);
+  const { setUserData } = useUserStore();
 
-  const handleSignUp = () => {
-    console.log('Signing up as:', userType);
-    console.log('Name:', name);
-    console.log('Email/Phone:', emailOrPhone);
-    console.log('Password:', password);
-    // Add your Sign in logic here
-    navigation.navigate('MainTabs');
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    resolver: yupResolver(login_schema),
+    defaultValues: {
+      contact: '',
+      password: '',
+    },
+  });
+
+  const { triggerMutation, loading } = useActionMutation({
+    onSuccessCallback: async data => {
+      
+        setUserData(data?.userData,data?.token);
+      reset();
+      navigation.navigate('MainTabs');
+    },
+    onErrorCallback: errmsg => {
+      showToast({
+        type: 'error',
+        title: 'Login Failed',
+        message: errmsg || 'Please Try again!',
+      });
+    },
+  });
+
+  const handleSignIn = data => {
+    console.log('Form Data:', data);
+    triggerMutation({
+      endPoint: '/auth/login',
+      body: data,
+      method: 'post',
+    });
   };
 
   useFocusEffect(
@@ -62,10 +94,6 @@ function Login({ navigation }) {
   );
 
   return (
-    // <SafeAreaView
-
-    // style={{ flex: 1,backgroundColor:"#FDD835"}}
-    // >
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -77,7 +105,6 @@ function Login({ navigation }) {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
-          {/* Header Section */}
           <View style={styles.header}>
             <View style={styles.logoContainer}>
               <Image
@@ -88,14 +115,13 @@ function Login({ navigation }) {
             </View>
           </View>
 
-          {/* Form Section */}
           <View style={styles.formContainer}>
             <Text style={styles.title}>Sign In</Text>
             <Text style={styles.subtitle}>
-              Continue your journey with the Chaffeurs
+              Continue your journey with the Chauffeurs
             </Text>
 
-            {/* Email/Phone Input */}
+            {/* Contact Field */}
             <View style={styles.inputContainer}>
               <Icon
                 name="mail-outline"
@@ -103,18 +129,27 @@ function Login({ navigation }) {
                 color="#999"
                 style={styles.iconStyle}
               />
-              <TextInput
-                style={styles.input}
-                placeholder="Email Or Phone No."
-                placeholderTextColor="#999"
-                value={emailOrPhone}
-                onChangeText={setEmailOrPhone}
-                keyboardType="email-address"
-                autoCapitalize="none"
+
+              <Controller
+                control={control}
+                name="contact"
+                render={({ field: { onChange, value } }) => (
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Email Or Phone No."
+                    placeholderTextColor="#999"
+                    value={value}
+                    onChangeText={onChange}
+                    autoCapitalize="none"
+                  />
+                )}
               />
             </View>
+            {errors.contact && (
+              <Text style={styles.error}>{errors.contact.message}</Text>
+            )}
 
-            {/* Password Input */}
+            {/* Password Field */}
             <View style={styles.inputContainer}>
               <Icon
                 name="lock-closed-outline"
@@ -122,14 +157,22 @@ function Login({ navigation }) {
                 color="#999"
                 style={styles.iconStyle}
               />
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                placeholderTextColor="#999"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
+
+              <Controller
+                control={control}
+                name="password"
+                render={({ field: { onChange, value } }) => (
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Password"
+                    placeholderTextColor="#999"
+                    value={value}
+                    onChangeText={onChange}
+                    secureTextEntry={!showPassword}
+                  />
+                )}
               />
+
               <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                 <Icon
                   name={showPassword ? 'eye-outline' : 'eye-off-outline'}
@@ -138,6 +181,9 @@ function Login({ navigation }) {
                 />
               </TouchableOpacity>
             </View>
+            {errors.password && (
+              <Text style={styles.error}>{errors.password.message}</Text>
+            )}
 
             <TouchableOpacity onPress={() => navigation.navigate('Forgot')}>
               <View style={styles.forgotContainer}>
@@ -145,12 +191,14 @@ function Login({ navigation }) {
               </View>
             </TouchableOpacity>
 
-            <Button title="Sign In" onPress={handleSignUp} />
+            <Button
+              isLoading={loading}
+              title="Sign In"
+              onPress={handleSubmit(handleSignIn)}
+            />
 
-            {/* Social Sign in */}
             <SocialBtns />
 
-            {/* Sign in Link */}
             <View style={styles.signInContainer}>
               <Text style={styles.signInText}>Don’t have an account? </Text>
               <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
@@ -161,16 +209,15 @@ function Login({ navigation }) {
         </ScrollView>
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
-    // </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
 
     backgroundColor: '#FDD835',
   },
+  error: error_msg,
   scrollContent: {
     flexGrow: 1,
   },

@@ -20,6 +20,13 @@ import {
 } from 'react-native-responsive-screen';
 import { useStore } from '../../stores/useStore';
 import Button from '../../components/Button';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { verify_schema } from '../../utils/Schema';
+import { error_msg } from '../../utils/Enums';
+import useActionMutation from '../../queryFunctions/useActionMutation';
+import { showToast } from '../../utils/toastHelper';
+import { useUserStore } from '../../stores/useUserStore';
 
 const { width, height } = Dimensions.get('window');
 
@@ -27,21 +34,33 @@ const fs = size => {
   return Math.sqrt(height * height + width * width) * (size / 1000);
 };
 
-export default function Verify({ navigation }) {
-  const [code, setCode] = useState(['', '', '', '']);
+export default function Verify({ route, navigation }) {
+  const [code, setCode] = useState(['', '', '', '', '']);
   const [isVerified, setIsVerified] = useState(false);
   const inputRefs = useRef([]);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
+  const { contact } = route.params || {};
   const { isForgot } = useStore();
+  const { setUserData } = useUserStore();
+
+  // ✅ React Hook Form setup
+  const {
+    handleSubmit,
+    setValue,
+    formState: { errors },
+    reset,
+  } = useForm({
+    resolver: yupResolver(verify_schema),
+    defaultValues: { code: '' },
+  });
 
   const handleCodeChange = (text, index) => {
     const newCode = [...code];
     newCode[index] = text;
     setCode(newCode);
 
-    // Auto focus next input
-    if (text && index < 3) {
+    if (text && index < 4) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -52,46 +71,74 @@ export default function Verify({ navigation }) {
     }
   };
 
+  const { triggerMutation, loading } = useActionMutation({
+    onSuccessCallback: async data => {
+      if (!data?.adminVerify && data?.verify) {
+        navigation.navigate('UploadDoc', {
+          contact: data?.userData?.contact,
+        });
+        return;
+      }
+      if (data?.adminVerify && data?.verify) {
+        setUserData(data?.userData, data?.token);
+        reset();
+        setIsVerified(true);
+
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }).start();
+
+        setTimeout(() => {
+          navigation.navigate('MainTabs');
+        }, 3000);
+      } else if (data?.codeValid) {
+        navigation.navigate('SetPass', { contact: data?.contact });
+      }
+    },
+    onErrorCallback: errmsg => {
+      showToast({
+        type: 'error',
+        title: 'Verification Failed',
+        message: errmsg || 'Please Try again!',
+      });
+    },
+  });
+
+  // ✅ Submit Handler with RHF
+  const onSubmit = data => {
+    const body = {
+      code: data?.code,
+      contact,
+      actionStep: 1,
+    };
+
+    const endPoint = isForgot ? '/auth/reset-password' : '/auth/verify-email';
+
+    triggerMutation({
+      endPoint,
+      body,
+      method: 'post',
+    });
+  };
+
+  // ✅ Trigger RHF validation + send OTP
   const handleVerify = () => {
-    if (isForgot) {
-      navigation.navigate('SetPass');
-      return;
-    }
-    // Add your verification logic here
-    console.log('Verification code:', code.join(''));
-
-    // Simulate successful verification
-    setIsVerified(true);
-
-    // Fade in animation
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
-
-    // Auto redirect after 3 seconds (optional)
-    setTimeout(() => {
-      console.log('Redirect to Home Page');
-      // navigation.navigate('Home');
-    }, 3000);
+    const joined = code.join('');
+    setValue('code', joined);
+    handleSubmit(onSubmit)();
   };
 
   const handleResendCode = () => {
     console.log('Resending code...');
-
-    // Add resend logic here
   };
 
   if (isVerified && !isForgot) {
-    setTimeout(() => {
-      navigation.navigate('MainTabs');
-    }, [3000]);
     return (
       <View style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor="#FDD835" />
 
-        {/* Header Section */}
         <View style={styles.header}>
           <View style={[{ justifyContent: 'center' }, styles.logoContainer]}>
             <Image
@@ -102,28 +149,22 @@ export default function Verify({ navigation }) {
           </View>
         </View>
 
-        {/* Congratulations Section */}
         <Animated.View
           style={[styles.congratsContainer, { opacity: fadeAnim }]}
         >
           <View style={styles.congratsContent}>
-            {/* Success Icon/Image */}
             <View style={styles.successIconContainer}>
               <Image
                 source={require('../../assets/images/congratulations.png')}
                 style={styles.congratsImage}
                 resizeMode="contain"
               />
-              {/* Or use Icon if you prefer */}
-              {/* <View style={styles.checkmarkCircle}>
-                <Icon name="checkmark" size={wp(15)} color="#4CAF50" />
-              </View> */}
             </View>
 
             <Text style={styles.congratsTitle}>Congratulations</Text>
             <Text style={styles.congratsText}>
               Your account is ready to use. You will be redirected to the Home
-              Page in a few seconds.
+              Page shortly.
             </Text>
           </View>
         </Animated.View>
@@ -135,13 +176,12 @@ export default function Verify({ navigation }) {
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FDD835" />
 
-      {/* Header Section */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.navigate('Login')}
           style={styles.backButton}
         >
-          <Icon name="chevron-back" size={wp(6)} color="#000" />
+          <Icon name="chevron-back" size={22} color="#000" />
           <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
 
@@ -154,15 +194,14 @@ export default function Verify({ navigation }) {
         </View>
       </View>
 
-      {/* Verification Form Section */}
       <View style={styles.formContainer}>
         <Text style={styles.title}>Verify Your Account</Text>
         <Text style={styles.subtitle}>
           We've sent a verification code to your email{' '}
-          <Text style={styles.emailText}>abc@gmail.com</Text>
+          <Text style={styles.emailText}>{contact || ''}</Text>
         </Text>
 
-        {/* OTP Input Boxes */}
+        {/* ✅ OTP Boxes */}
         <View style={styles.otpContainer}>
           {code.map((digit, index) => (
             <TextInput
@@ -178,8 +217,13 @@ export default function Verify({ navigation }) {
             />
           ))}
         </View>
+        {errors.code && (
+          <Text style={styles.errorText}>{errors.code.message}</Text>
+        )}
 
-        {/* Resend Code */}
+        {/* ✅ RHF Error */}
+
+        {/* ✅ Resend Code */}
         <View style={styles.resendContainer}>
           <Text style={styles.resendText}>Didn't receive code? </Text>
           <TouchableOpacity onPress={handleResendCode}>
@@ -187,7 +231,7 @@ export default function Verify({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        <Button title="Verify Now" onPress={handleVerify} />
+        <Button isLoading={loading} title="Verify Now" onPress={handleVerify} />
       </View>
     </View>
   );
@@ -198,6 +242,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FDD835',
   },
+  errorText: { ...error_msg, paddingLeft: wp(2) },
   header: {
     height: hp(25),
     backgroundColor: '#FDD835',
@@ -247,10 +292,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: hp(3),
-    paddingHorizontal: wp(5),
+    gap: '5',
   },
   otpInput: {
-    width: wp(18),
+    width: wp(16),
     height: hp(8),
     backgroundColor: '#F8F8F8',
     borderRadius: wp(3),
@@ -348,7 +393,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#000',
     marginBottom: hp(2),
-    fontFamily:"Poppins-Regular"
+    fontFamily: 'Poppins-Regular',
   },
   congratsText: {
     fontSize: fs(14),
@@ -356,7 +401,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: fs(22),
     paddingHorizontal: wp(4),
-    fontFamily:"Inter_28pt-Regular"
-
+    fontFamily: 'Inter_28pt-Regular',
   },
 });

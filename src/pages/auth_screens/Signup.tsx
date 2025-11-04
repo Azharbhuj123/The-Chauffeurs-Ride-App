@@ -29,6 +29,13 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import SocialBtns from '../../components/SocialBtns';
 import Button from '../../components/Button';
 import { useStore } from '../../stores/useStore';
+import { useUserStore } from '../../stores/useUserStore';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { signupSchema } from '../../utils/Schema';
+import { error_msg } from '../../utils/Enums';
+import useActionMutation from '../../queryFunctions/useActionMutation';
+import { showToast } from '../../utils/toastHelper';
 
 const { width, height } = Dimensions.get('window');
 
@@ -37,168 +44,207 @@ const fs = size => {
 };
 
 function Signup({ navigation }) {
-  const [userType, setUserType] = useState('user');
-  const [name, setName] = useState('');
-  const [emailOrPhone, setEmailOrPhone] = useState('');
-  const [password, setPassword] = useState('');
+  const { setRole } = useUserStore();
   const [showPassword, setShowPassword] = useState(false);
-  const { setRole } = useStore();
-  const insets = useSafeAreaInsets(); // ✅ handle top/bottom safe area
 
-  const handleSignUp = () => {
-    console.log('Signing up as:', userType);
-    console.log('Name:', name);
-    console.log('Email/Phone:', emailOrPhone);
-    console.log('Password:', password);
-    // Add your sign up logic here
-    setRole(userType);
-    navigation.navigate(userType === 'driver' ? 'UploadDoc' : 'Verify');
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+    reset,
+  } = useForm({
+    resolver: yupResolver(signupSchema),
+    defaultValues: {
+      role: 'User',
+      name: '',
+      contact: '',
+      password: '',
+    },
+  });
+
+  const selectedRole = watch('role');
+
+  const { triggerMutation, loading } = useActionMutation({
+    onSuccessCallback: async data => {
+      if (data?.codeSend) {
+        reset();
+        navigation.navigate('Verify', {
+          
+          contact: data?.contact,
+        });
+      }
+    },
+    onErrorCallback: errmsg => {
+      showToast({
+        type: 'error',
+        title: 'Registration Failed',
+        message: errmsg || 'Please Try again!',
+      });
+    },
+  });
+
+  const onSubmit = data => {
+    console.log('✅ Form Data:', data);
+    setRole(data.role);
+    triggerMutation({
+      endPoint: '/auth/register',
+      body: data,
+      method: 'post',
+    });
+    // navigation.navigate(data.role === 'Driver' ? 'UploadDoc' : 'Verify');
   };
 
   return (
-    // <SafeAreaView
-
-    // style={{ flex: 1,backgroundColor:"#FDD835"}}
-    // >
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
       >
-        <StatusBar barStyle="dark-content" backgroundColor="#FDD835" />
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          bounces={true}
-          // Remove problematic props
-        >
-          {/* Header Section */}
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {/* LOGO */}
           <View style={styles.header}>
-            <View style={styles.logoContainer}>
-              <Image
-                source={require('../../assets/images/headLogo.png')}
-                style={styles.logo}
-                resizeMode="contain"
-              />
-            </View>
-          </View>
+                      <View style={styles.logoContainer}>
+                        <Image
+                          source={require('../../assets/images/headLogo.png')}
+                          style={styles.logo}
+                          resizeMode="contain"
+                        />
+                      </View>
+                    </View>
 
-          {/* Form Section */}
           <View style={styles.formContainer}>
             <Text style={styles.title}>Sign Up</Text>
-            <Text style={styles.subtitle}>
-              Continue your journey with the Chaffeurs
-            </Text>
 
-            {/* User Type Toggle */}
+            {/* ✅ ROLE TOGGLE */}
             <View style={styles.toggleContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.toggleButton,
-                  userType === 'user' && styles.toggleButtonActive,
-                ]}
-                onPress={() => setUserType('user')}
-                activeOpacity={0.7}
-              >
-                <Text
+              {['User', 'Driver'].map(role => (
+                <TouchableOpacity
+                  key={role}
                   style={[
-                    styles.toggleText,
-                    userType === 'user' && styles.toggleTextActive,
+                    styles.toggleButton,
+                    selectedRole === role && styles.toggleButtonActive,
                   ]}
+                  onPress={() => setValue('role', role)}
+                  activeOpacity={0.7}
                 >
-                  Sign up as User
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.toggleButton,
-                  userType === 'driver' && styles.toggleButtonActive,
-                ]}
-                onPress={() => setUserType('driver')}
-                activeOpacity={0.7}
-              >
-                <Text
-                  style={[
-                    styles.toggleText,
-                    userType === 'driver' && styles.toggleTextActive,
-                  ]}
-                >
-                  Sign up as Driver
-                </Text>
-              </TouchableOpacity>
+                  <Text
+                    style={[
+                      styles.toggleText,
+                      selectedRole === role && styles.toggleTextActive,
+                    ]}
+                  >
+                    Sign up as {role}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
+            {errors.role && (
+              <Text style={styles.errorText}>{errors.role.message}</Text>
+            )}
 
-            {/* Name Input */}
-            <View style={styles.inputContainer}>
-              <Icon
-                name="person-outline"
-                size={wp(5)}
-                color="#999"
-                style={styles.iconStyle}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Name"
-                placeholderTextColor="#999"
-                value={name}
-                onChangeText={setName}
-              />
-            </View>
+            {/* ✅ NAME INPUT */}
+            <Controller
+              control={control}
+              name="name"
+              render={({ field: { onChange, value } }) => (
+                <View style={styles.inputContainer}>
+                  <Icon
+                    name="person-outline"
+                    size={22}
+                    style={styles.iconStyle}
+                    color="#999"
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Name"
+                    placeholderTextColor="#999"
+                    value={value}
+                    onChangeText={onChange}
+                  />
+                </View>
+              )}
+            />
+            {errors.name && (
+              <Text style={styles.errorText}>{errors.name.message}</Text>
+            )}
 
-            {/* Email/Phone Input */}
-            <View style={styles.inputContainer}>
-              <Icon
-                name="mail-outline"
-                size={wp(5)}
-                color="#999"
-                style={styles.iconStyle}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Email Or Phone No."
-                placeholderTextColor="#999"
-                value={emailOrPhone}
-                onChangeText={setEmailOrPhone}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View>
+            {/* ✅ EMAIL / PHONE INPUT */}
+            <Controller
+              control={control}
+              name="contact"
+              render={({ field: { onChange, value } }) => (
+                <View style={styles.inputContainer}>
+                  <Icon
+                    name="mail-outline"
+                    size={22}
+                    style={styles.iconStyle}
+                    color="#999"
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Email or Phone"
+                    placeholderTextColor="#999"
+                    value={value}
+                    onChangeText={onChange}
+                    keyboardType="email-address"
+                  />
+                </View>
+              )}
+            />
+            {errors.contact && (
+              <Text style={styles.errorText}>{errors.contact.message}</Text>
+            )}
 
-            {/* Password Input */}
-            <View style={styles.inputContainer}>
-              <Icon
-                name="lock-closed-outline"
-                size={wp(5)}
-                color="#999"
-                style={styles.iconStyle}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                placeholderTextColor="#999"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-              />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                <Icon
-                  name={showPassword ? 'eye-outline' : 'eye-off-outline'}
-                  size={wp(5)}
-                  color="#999"
-                />
-              </TouchableOpacity>
-            </View>
+            {/* ✅ PASSWORD INPUT */}
+            <Controller
+              control={control}
+              name="password"
+              render={({ field: { onChange, value } }) => (
+                <View style={styles.inputContainer}>
+                  <Icon
+                    name="lock-closed-outline"
+                    size={22}
+                    style={styles.iconStyle}
+                    color="#999"
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Password"
+                    placeholderTextColor="#999"
+                    secureTextEntry={!showPassword}
+                    value={value}
+                    onChangeText={onChange}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(prev => !prev)}
+                  >
+                    <Icon
+                      name={showPassword ? 'eye-outline' : 'eye-off-outline'}
+                      size={22}
+                      style={styles.iconStyle}
+                      color="#999"
+                    />
+                  </TouchableOpacity>
+                </View>
+              )}
+            />
+            {errors.password && (
+              <Text style={styles.errorText}>{errors.password.message}</Text>
+            )}
 
-            <Button title="Sign Up" onPress={handleSignUp} />
+            {/* ✅ Submit Button */}
+            <Button
+              isLoading={loading}
+              title="Sign Up"
+              onPress={handleSubmit(onSubmit)}
+            />
 
-            {/* Social Sign Up */}
             <SocialBtns />
 
-            {/* Sign In Link */}
             <View style={styles.signInContainer}>
-              <Text style={styles.signInText}>Already have an account? </Text>
+              <Text>Already have an account? </Text>
               <TouchableOpacity onPress={() => navigation.navigate('Login')}>
                 <Text style={styles.signInLink}>Sign In</Text>
               </TouchableOpacity>
@@ -207,7 +253,6 @@ function Signup({ navigation }) {
         </ScrollView>
       </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
-    // </SafeAreaView>
   );
 }
 
@@ -217,6 +262,7 @@ const styles = StyleSheet.create({
 
     backgroundColor: '#FDD835',
   },
+  errorText: error_msg,
   scrollContent: {
     flexGrow: 1,
   },
