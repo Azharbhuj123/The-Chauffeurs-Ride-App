@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     marginHorizontal: wp('5%'),
     marginTop: hp('3%'),
     marginBottom: hp('1.5%'),
-    fontFamily:'Poppins'
+    fontFamily:'Poppins-Regular'
 
   },
 
@@ -276,13 +276,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000',
     marginTop: hp('1%'),
-    fontFamily:'Poppins'
+    fontFamily:'Poppins-Regular'
   },
   tierPoints: {
     fontSize: wp('3.2%'),
     color: '#888',
     marginVertical: hp('0.5%'),
-    fontFamily:'Poppins'
+    fontFamily:'Poppins-Regular'
 
   },
   tierPerks: {
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     paddingTop: hp(1),
     borderTopWidth: 1,
     borderTopColor: '#999',
-    fontFamily:'Poppins'
+    fontFamily:'Poppins-Regular'
 
   },
 
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
     borderColor: '1px solid rgba(17, 17, 17, 0.10)',
   },
   listItemTitle: { fontSize: wp('3.75%'), color: '#000', fontWeight: '500',
-    fontFamily:'Poppins'
+    fontFamily:'Poppins-Regular'
 
 
    },
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
     color: '#888',
     marginTop: hp('0.3%'),
     color: '#FDD835',
-    fontFamily:'Poppins'
+    fontFamily:'Poppins-Regular'
 
   },
   redeemButton: {
@@ -335,15 +335,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   redeemButtonText: { color: '#000', fontWeight: '600', fontSize: wp('3%') ,
-    fontFamily:'Poppins'
+    fontFamily:'Poppins-Regular'
 
   },
   unlockedButton: { backgroundColor: '#e0e0e0',
-    fontFamily:'Poppins'
+    fontFamily:'Poppins-Regular'
 
    },
   unlockedButtonText: { color: '#888',
-    fontFamily:'Poppins'
+    fontFamily:'Poppins-Regular'
 
    },
   activityPoints: { fontSize: wp('4%'), fontWeight: '600' },

@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1F2937',
     textAlign: 'center',
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins-Regular',
 
     marginTop: 15,
     marginBottom: 10,
@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins-Regular',
 
     marginBottom: 25,
   },
@@ -428,14 +428,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     width: '100%',
     alignItems: 'center',
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins-Regular',
 
   },
   modalButtonText: {
     color: '#1F2937',
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins-Regular',
     
   },
   btnContainer: {

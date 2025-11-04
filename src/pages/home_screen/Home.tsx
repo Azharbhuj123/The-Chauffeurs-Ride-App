@@ -174,7 +174,7 @@ export default function Home({ navigation }) {
                     style={{
                       fontSize: 14,
                       color: '#FFD700',
-                      fontFamily: 'Poppins',
+                      fontFamily: 'Poppins-Regular',
                     }}
                   >
                     Book Again
@@ -219,14 +219,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000',
     marginBottom: hp('0.5%'),
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins-Regular',
   },
   ctaSubtitle: {
     fontSize: wp('3.5%'),
     color: '#000',
     fontWeight: '400',
 
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins-Regular',
   },
   rideStatusCard: {
     backgroundColor: '#fff',
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000',
     marginBottom: hp('1.5%'),
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins-Regular',
   },
   statusRow: {
     flexDirection: 'row',
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     fontSize: wp('3.5%'),
     color: '#666',
     marginLeft: wp('2%'),
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins-Regular',
   },
   section: {
     marginTop: hp('2%'),
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: wp('85%'),
     marginRight: wp('3%'),
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins-Regular',
   },
   loyaltyContent: {
     flex: 1,
@@ -280,19 +280,19 @@ const styles = StyleSheet.create({
     color: '#FFD700',
     marginBottom: hp('1%'),
     fontWeight: '600',
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins-Regular',
   },
   loyaltyPoints: {
     fontSize: wp('6%'),
     fontWeight: 'bold',
     color: '#fff',
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins-Regular',
     marginBottom: hp('0.5%'),
   },
   loyaltySubtext: {
     fontSize: wp('3%'),
     color: '#fff',
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins-Regular',
   },
   loyaltyRight: {
     backgroundColor: '#fff',
@@ -304,12 +304,12 @@ const styles = StyleSheet.create({
     fontSize: wp('4%'),
     fontWeight: 'bold',
     color: '#000',
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins-Regular',
   },
   loyaltyRightSubtext: {
     fontSize: wp('2.5%'),
     color: '#fff',
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins-Regular',
   },
   pagination: {
     flexDirection: 'row',
@@ -339,18 +339,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins-Regular',
   },
   destinationTitle: {
     fontSize: wp('4%'),
     fontWeight: '600',
     color: '#000',
     marginBottom: hp('0.5%'),
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins-Regular',
   },
   destinationSubtitle: {
     fontSize: wp('3%'),
     color: '#666',
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins-Regular',
   },
 });
