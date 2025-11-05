@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 
-type Role = 'User' | 'Driver' | 'Admin';
+type Role = 'User' | 'Driver' | 'Admin' | '';
 
 interface CounterState {
   isForgot: boolean;
@@ -18,11 +18,10 @@ interface CounterState {
 
 export const useUserStore = create<CounterState>(set => ({
   isForgot: false,
-  role: 'User',
+  role: '',
   token: null,
   userData: null,
   hydrated: false,
-
 
   setForgotTrue: () => set({ isForgot: true }),
   resetForgotTrue: () => set({ isForgot: false }),
@@ -32,18 +31,19 @@ export const useUserStore = create<CounterState>(set => ({
   setUserData: async (user, token) => {
     await AsyncStorage.setItem('userData', JSON.stringify(user));
     await AsyncStorage.setItem('token', token);
-    set({ userData: user, token });
+    set({ userData: user, token, role: user?.role });
   },
 
   // ✅ Load values from async storage on app start
   loadStoredData: async () => {
-    const storedUser = await AsyncStorage.removeItem('userData');
-    const storedToken = await AsyncStorage.removeItem('token');
-
+    const storedUser = await AsyncStorage.getItem('userData');
+    const storedToken = await AsyncStorage.getItem('token');
+    const parse_user = JSON.parse(storedUser);
     set({
-      userData: storedUser ? JSON.parse(storedUser) : null,
+      userData: storedUser ? parse_user : null,
       token: storedToken || null,
-      hydrated: true,   // ✅ finished loading
+      role: parse_user?.role || '',
+      hydrated: true, // ✅ finished loading
     });
   },
 }));

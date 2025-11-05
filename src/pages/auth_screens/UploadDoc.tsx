@@ -41,7 +41,7 @@ const fs = size => {
   return Math.sqrt(height * height + width * width) * (size / 1000);
 };
 
-export default function UploadDoc({route, navigation }) {
+export default function UploadDoc({ route, navigation }) {
   const [documents, setDocuments] = useState({
     driverLicense: null,
     vehicleInsurance: null,
@@ -152,19 +152,12 @@ export default function UploadDoc({route, navigation }) {
   };
 
   const { triggerMutation, loading } = useActionMutation({
-    onSuccessCallback: async (data) => {
-  if (data?.documentsUploaded) {
-    navigation.navigate('MainTabs', {
-      screen: 'Home', // the tab inside MainTabs
-      params: {
-        screen: 'AddVehicle', // the screen inside DriverHomeStack
-        params: { activeStep: 5 },
-      },
-    });
-  }
-},
+    onSuccessCallback: async data => {
+      if (data?.documentsUploaded) {
+        navigation.navigate('Approval');
+      }
+    },
 
-      
     onErrorCallback: errmsg => {
       showToast({
         type: 'error',
@@ -188,7 +181,7 @@ export default function UploadDoc({route, navigation }) {
       return;
     }
     const form_data = new FormData();
-    form_data.append("contact",contact)
+    form_data.append('contact', contact);
     form_data.append('driver_License', {
       uri: documents.driverLicense.uri,
       type: documents.driverLicense.type,

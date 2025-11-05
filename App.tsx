@@ -6,28 +6,51 @@
  */
 
 // App.tsx
-import React from 'react';
-import { StatusBar, StyleSheet, useColorScheme } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Platform, StatusBar, StyleSheet, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MainNavigation from './src/navigation/MainNavigation';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from '@tanstack/react-query';
 import Toast, { BaseToast, ErrorToast } from 'react-native-toast-message';
 import FlashMessage from 'react-native-flash-message';
 import { heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { COLORS } from './src/utils/Enums';
+import AppLoader from './src/components/AppLoader';
+import { PERMISSIONS, request, check, RESULTS } from 'react-native-permissions';
+import Geolocation from 'react-native-geolocation-service';
+
+import { useStore } from './src/stores/useStore';
 
 export default function App() {
   const isDarkMode = useColorScheme() === 'dark';
-
+  const { setLocation } = useStore();
   const queryClient = new QueryClient();
 
   const toastConfig = {
     success: props => (
       <BaseToast
         {...props}
-        style={{ borderLeftColor: '#FDD835', backgroundColor: '#fff' }}
+        style={{
+          borderLeftColor: '#000',
+          backgroundColor: '#fff',
+          marginTop: hp(3),
+        }}
         contentContainerStyle={{ paddingHorizontal: 15 }}
-        text1Style={{ fontSize: 16, fontWeight: 'bold', color: 'green' }}
-        text2Style={{ fontSize: 14, color: '#555' }}
+        text1Style={{
+          fontSize: 16,
+          fontWeight: 'bold',
+          color: COLORS.success,
+          fontFamily: 'Poppins-Regular',
+        }}
+        text2Style={{
+          fontSize: 14,
+          color: '#555',
+          fontFamily: 'Poppins-Regular',
+        }}
       />
     ),
 
@@ -35,15 +58,15 @@ export default function App() {
       <ErrorToast
         {...props}
         style={{
-          borderLeftColor: 'red',
+          borderLeftColor: COLORS.error,
           backgroundColor: '#fff',
           fontFamily: 'Poppins-Regular',
-          marginTop: hp(3)
+          marginTop: hp(3),
         }}
         text1Style={{
           fontSize: 16,
           fontWeight: 'bold',
-          color: 'red',
+          color: COLORS.error,
           fontFamily: 'Poppins-Regular',
         }}
         text2Style={{
@@ -54,6 +77,55 @@ export default function App() {
       />
     ),
   };
+ 
+  const [permissionStatus, setPermissionStatus] = useState('');
+
+  const requestLocationPermission = async () => {
+    const permission =
+      Platform.OS === 'ios'
+        ? PERMISSIONS.IOS.LOCATION_WHEN_IN_USE
+        : PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION;
+
+    const result = await request(permission);
+    console.log('Permission result:', result);
+    setPermissionStatus(result);
+
+    if (result === RESULTS.GRANTED) {
+      getUserLocation();
+    }
+  };
+
+  useEffect(() => {
+    requestLocationPermission().then(result => {
+      console.log('Permission result:', result);
+    });
+  }, []);
+
+  const getUserLocation = () => {
+    Geolocation.getCurrentPosition(
+      position => {
+ 
+        setLocation(position?.coords);
+      },
+      error => {
+        console.log('Error getting location:', error);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
+    );
+  };
+
+  useEffect(() => {
+    check(
+      Platform.OS === 'ios'
+        ? PERMISSIONS.IOS.LOCATION_WHEN_IN_USE
+        : PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
+    ).then(result => {
+      setPermissionStatus(result);
+      if (result === RESULTS.GRANTED) {
+        getUserLocation();
+      }
+    });
+  }, []);
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>

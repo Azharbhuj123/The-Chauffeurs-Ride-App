@@ -64,8 +64,17 @@ function Login({ navigation }) {
 
   const { triggerMutation, loading } = useActionMutation({
     onSuccessCallback: async data => {
-      
-        setUserData(data?.userData,data?.token);
+      if (data?.no_documents) {
+        navigation.navigate('UploadDoc', {
+          contact: data?.contact,
+        });
+        return;
+      }
+      if (data?.not_verify_by_admin) {
+        navigation.navigate('Approval');
+        return;
+      }
+      setUserData(data?.userData, data?.token);
       reset();
       navigation.navigate('MainTabs');
     },

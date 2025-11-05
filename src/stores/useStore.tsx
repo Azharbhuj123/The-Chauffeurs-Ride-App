@@ -1,24 +1,28 @@
 import { create } from 'zustand';
 
-// Define the state type
-type Role = 'user' | 'driver' | 'admin';
-
-interface CounterState {
-  isForgot: boolean;
-  role: Role;
-  setForgotTrue: () => void;
-  resetForgotTrue: () => void;
-  setRole: (newRole: Role) => void;
+// Define your location type (customize if needed)
+interface LocationState {
+  latitude?: number;
+  longitude?: number;
+  [key: string]: any;
 }
 
+type Role = 'user' | 'driver' | 'admin';
 
-// Create the store
-export const useStore = create<CounterState>((set) => ({
+interface AppState {
+  isForgot: boolean;
+  location: LocationState | null;
+  setForgotTrue: () => void;
+  resetForgotTrue: () => void;
+  setLocation: (loc: LocationState) => void;
+}
+
+export const useStore = create<AppState>((set) => ({
   isForgot: false,
-  role: 'user',
+  location: null,
 
   setForgotTrue: () => set({ isForgot: true }),
   resetForgotTrue: () => set({ isForgot: false }),
-  setRole: (newRole) => set({ role: newRole }),
-}));
 
+  setLocation: (loc) => set({ location: loc }),
+}));

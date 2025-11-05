@@ -25,6 +25,7 @@ type ButtonProps = {
   color: string;
   textColor: string;
   loading: Boolean;
+  disabled :Boolean;
 };
 
 export default function Button({
@@ -33,6 +34,7 @@ export default function Button({
   color = '#FDD835',
   textColor = '#000',
   isLoading = false,
+  disabled =false
 }: ButtonProps) {
   return (
     <View>
@@ -42,7 +44,7 @@ export default function Button({
           styles.signUpButton,
         ]}
         onPress={onPress}
-        disabled={isLoading} // optional: prevents double press
+        disabled={isLoading || disabled} // optional: prevents double press
         activeOpacity={0.8}
       >
         {isLoading ? (

@@ -9,7 +9,7 @@ import {
   FlatList,
   StatusBar,
 } from 'react-native';
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
@@ -17,16 +17,64 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import UserHeader from '../../components/Header';
-import { CommonActions } from '@react-navigation/native';
+import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 import { useUserStore } from '../../stores/useUserStore';
+import { useQuery } from '@tanstack/react-query';
+import { fetchData } from '../../queryFunctions/queryFunctions';
+import { formatSmartDate } from '../../utils/DateFormats';
+import { COLORS } from '../../utils/Enums';
+import { useLoaderStore } from '../../stores/useLoaderStore';
+import AppLoader from '../../components/AppLoader';
+import { useStore } from '../../stores/useStore';
+import { socket, joinUserRoom } from '../../utils/socket';
+
 export default function Home({ navigation }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef(null);
   const tabBarHeight = useTabBarHeightHelper();
-  const {token } = useUserStore();
-  console.log(token,"useUserStore token");
-  
+  const { token, userData } = useUserStore();
+  const { showLoader, hideLoader } = useLoaderStore();
+  const { location } = useStore();
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['user-home'],
+    queryFn: () => fetchData('/ride/user-screen'),
+    keepPreviousData: true,
+
+  });
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, []),
+  );
+  useFocusEffect(
+    useCallback(() => {
+      console.log(userData?._id, 'userData?._id');
+
+      if (userData?._id) {
+        joinUserRoom(userData._id.toString());
+
+        const data = {
+          userId: userData._id.toString(),
+          lat: location?.latitude,
+          lng: location?.longitude,
+        };
+
+        socket.emit('user-location', data);
+      }
+
+      // ✅ Cleanup on screen blur / unmount
+      return () => {
+        if (userData?._id) {
+          socket.emit('leave-room', userData._id.toString()); // optional
+        }
+        socket.off('user-location'); // remove listener (if any)
+        console.log('Screen blurred, socket listeners removed.');
+      };
+    }, [userData?._id, location]),
+  );
 
   const loyaltyData = [
     {
@@ -55,39 +103,6 @@ export default function Home({ navigation }) {
     },
   ];
 
-  const quick_Destinations = [
-    {
-      id: 1,
-      title: 'The Grand Hyatt Hotel',
-      subTitle: 'East trip: Yesterday | 10.2 mi',
-    },
-    {
-      id: 2,
-      title: 'The Grand Hyatt Hotel',
-      subTitle: 'East trip: Yesterday | 10.2 mi',
-    },
-    {
-      id: 3,
-      title: 'The Grand Hyatt Hotel',
-      subTitle: 'East trip: Yesterday | 10.2 mi',
-    },
-    {
-      id: 4,
-      title: 'The Grand Hyatt Hotel',
-      subTitle: 'East trip: Yesterday | 10.2 mi',
-    },
-    {
-      id: 5,
-      title: 'The Grand Hyatt Hotel',
-      subTitle: 'East trip: Yesterday | 10.2 mi',
-    },
-    {
-      id: 6,
-      title: 'The Grand Hyatt Hotel',
-      subTitle: 'East trip: Yesterday | 10.2 mi',
-    },
-  ];
-
   const onScroll = event => {
     const slideSize = wp('90%');
     const index = Math.round(event.nativeEvent.contentOffset.x / slideSize);
@@ -103,6 +118,40 @@ export default function Home({ navigation }) {
       </View>
     </View>
   );
+
+  const getRideStatusText = status => {
+    console.log(status, 'status');
+
+    switch (status) {
+      case 'Pending':
+        return 'Searching for a driver...';
+      case 'Accepted':
+        return 'Driver accepted your ride, on the way!';
+      case 'Started':
+        return 'Your trip has started';
+      case 'Completed':
+        return 'Trip completed!';
+      case 'Cancelled':
+        return 'Ride was cancelled';
+      default:
+        return 'No active trip currently booked';
+    }
+  };
+
+  const handleNavigate = (rideId, status) => {
+    if (status === 'Pending') {
+      return;
+    } else {
+      navigation.navigate('Bookings', {
+        screen: 'RideConfirmationScreen',
+        params: { rideId },
+      });
+    }
+  };
+
+  if (isLoading) {
+    return <AppLoader />;
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
@@ -121,7 +170,10 @@ export default function Home({ navigation }) {
           <UserHeader />
 
           {/* Yellow CTA Card */}
-          <TouchableOpacity style={styles.ctaCard}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Bookings')}
+            style={styles.ctaCard}
+          >
             <View>
               <Text style={styles.ctaTitle}>Book a Chauffeur</Text>
               <Text style={styles.ctaSubtitle}>
@@ -132,15 +184,35 @@ export default function Home({ navigation }) {
           </TouchableOpacity>
 
           {/* Current Ride Status */}
-          <View style={styles.rideStatusCard}>
+          <TouchableOpacity
+            onPress={() =>
+              handleNavigate(data?.data?._id, data?.data?.ride_status)
+            }
+            style={styles.rideStatusCard}
+          >
             <Text style={styles.sectionTitle}>Current Ride Status</Text>
             <View style={styles.statusRow}>
-              <Icon name="time-outline" size={wp('5%')} color="#666" />
-              <Text style={styles.statusText}>
-                No active trip currently booked
-              </Text>
+              {/* // data?.data?._id  ride id if active.... */}
+              {data?.data?._id ? (
+                <View style={{ flexDirection: 'row' }}>
+                  <Icon
+                    name="checkmark-circle-sharp"
+                    size={wp('5%')}
+                    color={COLORS.success}
+                  />
+
+                  <Text style={[styles.statusText, { color: COLORS.success }]}>
+                    {getRideStatusText(data?.data?.ride_status)}
+                  </Text>
+                </View>
+              ) : (
+                <View style={{ flexDirection: 'row' }}>
+                  <Icon name="time-outline" size={wp('5%')} color="#666" />
+                  <Text style={styles.statusText}>{getRideStatusText()}</Text>
+                </View>
+              )}
             </View>
-          </View>
+          </TouchableOpacity>
 
           {/* Loyalty & Offers - Slider */}
           <View style={styles.section}>
@@ -164,26 +236,31 @@ export default function Home({ navigation }) {
           {/* Quick Destinations */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Quick Destinations</Text>
-            {Array.isArray(quick_Destinations) &&
-              quick_Destinations?.map(des => (
-                <TouchableOpacity key={des?.id} style={styles.destinationCard}>
+            {Array.isArray(data?.quick_destination) &&
+              data?.quick_destination?.map(des => (
+                <View key={des?._id} style={styles.destinationCard}>
                   <View>
-                    <Text style={styles.destinationTitle}>{des?.title}</Text>
+                    <Text style={styles.destinationTitle}>
+                      {des?.pickup_location?.famous_location}
+                    </Text>
                     <Text style={styles.destinationSubtitle}>
-                      {des?.subTitle}
+                      Last Trip: {formatSmartDate(des?.ride_complete_at)} |{' '}
+                      {des?.distance}
                     </Text>
                   </View>
                   {/* <Icon name="chevron-forward" size={wp('5%')} color="#666" /> */}
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      color: '#FFD700',
-                      fontFamily: 'Poppins-Regular',
-                    }}
-                  >
-                    Book Again
-                  </Text>
-                </TouchableOpacity>
+                  <TouchableOpacity>
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        color: '#FFD700',
+                        fontFamily: 'Poppins-Regular',
+                      }}
+                    >
+                      Book Again
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               ))}
           </View>
 

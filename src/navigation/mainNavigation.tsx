@@ -15,6 +15,7 @@ import Forgot from "../pages/auth_screens/Forgot";
 import SetPass from "../pages/auth_screens/SetPass";
 import BottomTabs from "./BottomTabs";
 import UploadDoc from "../pages/auth_screens/UploadDoc";
+import Approval from "../pages/auth_screens/Approval";
 
 const { width } = Dimensions.get("window");
 
@@ -38,6 +39,7 @@ export default function MainNavigation() {
         <Stack.Screen  name="Login" component={Login} />
         <Stack.Screen  name="Forgot" component={Forgot} />
         <Stack.Screen  name="SetPass" component={SetPass} />
+        <Stack.Screen  name="Approval" component={Approval} />
 
         <Stack.Screen name="MainTabs" component={BottomTabs} />
       </Stack.Navigator>

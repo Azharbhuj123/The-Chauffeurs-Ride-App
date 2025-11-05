@@ -1,27 +1,29 @@
 // @ts-nocheck
 
-import React from 'react'
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {
-    widthPercentageToDP as wp,
-    heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 
-
-export default function TopHeader({title ,navigation}) {
+export default function TopHeader({ title, navigation, no_navigate = false }) {
   return (
-   <View style={styles.header}>
-           <TouchableOpacity onPress={() => navigation?.goBack()} activeOpacity={0.7}>
-             <Ionicons name="chevron-back" size={wp(6)} color="#000" />
-           </TouchableOpacity>
-           <Text style={styles.headerTitle}>{title}</Text>
-           <View style={{ width: wp(6) }} />
-         </View>
-  )
+    <View style={styles.header}>
+      {!no_navigate && (
+        <TouchableOpacity
+          onPress={() => navigation?.goBack()}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="chevron-back" size={wp(6)} color="#000" />
+        </TouchableOpacity>
+      )}
+      <Text style={styles.headerTitle}>{title}</Text>
+      <View style={{ width: wp(6) }} />
+    </View>
+  );
 }
-
-
 
 const styles = StyleSheet.create({
   container: {
@@ -39,5 +41,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000',
   },
-
-})
+});

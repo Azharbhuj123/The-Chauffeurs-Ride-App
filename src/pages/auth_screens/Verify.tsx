@@ -73,6 +73,14 @@ export default function Verify({ route, navigation }) {
 
   const { triggerMutation, loading } = useActionMutation({
     onSuccessCallback: async data => {
+      if (data?.resend) {
+        showToast({
+          type: 'success',
+          title: 'Verification code sent',
+          message: `Code send to ${contact}`,
+        });
+        return;
+      }
       if (!data?.adminVerify && data?.verify) {
         navigation.navigate('UploadDoc', {
           contact: data?.userData?.contact,
@@ -131,7 +139,14 @@ export default function Verify({ route, navigation }) {
   };
 
   const handleResendCode = () => {
-    console.log('Resending code...');
+    const body = {
+      contact,
+    };
+    triggerMutation({
+      endPoint: '/auth/resend-verification',
+      body,
+      method: 'post',
+    });
   };
 
   if (isVerified && !isForgot) {
