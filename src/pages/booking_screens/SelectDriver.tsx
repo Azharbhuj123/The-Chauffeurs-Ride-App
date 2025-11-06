@@ -45,14 +45,14 @@ const SelectDriver = ({ navigation }) => {
       trips: '1,094 Trips',
       price: 'Premium Ride',
     },
-    {
-      id: 4,
-      name: 'Robert Adams',
-      car: 'Toyota Camry',
-      rating: 4.8,
-      trips: '1,094 Trips',
-      price: 'Premium Ride',
-    },
+  {
+    id: 4,
+    name: 'Robert Adams',
+    car: 'Toyota Camry',
+    rating: 4.8,
+    trips: '1,094 Trips',
+    price: 'Premium Ride',
+  },
     {
       id: 5,
       name: 'Robert Adams',

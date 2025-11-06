@@ -36,6 +36,8 @@ import { GOOGLE_MAP_API_KEY, no_found } from '../../utils/Enums';
 import { useStore } from '../../stores/useStore';
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
+import UpgradeModal from '../../components/Upgrade';
+import { useRidestore } from '../../stores/rideStore';
 
 // --- Responsive Utility Functions (Mocking Libraries like 'react-native-responsive-screen') ---
 const { width, height } = Dimensions.get('window');
@@ -444,8 +446,42 @@ const LocationInput = ({
 };
 
 // 3. Vehicle Class Selector (Luxury, Business, Economy buttons)
-const VehicleClassSelector = ({ selectedClass, onSelect }) => {
+const VehicleClassSelector = ({
+  selectedClass,
+  onSelect,
+  hasVoucher,
+  setShowUpgradeModal,
+  setFromClass,
+  setToClass,
+  upgradeShownOnce,
+  setUpgradeShownOnce,
+}) => {
   const classes = ['Luxury', 'Business', 'Economy'];
+
+  const handleSelect = cls => {
+    onSelect(cls);
+
+    if (!hasVoucher) return; // no voucher = no modal
+    if (upgradeShownOnce) return; // user already saw modal
+
+    if (cls === 'Economy') {
+      setFromClass('Economy');
+      setToClass('Business');
+      setShowUpgradeModal(true);
+      setUpgradeShownOnce(true);
+    }
+
+    if (cls === 'Business') {
+      setFromClass('Business');
+      setToClass('Luxury');
+      setShowUpgradeModal(true);
+      setUpgradeShownOnce(true);
+    }
+    if (cls === 'Luxury') {
+      setFromClass('Luxury');
+    }
+  };
+
   return (
     <View style={styles.classSelectorContainer}>
       <Text style={styles.sectionTitle}>Choose Your Vehicle Class</Text>
@@ -457,7 +493,7 @@ const VehicleClassSelector = ({ selectedClass, onSelect }) => {
               styles.classButton,
               selectedClass === cls && styles.classButtonActive,
             ]}
-            onPress={() => onSelect(cls)}
+            onPress={() => handleSelect(cls)}
           >
             <Text
               style={[
@@ -558,14 +594,24 @@ const CarCard = ({ car, isSelected, onSelect }) => {
 // --- Main App Component ---
 export default function BookingMain({ navigation }) {
   const [isScheduledRide, setIsScheduledRide] = useState(false);
-  const [selectedClass, setSelectedClass] = useState('Luxury');
+
   const [selectedCar, setSelectedCar] = useState();
   const [fromLocation, setFromLocation] = useState(null);
   const [toLocation, setToLocation] = useState(null);
   const [showPicker, setShowPicker] = useState(false);
   const [pickerMode, setPickerMode] = useState('date'); // 'date' | 'time'
+  const [selectedClass, setSelectedClass] = useState('Economy');
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [isUpgradeClass, setIsUpgradeClass] = useState(false);
+
+  const [fromClass, setFromClass] = useState('');
+  const [toClass, setToClass] = useState('');
+
+  const [upgradeShownOnce, setUpgradeShownOnce] = useState(false);
+
   const tabBarHeight = useTabBarHeightHelper();
   const { location } = useStore();
+  const { setRideData, rideData } = useRidestore();
 
   const [dateTime, setDateTime] = useState({
     date: 'Select Date',
@@ -588,17 +634,20 @@ export default function BookingMain({ navigation }) {
   });
 
   // check any voucher
-  const { data: voucherData, isLoading: voucherLoad } = useQuery({
+  const {
+    data: voucherData,
+    isLoading: voucherLoad,
+    refetch: voucherApiRefetch,
+  } = useQuery({
     queryKey: ['check-voucher'],
     queryFn: () => {
-      return fetchData(`/voucher/check-status?type=upgrade_vehicle`);
+      return fetchData(
+        `/voucher/check-status?type=upgrade_vehicle&secondType=book_driver`,
+      );
     },
     keepPreviousData: true,
   });
 
-
- 
-  
   // ride fare
   const { data: ridefare, isLoading: ridefareLoad } = useQuery({
     queryKey: [
@@ -609,7 +658,8 @@ export default function BookingMain({ navigation }) {
       toLocation?.latitude,
       toLocation?.longitude,
       selectedCar,
-      voucherData?.voucher?.type
+      voucherData?.voucher?.type,
+      isUpgradeClass,
     ],
     queryFn: () => {
       const queryParams = new URLSearchParams({
@@ -617,8 +667,8 @@ export default function BookingMain({ navigation }) {
         pickup_lng: fromLocation?.longitude?.toString(),
         drop_lat: toLocation?.latitude?.toString(),
         drop_lng: toLocation?.longitude?.toString(),
-        category_type: selectedClass || '',
-        upgrade_class: voucherData?.voucher?.type ? true :false,
+        category_type: fromClass == '' ? selectedClass : fromClass,
+        upgrade_class: isUpgradeClass,
         vehicle_id: selectedCar || '',
       }).toString();
 
@@ -634,12 +684,16 @@ export default function BookingMain({ navigation }) {
       !!selectedCar,
   });
 
-  
-
   useFocusEffect(
     useCallback(() => {
       setSelectedCar(data?.allDrivers[0]?.vehicle?._id);
     }, [data?.allDrivers]),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      voucherApiRefetch();
+    }, []),
   );
 
   const handleToggle = isSchedule => setIsScheduledRide(isSchedule);
@@ -686,11 +740,39 @@ export default function BookingMain({ navigation }) {
   );
 
   const handleBooking = () => {
-    Alert.alert('ok');
+    setRideData({
+      pick_location: fromLocation,
+      drop_location: toLocation,
+      selectedClass,
+      ...ridefare?.data,
+      selectedCar,
+      is_upgrade_class: isUpgradeClass,
+      is_schedule: false,
+    });
+
+    navigation.navigate('ConfirmBooking');
   };
+
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <UpgradeModal
+        visible={showUpgradeModal}
+        onClose={() => {
+          setShowUpgradeModal(false);
+          setFromClass('');
+          setToClass('');
+          setIsUpgradeClass(false);
+        }}
+        onConfirm={() => {
+          setShowUpgradeModal(false);
+          setSelectedClass(toClass); // auto upgrade
+          setIsUpgradeClass(true);
+        }}
+        fromClass={fromClass}
+        toClass={toClass}
+      />
+
       <TouchableWithoutFeedback onPress={() => setShowPicker(false)}>
         <ScrollView
           contentContainerStyle={{ paddingBottom: tabBarHeight }}
@@ -799,6 +881,12 @@ export default function BookingMain({ navigation }) {
             <VehicleClassSelector
               selectedClass={selectedClass}
               onSelect={setSelectedClass}
+              hasVoucher={voucherData?.voucher?.type}
+              setShowUpgradeModal={setShowUpgradeModal}
+              setFromClass={setFromClass}
+              setToClass={setToClass}
+              upgradeShownOnce={upgradeShownOnce}
+              setUpgradeShownOnce={setUpgradeShownOnce}
             />
 
             {/* --- Car Selection --- */}
@@ -834,29 +922,32 @@ export default function BookingMain({ navigation }) {
                 )}
               </View>
             )}
-
-            {/* --- Driver Info --- */}
-            <View style={styles.driverSection}>
-              <View style={styles.driverInfoRow}>
-                <Text style={styles.starIcon}>★</Text>
-                <Text style={styles.bookDriverText}>Book Selected Driver</Text>
-                <TouchableOpacity
-                  onPress={() => navigation.navigate('SelectDriver')}
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                >
-                  <Text style={styles.viewDriverText}>View Driver</Text>
-                  <MaterialIcons
-                    color="#FDD835"
-                    name="navigate-next"
-                    size={wp(6)}
-                  />
-                </TouchableOpacity>
+            {voucherData?.is_sec_voucher && (
+              // {/* --- Driver Info --- */}
+              <View style={styles.driverSection}>
+                <View style={styles.driverInfoRow}>
+                  <Text style={styles.starIcon}>★</Text>
+                  <Text style={styles.bookDriverText}>
+                    Book Selected Driver
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate('SelectDriver')}
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text style={styles.viewDriverText}>View Driver</Text>
+                    <MaterialIcons
+                      color="#FDD835"
+                      name="navigate-next"
+                      size={wp(6)}
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
+            )}
           </View>
 
           {/* --- Grey Bottom Section --- */}

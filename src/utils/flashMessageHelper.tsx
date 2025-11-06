@@ -7,6 +7,7 @@ export type FlashMessageOptions = {
   backgroundColor?: string;
   duration?: number;
   icon?: "none" | "auto" | "success" | "info" | "warning" | "danger";
+  onPress?: () => void;   // ✅ add this
 };
 
 export const showFlash = ({
@@ -16,6 +17,7 @@ export const showFlash = ({
   backgroundColor,
   duration = 3000,
   icon = "auto",
+  onPress,               // ✅ accept press action
 }: FlashMessageOptions) => {
   showMessage({
     message: title,
@@ -25,8 +27,10 @@ export const showFlash = ({
     icon,
     duration,
     floating: true,
+    onPress,             // ✅ attach callback
   });
 };
+
 
 
 /*

@@ -16,6 +16,7 @@ import SetPass from "../pages/auth_screens/SetPass";
 import BottomTabs from "./BottomTabs";
 import UploadDoc from "../pages/auth_screens/UploadDoc";
 import Approval from "../pages/auth_screens/Approval";
+import { navigationRef } from "../utils/NavigationService";
 
 const { width } = Dimensions.get("window");
 
@@ -29,7 +30,7 @@ const Stack = createNativeStackNavigator();
 
 export default function MainNavigation() {
   return (
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}>
       <Stack.Navigator  initialRouteName="intro" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="intro" component={Intro} />
         <Stack.Screen name="Splash" component={Splash_Screen} />

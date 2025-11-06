@@ -54,7 +54,7 @@ export default function Home({ navigation }) {
       console.log(userData?._id, 'userData?._id');
 
       if (userData?._id) {
-        joinUserRoom(userData._id.toString());
+        // joinUserRoom(userData._id.toString());
 
         const data = {
           userId: userData._id.toString(),
@@ -139,6 +139,7 @@ export default function Home({ navigation }) {
   };
 
   const handleNavigate = (rideId, status) => {
+    if(!rideId) return
     if (status === 'Pending') {
       return;
     } else {
@@ -234,10 +235,11 @@ export default function Home({ navigation }) {
           </View>
 
           {/* Quick Destinations */}
+            {Array.isArray(data?.quick_destination) && data?.quick_destination?.length >0  && (
+              
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Quick Destinations</Text>
-            {Array.isArray(data?.quick_destination) &&
-              data?.quick_destination?.map(des => (
+              {data?.quick_destination?.map(des => (
                 <View key={des?._id} style={styles.destinationCard}>
                   <View>
                     <Text style={styles.destinationTitle}>
@@ -263,6 +265,7 @@ export default function Home({ navigation }) {
                 </View>
               ))}
           </View>
+  )}
 
           {/* Bottom spacing to prevent content hiding behind tab bar */}
         </ScrollView>

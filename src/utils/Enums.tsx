@@ -1,7 +1,7 @@
 export const COLORS = {
   success: '#189237',
   error: '#FF3A2F',
-  warning: '#FFD700',
+  warning: '#FDD835',
   info: '#3498db',
 };
 
@@ -22,6 +22,7 @@ export const no_found = {
   marginVertical: 16,
   fontStyle: 'italic',
   alignItems: 'center',
+
   justifyContent: 'center',
 };
 

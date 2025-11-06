@@ -89,5 +89,6 @@ const styles = StyleSheet.create({
   },
   signUpButtonText: {
     fontSize: fs(16),
+    fontWeight:"bold"
   },
 });

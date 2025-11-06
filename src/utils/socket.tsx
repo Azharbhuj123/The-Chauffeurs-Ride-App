@@ -20,13 +20,14 @@ const options = {
 
 export const socket = io(SOCKET_URL, options);
 
-export const joinUserRoom = (userId:string) => {
-  if (socket.connected) return; // prevent reconnecting
-  if (socket && userId) {
+export const joinUserRoom = (userId: string) => {
+  if (!socket.connected) {
     socket.connect();
+  }
+
+  if (userId) {
     socket.emit("join", userId);
     console.log("Joined socket room:", userId);
   }
 };
 
- 

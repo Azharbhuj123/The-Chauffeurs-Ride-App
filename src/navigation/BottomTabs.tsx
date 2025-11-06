@@ -42,7 +42,7 @@ import { AboutUsScreen } from '../pages/profile_screens/AboutUsScreen';
 import { SettingsScreen } from '../pages/profile_screens/SettingsScreen';
 import { HelpSupportScreen } from '../pages/profile_screens/HelpSupportScreen';
 import { LoyaltyRewardsScreen } from '../pages/loyality_screens/LoyaltyRewardsScreen';
- 
+
 import Driver_Home from '../pages/driver_screens/Home';
 import VehicleRegistration from '../pages/driver_screens/AddVechile';
 import ChauffeursRegistration from '../pages/driver_screens/AddChauffeurs';
@@ -104,6 +104,10 @@ function DriverHomeStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="DriverHome" component={Driver_Home} />
+        <Stack.Screen
+        name="RideConfirmationScreen"
+        component={RideConfirmationScreen}
+      />
       <Stack.Screen name="AddVehicle" component={VehicleRegistration} />
       <Stack.Screen name="AddChauffeurs" component={ChauffeursRegistration} />
 
@@ -217,7 +221,6 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
   );
 };
 
-
 const CustomDriverTabBar = ({ state, descriptors, navigation }) => {
   const insets = useSafeAreaInsets();
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
@@ -293,7 +296,6 @@ const CustomDriverTabBar = ({ state, descriptors, navigation }) => {
   );
 };
 
-
 export default function BottomTabs() {
   const Tab = createBottomTabNavigator();
   const { role } = useUserStore();
@@ -331,6 +333,7 @@ export default function BottomTabs() {
             component={EarningsStack}
             options={{ unmountOnBlur: true }}
           />
+           
           <Tab.Screen name="Loyalty" component={OwnershipStack} />
 
           <Tab.Screen name="Profile" component={OperationsStack} />

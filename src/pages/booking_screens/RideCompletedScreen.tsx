@@ -11,6 +11,7 @@ import {
   TextInput,
   Dimensions,
   KeyboardAvoidingView,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -23,12 +24,26 @@ import {
 } from 'react-native-responsive-screen';
 import Button from '../../components/Button';
 import TopHeader from '../../components/TopHeader';
+import { useQuery } from '@tanstack/react-query';
+import { fetchData } from '../../queryFunctions/queryFunctions';
+import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 
 const { width } = Dimensions.get('window');
 
-export default function RideCompletedScreen({ navigation }) {
+export default function RideCompletedScreen({ navigation, route }) {
   const [rating, setRating] = useState(0);
   const [note, setNote] = useState('');
+  const { rideId } = route.params || {};
+  const tabBarHeight = useTabBarHeightHelper();
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['ride_view', rideId],
+    queryFn: () => fetchData(`/ride/${rideId}`),
+    keepPreviousData: true,
+    enabled: !!rideId,
+  });
+
+  const payment_breakdown = data?.data?.payment_breakdown;
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }}>
@@ -36,10 +51,13 @@ export default function RideCompletedScreen({ navigation }) {
         <View style={styles.container}>
           {/* Header */}
 
-          <TopHeader title='Ride Completed' navigation={navigation} />
+          <TopHeader title="Ride Completed" navigation={navigation} />
           <ScrollView
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={[styles.scrollContent,{
+            paddingBottom: tabBarHeight + hp(7) 
+
+            }]}
           >
             {/* Success Icon */}
             <View style={styles.successContainer}>
@@ -48,7 +66,7 @@ export default function RideCompletedScreen({ navigation }) {
               </View>
               <Text style={styles.successTitle}>You've Arrived!</Text>
               <Text style={styles.successSubtitle}>
-                555 Luxury Tower, Cleanfield
+                {data?.data?.pickup_location?.address}
               </Text>
             </View>
 
@@ -58,27 +76,49 @@ export default function RideCompletedScreen({ navigation }) {
 
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Duration:</Text>
-                <Text style={styles.summaryValue}>29 min</Text>
+                <Text style={styles.summaryValue}> {data?.data?.duration}</Text>
               </View>
 
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Distance:</Text>
-                <Text style={styles.summaryValue}>12.7 miles</Text>
+                <Text style={styles.summaryValue}>{data?.data?.distance}</Text>
               </View>
 
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Base Fare:</Text>
-                <Text style={styles.summaryValue}>$70.00</Text>
+                <Text style={styles.summaryValue}>
+                  ${payment_breakdown?.driver_earning}
+                </Text>
               </View>
 
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Taxes & Fees:</Text>
-                <Text style={styles.summaryValue}>$8.95</Text>
+                <Text style={styles.summaryValue}>
+                  ${payment_breakdown?.platform_fee}
+                </Text>
               </View>
+              {payment_breakdown?.dispatch_fee > 0 && (
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Dispatch Fees:</Text>
+                  <Text style={styles.summaryValue}>
+                    ${payment_breakdown?.dispatch_fee}
+                  </Text>
+                </View>
+              )}
+              {payment_breakdown?.referral_fee > 0 && (
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Referral Fees:</Text>
+                  <Text style={styles.summaryValue}>
+                    ${payment_breakdown?.referral_fee}
+                  </Text>
+                </View>
+              )}
 
               <View style={[styles.summaryRow, styles.totalRow]}>
                 <Text style={styles.totalLabel}>Total Charged:</Text>
-                <Text style={styles.totalValue}>$78.95</Text>
+                <Text style={styles.totalValue}>
+                  ${payment_breakdown?.total_fare}
+                </Text>
               </View>
             </View>
 
@@ -88,17 +128,22 @@ export default function RideCompletedScreen({ navigation }) {
 
               <View style={styles.driverInfo}>
                 <View style={styles.driverAvatar}>
-                  <Text style={styles.driverInitials}>JD</Text>
+                  <Image
+                    source={{ uri: data?.data?.driver?.profile_image }}
+                    style={{ width: '100%', height: '100%', borderRadius: 50 }}
+                  />
                 </View>
                 <View style={styles.driverDetails}>
-                  <Text style={styles.driverName}>John Davis</Text>
-                  <Text style={styles.driverCar}>Mercedes S-Class · CHZ-1234</Text>
+                  <Text style={styles.driverName}>{data?.data?.driver?.name}</Text>
+                  <Text style={styles.driverCar}>
+                    {data?.data?.vehicle?.vehicle_make} {data?.data?.vehicle?.vehicle_model} · {data?.data?.vehicle?.vehicle_plate_number}
+                  </Text>
                 </View>
               </View>
 
               {/* Star Rating */}
               <View style={styles.starsContainer}>
-                {[1, 2, 3, 4, 5].map((star) => (
+                {[1, 2, 3, 4, 5].map(star => (
                   <TouchableOpacity
                     key={star}
                     onPress={() => setRating(star)}
@@ -126,12 +171,14 @@ export default function RideCompletedScreen({ navigation }) {
           </ScrollView>
 
           {/* Pay Now Button */}
-          <View style={styles.bottomContainer}>
-            <Button title='Pay Now' onPress={() => navigation.navigate('PaymentSummaryScreen')} />
-
-
-
-          </View>
+          {data?.data?.payment_method === 'Card' && (
+            <View style={styles.bottomContainer}>
+              <Button
+                title="Pay Now"
+                onPress={() => navigation.navigate('PaymentSummaryScreen')}
+              />
+            </View>
+          )}
         </View>
       </SafeAreaView>
     </KeyboardAvoidingView>
@@ -158,13 +205,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#000',
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
   backButton: {
     marginRight: wp('3%'),
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
 
   scrollContent: {
@@ -188,14 +233,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#000',
     marginBottom: hp('0.5%'),
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
   successSubtitle: {
     fontSize: wp('3.5%'),
     color: '#888',
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
+    textAlign: 'center',
   },
   summaryCard: {
     backgroundColor: '#fff',
@@ -209,8 +253,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000',
     marginBottom: hp('2%'),
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
   summaryRow: {
     flexDirection: 'row',
@@ -221,15 +264,13 @@ const styles = StyleSheet.create({
   summaryLabel: {
     fontSize: wp('3.8%'),
     color: '#888',
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
   summaryValue: {
     fontSize: wp('3.8%'),
     color: '#000',
     fontWeight: '500',
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
   totalRow: {
     borderTopWidth: 1,
@@ -241,15 +282,13 @@ const styles = StyleSheet.create({
     fontSize: wp('4.2%'),
     fontWeight: '600',
     color: '#000',
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
   totalValue: {
     fontSize: wp('4.2%'),
     fontWeight: '700',
     color: '#000',
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
   ratingCard: {
     backgroundColor: '#fff',
@@ -285,8 +324,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000',
     marginBottom: hp('0.3%'),
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
   driverCar: {
     fontSize: wp('3.3%'),
@@ -310,13 +348,11 @@ const styles = StyleSheet.create({
     color: '#000',
     marginTop: hp('1%'),
     minHeight: hp('6%'),
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
   bottomContainer: {
     backgroundColor: '#F5F5F5',
     paddingTop: hp('1%'),
-    marginBottom: hp(10),
     width: '100%',
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -327,7 +363,7 @@ const styles = StyleSheet.create({
     paddingVertical: hp('2%'),
     borderRadius: wp('8%'),
     alignItems: 'center',
-       fontFamily:"SF Pro",
+    fontFamily: 'SF Pro',
 
     marginBottom: hp('1.5%'),
   },
@@ -335,8 +371,7 @@ const styles = StyleSheet.create({
     fontSize: wp('4%'),
     fontWeight: '700',
     color: '#000',
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
   bottomNav: {
     flexDirection: 'row',
@@ -348,20 +383,17 @@ const styles = StyleSheet.create({
     borderRadius: wp('8%'),
     justifyContent: 'space-around',
     alignItems: 'center',
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
   navItem: {
     padding: wp('2%'),
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
   navItemActive: {
     backgroundColor: '#FFD700',
     borderRadius: wp('3%'),
     paddingHorizontal: wp('5%'),
     paddingVertical: wp('2%'),
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
 });

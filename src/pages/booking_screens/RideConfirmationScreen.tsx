@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Dimensions,
   ScrollView,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -24,26 +25,51 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
 import { useFocusEffect } from '@react-navigation/native';
 import AppLoader from '../../components/AppLoader';
+import Button from '../../components/Button';
+import { useUserStore } from '../../stores/useUserStore';
+import { COLORS } from '../../utils/Enums';
+import { showToast } from '../../utils/toastHelper';
+import useActionMutation from '../../queryFunctions/useActionMutation';
+import { showFlash } from '../../utils/flashMessageHelper';
+import { joinUserRoom, socket } from '../../utils/socket';
 
 // Get screen dimensions
 const { width, height } = Dimensions.get('window');
 
 const RideConfirmationScreen = ({ navigation, route }) => {
+  const [title, setTitle] = useState('Your Ride is Accepted');
+  const [rideStatus, setRideStatus] = useState('Accepted');
   const tabBarHeight = useTabBarHeightHelper();
-  const { rideId } = route.params || {};
+  const { rideId, from } = route.params || {};
   console.log(rideId, 'rideId');
+
+  const { role, userData } = useUserStore();
+
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['ride_view', rideId],
     queryFn: () => fetchData(`/ride/${rideId}`),
     keepPreviousData: true,
     enabled: !!rideId,
   });
-  console.log(data, 'ride data');
+ 
 
   useFocusEffect(
     useCallback(() => {
+      if (data?.data?.ride_status) {
+        const title_set =
+          data?.data?.ride_status === 'Arrived'
+            ? 'Your Ride Is Arrived'
+            : data?.data?.ride_status === 'Started'
+            ? 'Your Ride Is Underway'
+            : data?.data?.ride_status === 'Completed'
+            ? 'Ride Has Been Completed'
+            : title;
+        setTitle(title_set);
+        setRideStatus(data?.data?.ride_status);
+      }
+
       refetch();
-    }, []),
+    }, [data?.data?.ride_status]),
   );
 
   const getInitials = (fullName = '') => {
@@ -78,19 +104,77 @@ const RideConfirmationScreen = ({ navigation, route }) => {
       console.log('Error saving AsyncStorage:', error);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (userData?._id) {
+        socket.on('ride_request', data => {
+          if (data?.ride_arrived) {
+            setTitle('Your Ride is Arrived');
+            setRideStatus(data?.ride_status);
+          }
+          if (data?.ride_start) {
+            setTitle('Your Ride is Underway');
+            setRideStatus(data?.ride_status);
+          }
+          if (data?.ride_completed) {
+            const where_to_go =
+              role === 'Driver' ? 'DriverHome' : 'RideComplete';
+
+            navigation.navigate(where_to_go,{
+              rideId:data?.ride_id
+            });
+
+            setTitle('Ride Has Been Completed');
+            setRideStatus(data?.ride_status);
+          }
+        });
+      }
+
+      return () => {
+        socket.off('ride_request');
+        console.log('ride_request listener removed ✅');
+      };
+    }, [userData?._id]),
+  );
+
+  const { triggerMutation, loading } = useActionMutation({
+    onSuccessCallback: async data => {},
+    onErrorCallback: errmsg => {
+      showToast({
+        type: 'error',
+        title: 'Action Failed',
+        message: errmsg || 'Please Try again!',
+      });
+    },
+  });
+
+  const handleAction = action => {
+    const body = {
+      ride_id: rideId,
+      action,
+    };
+    triggerMutation({
+      endPoint: '/ride/request-ride-action',
+
+      body,
+      method: 'post',
+    });
+  };
+
   if (isLoading) {
     return <AppLoader />;
   }
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      <TopHeader title="Your Ride is Confirmed!" navigation={navigation} />
+      <TopHeader title={title} navigation={navigation} />
 
-      {/* 👇 Wrap the content in ScrollView to allow scrolling if screen overflows */}
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,
-          paddingBottom: tabBarHeight * 0.4,
+          paddingBottom:
+            role === 'Driver' ? tabBarHeight * 0.1 : tabBarHeight * 0.4,
         }}
         showsVerticalScrollIndicator={false}
       >
@@ -102,11 +186,15 @@ const RideConfirmationScreen = ({ navigation, route }) => {
           />
 
           {/* ETA Banner */}
-          <View style={styles.etaContainer}>
-            <Icon name="clock-time-three-outline" size={20} color="#333" />
-            <Text style={styles.etaTextBold}>Driver En Route</Text>
-            <Text style={styles.etaText}>5 min ETA</Text>
-          </View>
+          {rideStatus === 'Accepted' ? (
+            <View style={styles.etaContainer}>
+              <Icon name="clock-time-three-outline" size={20} color="#333" />
+              <Text style={styles.etaTextBold}>Driver En Route</Text>
+              <Text style={styles.etaText}>{data?.data?.duration} ETA</Text>
+            </View>
+          ) : (
+            ''
+          )}
 
           {/* Pickup Location Marker */}
           <View style={styles.pickupMarkerContainer}>
@@ -172,6 +260,29 @@ const RideConfirmationScreen = ({ navigation, route }) => {
               <Text style={styles.contactButtonText}>Contact Driver</Text>
             </TouchableOpacity>
           </View>
+          {role === 'Driver' &&
+            (rideStatus === 'Accepted' ? (
+              <View style={{ marginTop: hp(3) }}>
+                <Button
+                  onPress={() => handleAction('arrived')}
+                  title="Mark as Arrived"
+                />
+              </View>
+            ) : rideStatus === 'Arrived' ? (
+              <View style={{ marginTop: hp(3) }}>
+                <Button
+                  onPress={() => handleAction('ride_start')}
+                  title="Start The Ride"
+                />
+              </View>
+            ) : (
+              <View style={{ marginTop: hp(3) }}>
+                <Button
+                  onPress={() => handleAction('ride_completed')}
+                  title="Mark As Completed"
+                />
+              </View>
+            ))}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -385,7 +496,7 @@ const styles = StyleSheet.create({
   },
   contactButton: {
     flex: 1,
-    backgroundColor: '#FDD835',
+    backgroundColor: COLORS.warning,
     borderRadius: 30,
     paddingVertical: 16,
     flexDirection: 'row',

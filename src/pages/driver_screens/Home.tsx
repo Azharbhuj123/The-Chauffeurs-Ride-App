@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -22,6 +22,14 @@ import UserHeader from '../../components/Header';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/Button';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
+import { useFocusEffect } from '@react-navigation/native';
+import { joinUserRoom, socket } from '../../utils/socket';
+import { useUserStore } from '../../stores/useUserStore';
+import { useStore } from '../../stores/useStore';
+import useActionMutation from '../../queryFunctions/useActionMutation';
+import { showToast } from '../../utils/toastHelper';
+import { useQuery } from '@tanstack/react-query';
+import { fetchData } from '../../queryFunctions/queryFunctions';
 
 const { width, height } = Dimensions.get('window');
 
@@ -32,8 +40,9 @@ const fs = size => {
 export default function HomeScreen({ navigation }) {
   const [showRejectPopup, setShowRejectPopup] = useState(false);
   const [selectedRide, setSelectedRide] = useState(null);
-    const tabBarHeight = useTabBarHeightHelper();
-  
+  const tabBarHeight = useTabBarHeightHelper();
+  const { token, userData } = useUserStore();
+  const { location } = useStore();
 
   const [fleetStatus] = useState([
     {
@@ -61,33 +70,27 @@ export default function HomeScreen({ navigation }) {
       statusColor: '#4CAF50',
     },
   ]);
-  const [rideRequests] = useState([
-    {
-      id: 1,
-      pickupAddress: '789 Market St, SF',
-      dropoffAddress: 'RT-International Airport',
-      date: 'Oct 15, 2025 at 11:00',
-      distance: '9 mile',
-      price: '$55.00',
-    },
-    {
-      id: 2,
-      pickupAddress: '789 Market St, SF',
-      dropoffAddress: 'RT-International Airport',
-      date: 'Oct 15, 2025 at 11:00',
-      distance: '9 mile',
-      price: '$55.00',
-    },
-    {
-      id: 3,
-      pickupAddress: '789 Market St, SF',
-      dropoffAddress: 'RT-International Airport',
-      date: 'Oct 15, 2025 at 11:00',
-      distance: '9 mile',
-      price: '$55.00',
-    },
-  ]);
+  const [rideRequests, setRideRequests] = useState([]);
 
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['driver-latest-ride', userData],
+    queryFn: () => fetchData('/ride/driver-latest-ride'),
+    keepPreviousData: true,
+  });
+
+
+ 
+  
+  useFocusEffect(
+    useCallback(() => {
+      if (data?.in_progress) {
+        navigation.navigate('RideConfirmationScreen', {
+          rideId: data?.ride_id,
+          from: 'driver',
+        });
+      }
+    }, [data?.in_progress]),
+  );
   const handleAddVehicle = () => {
     console.log('Add Vehicle pressed');
     navigation.navigate('AddVehicle');
@@ -99,8 +102,83 @@ export default function HomeScreen({ navigation }) {
     // navigation.navigate('Chauffeur');
   };
 
+  useFocusEffect(
+    useCallback(() => {
+      if (userData?._id) {
+        // joinUserRoom(userData._id.toString());
+
+        const data = {
+          userId: userData._id.toString(),
+          lat: location?.latitude,
+          lng: location?.longitude,
+        };
+
+        socket.emit('user-location', data);
+        socket.on('ride_request', data => {
+          if (data?.ride_offer) {
+            console.log('🚗 New Ride Request Received:', data);
+
+            // Format data for UI
+            const formattedRide = {
+              id: data._id,
+              pickupAddress: data.pickup_location?.address || 'N/A',
+              dropoffAddress: data.drop_location?.address || 'N/A',
+              date: new Date(data.createdAt).toLocaleString(),
+              distance: data.distance || 'N/A',
+              price: `${data.payment_breakdown?.total_fare || 0}`,
+              ride_status: data.ride_status,
+              userName: data.user?.name,
+              payment_method: data.payment_method,
+              vehicle_type: data.vehicle_type,
+            };
+
+            // Append to existing list
+            setRideRequests(prev => [formattedRide, ...prev]);
+          }
+          if (data?.ride_time_out) {
+            setRideRequests(prev =>
+              prev?.filter(ride => ride?.id !== data?.ride_id),
+            );
+          }
+          if (data?.ride_accept) {
+            navigation.navigate('RideConfirmationScreen', {
+              rideId: data?.ride_id,
+              from: 'driver',
+            });
+          }
+        });
+      }
+
+      // ✅ Cleanup on screen blur / unmount
+      return () => {
+        socket.off('user-location'); // remove listener (if any)
+        console.log('Screen blurred, socket listeners removed.');
+      };
+    }, [userData?._id]),
+  );
+
+  const { triggerMutation, loading } = useActionMutation({
+    onSuccessCallback: async data => {},
+    onErrorCallback: errmsg => {
+      showToast({
+        type: 'error',
+        title: 'Action Failed',
+        message: errmsg || 'Please Try again!',
+      });
+    },
+  });
+
   const handleAccept = ride => {
     console.log('Accepted ride:', ride);
+    const body = {
+      ride_id: ride?.id,
+      action: 'accept',
+    };
+    triggerMutation({
+      endPoint: '/ride/request-ride-action',
+      body: body,
+      method: 'post',
+    });
     // navigation.navigate('AssignDriver', { ride });
   };
 
@@ -124,8 +202,10 @@ export default function HomeScreen({ navigation }) {
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={styles.scrollView}
-                contentContainerStyle={[styles.scrollContent,{ paddingBottom: tabBarHeight + 40 }]}
-
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: tabBarHeight + 40 },
+        ]}
       >
         <UserHeader />
 
@@ -181,65 +261,79 @@ export default function HomeScreen({ navigation }) {
             </View>
           ))}
         </View>
+        {rideRequests?.length > 0 && (
+          <View style={styles.incomingRideContainer}>
+            <Text style={styles.sectionTitle}>
+              Incoming Ride Requests (Queue)
+            </Text>
 
-        <View style={styles.incomingRideContainer}>
-          <Text style={styles.sectionTitle}>
-            Incoming Ride Requests (Queue)
-          </Text>
+            {/* Ride Request Cards */}
+            {rideRequests.map(ride => (
+              <View key={ride.id} style={styles.rideCard}>
+                {/* Pickup Location */}
+                <View style={styles.locationRow1}>
+                  <Icon name="location" size={20} color="#000" />
+                  <Text
+                    style={styles.locationText1}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {ride.pickupAddress?.slice(0, 35) || 'No pickup address'}
+                  </Text>
 
-          {/* Ride Request Cards */}
-          {rideRequests.map(ride => (
-            <View key={ride.id} style={styles.rideCard}>
-              {/* Pickup Location */}
-              <View style={styles.locationRow1}>
-                <Icon name="location" size={20} color="#000" />
-                <Text style={[styles.locationText1]}>{ride.pickupAddress}</Text>
-                <Text style={styles.priceText}>{ride.price}</Text>
+                  <Text style={styles.priceText}>${ride?.price}</Text>
+                </View>
+
+                {/* Dropoff Location */}
+                <View style={styles.locationRow}>
+                  <Fontisto name="arrow-right-l" size={20} color="#11111180" />
+                  <Text style={styles.locationText}>{ride.dropoffAddress}</Text>
+                </View>
+
+                {/* Date & Time */}
+                <View style={styles.detailRow}>
+                  <Icon name="calendar-outline" size={16} color="#11111180" />
+                  <Text style={styles.detailText}>{ride.date}</Text>
+                </View>
+
+                {/* Distance */}
+                <View style={styles.detailRow}>
+                  <Icon name="navigate-outline" size={16} color="#11111180" />
+                  <Text style={styles.detailText}>
+                    Distance: {ride.distance}
+                  </Text>
+                </View>
+
+                {/* Payment Method */}
+                <View style={styles.detailRow}>
+                  <Icon name="cash-outline" size={16} color="#11111180" />
+                  <Text style={styles.detailText}>
+                    Payment: {ride.payment_method}
+                  </Text>
+                </View>
+
+                {/* Action Buttons */}
+                <View style={styles.actionButtons}>
+                  <TouchableOpacity
+                    style={styles.acceptButton}
+                    onPress={() => handleAccept(ride)}
+                  >
+                    <Icon name="checkmark" size={20} color="#000" />
+                    <Text style={styles.acceptText}>Accept</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.rejectButton}
+                    onPress={() => handleReject(ride)}
+                  >
+                    <Icon name="close" size={20} color="#11111180" />
+                    <Text style={styles.rejectText}>Reject</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-
-              {/* Dropoff Location */}
-              <View style={styles.locationRow}>
-                <Fontisto name="arrow-right-l" size={20} color="#11111180" />
-                <Text style={styles.locationText}>{ride.dropoffAddress}</Text>
-              </View>
-
-              {/* Date & Time */}
-              <View style={styles.detailRow}>
-                <Icon name="calendar-outline" size={16} color="#11111180" />
-                <Text style={styles.detailText}>{ride.date}</Text>
-              </View>
-
-              {/* Distance */}
-              <View style={styles.detailRow}>
-                <Icon name="navigate-outline" size={16} color="#11111180" />
-                <Text style={styles.detailText}>
-                  Percentage: {ride.distance}
-                </Text>
-              </View>
-
-              {/* Price */}
-
-              {/* Action Buttons */}
-              <View style={styles.actionButtons}>
-                <TouchableOpacity
-                  style={styles.acceptButton}
-                  onPress={() => handleAccept(ride)}
-                >
-                  <Icon name="checkmark" size={20} color="#000" />
-                  <Text style={styles.acceptText}>Accept</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.rejectButton}
-                  onPress={() => handleReject(ride)}
-                >
-                  <Icon name="close" size={20} color="#11111180" />
-                  <Text style={styles.rejectText}>Reject</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
-        </View>
+            ))}
+          </View>
+        )}
 
         {/* Reject Popup Modal */}
         <Modal
@@ -297,7 +391,10 @@ export default function HomeScreen({ navigation }) {
         {/* City Driver & Positioning Section */}
         <View style={styles.mapSection}>
           <Text style={styles.sectionTitle}>City Driver & Positioning</Text>
-            <Image style={{width:'100%'}} source={require('../../assets/images/map2.png')} />
+          <Image
+            style={{ width: '100%' }}
+            source={require('../../assets/images/map2.png')}
+          />
           {/* Manual Repositioning */}
           <View style={styles.repositioningSection}>
             <Text style={styles.repositioningTitle}>Manual Repositioning</Text>
@@ -369,9 +466,8 @@ const styles = StyleSheet.create({
     borderRadius: wp(3),
     padding: wp(4),
     marginBottom: hp(1.5),
-     
- 
-    boxShadow:'0 0 50px 0 rgba(0, 0, 0, 0.08)'
+
+    boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
   },
   sectionTitle: {
     fontSize: fs(18),
@@ -386,8 +482,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: hp(1.5),
-    borderWidth:1,
-    borderColor:'1px solid rgba(17, 17, 17, 0.10)',
+    borderWidth: 1,
+    borderColor: '1px solid rgba(17, 17, 17, 0.10)',
   },
   fleetCardLast: {
     marginBottom: 0,
@@ -425,27 +521,24 @@ const styles = StyleSheet.create({
   mapSection: {
     backgroundColor: '#FFF',
     borderRadius: wp(3),
-      padding: wp(4),
+    padding: wp(4),
 
     paddingTop: hp(3),
     paddingBottom: hp(3),
     marginBottom: hp(1.5),
-    
-    boxShadow:'0 0 50px 0 rgba(0, 0, 0, 0.08)'
+
+    boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
   },
   mapPlaceholder: {
     justifyContent: 'center',
     alignItems: 'center',
-
   },
-  
+
   repositioningSection: {
     borderRadius: wp(3),
     padding: wp(4),
     marginTop: 10,
     alignItems: 'center',
-    
- 
   },
   repositioningTitle: {
     fontSize: fs(16),
@@ -466,7 +559,7 @@ const styles = StyleSheet.create({
     marginBottom: hp(2),
     //  borderWidth:1,
     // borderColor:'1px solid rgba(17, 17, 17, 0.10)',
-    boxShadow:'0 0 50px 0 rgba(0, 0, 0, 0.08)'
+    boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
   },
 
   sectionTitle: {
@@ -483,8 +576,8 @@ const styles = StyleSheet.create({
     borderRadius: wp(3),
     padding: wp(4),
     marginBottom: hp(2),
-       borderWidth:1,
-    borderColor:'1px solid rgba(17, 17, 17, 0.10)',
+    borderWidth: 1,
+    borderColor: '1px solid rgba(17, 17, 17, 0.10)',
   },
   locationRow1: {
     flexDirection: 'row',

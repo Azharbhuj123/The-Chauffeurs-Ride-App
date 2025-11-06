@@ -24,10 +24,16 @@ import { PERMISSIONS, request, check, RESULTS } from 'react-native-permissions';
 import Geolocation from 'react-native-geolocation-service';
 
 import { useStore } from './src/stores/useStore';
+import { joinUserRoom } from './src/utils/socket';
+import { useUserStore } from './src/stores/useUserStore';
+import { initSocketListeners } from './src/utils/socketEvents';
+import { useNavigation } from '@react-navigation/native';
+import { navigationRef } from './src/utils/NavigationService';
 
 export default function App() {
   const isDarkMode = useColorScheme() === 'dark';
   const { setLocation } = useStore();
+  const { userData, role } = useUserStore();
   const queryClient = new QueryClient();
 
   const toastConfig = {
@@ -77,8 +83,16 @@ export default function App() {
       />
     ),
   };
- 
+
+
   const [permissionStatus, setPermissionStatus] = useState('');
+
+    useEffect(() => {
+    if (userData?._id) {
+      joinUserRoom(userData?._id);
+      initSocketListeners(role); // ✅ no navigation passed
+    }
+  }, [userData?._id]);
 
   const requestLocationPermission = async () => {
     const permission =
@@ -104,7 +118,6 @@ export default function App() {
   const getUserLocation = () => {
     Geolocation.getCurrentPosition(
       position => {
- 
         setLocation(position?.coords);
       },
       error => {
@@ -127,14 +140,14 @@ export default function App() {
     });
   }, []);
   return (
-    <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <SafeAreaProvider>
         <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-        <MainNavigation />
+        <MainNavigation  />
         <Toast config={toastConfig} />
         <FlashMessage position="top" />
-      </QueryClientProvider>
-    </SafeAreaProvider>
+      </SafeAreaProvider>
+    </QueryClientProvider>
   );
 }
 
