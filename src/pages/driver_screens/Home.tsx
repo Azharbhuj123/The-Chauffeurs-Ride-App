@@ -30,6 +30,7 @@ import useActionMutation from '../../queryFunctions/useActionMutation';
 import { showToast } from '../../utils/toastHelper';
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
+import { useRideStore } from '../../stores/rideStore';
 
 const { width, height } = Dimensions.get('window');
 
@@ -43,6 +44,7 @@ export default function HomeScreen({ navigation }) {
   const tabBarHeight = useTabBarHeightHelper();
   const { token, userData } = useUserStore();
   const { location } = useStore();
+  const { setRideRequests ,rideRequests } = useRideStore();
 
   const [fleetStatus] = useState([
     {
@@ -70,7 +72,6 @@ export default function HomeScreen({ navigation }) {
       statusColor: '#4CAF50',
     },
   ]);
-  const [rideRequests, setRideRequests] = useState([]);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['driver-latest-ride', userData],
@@ -105,7 +106,7 @@ export default function HomeScreen({ navigation }) {
   useFocusEffect(
     useCallback(() => {
       if (userData?._id) {
-        // joinUserRoom(userData._id.toString());
+        joinUserRoom(userData._id.toString());
 
         const data = {
           userId: userData._id.toString(),
@@ -114,39 +115,7 @@ export default function HomeScreen({ navigation }) {
         };
 
         socket.emit('user-location', data);
-        socket.on('ride_request', data => {
-          if (data?.ride_offer) {
-            console.log('🚗 New Ride Request Received:', data);
-
-            // Format data for UI
-            const formattedRide = {
-              id: data._id,
-              pickupAddress: data.pickup_location?.address || 'N/A',
-              dropoffAddress: data.drop_location?.address || 'N/A',
-              date: new Date(data.createdAt).toLocaleString(),
-              distance: data.distance || 'N/A',
-              price: `${data.payment_breakdown?.total_fare || 0}`,
-              ride_status: data.ride_status,
-              userName: data.user?.name,
-              payment_method: data.payment_method,
-              vehicle_type: data.vehicle_type,
-            };
-
-            // Append to existing list
-            setRideRequests(prev => [formattedRide, ...prev]);
-          }
-          if (data?.ride_time_out) {
-            setRideRequests(prev =>
-              prev?.filter(ride => ride?.id !== data?.ride_id),
-            );
-          }
-          if (data?.ride_accept) {
-            navigation.navigate('RideConfirmationScreen', {
-              rideId: data?.ride_id,
-              from: 'driver',
-            });
-          }
-        });
+         
       }
 
       // ✅ Cleanup on screen blur / unmount

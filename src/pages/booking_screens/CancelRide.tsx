@@ -21,43 +21,96 @@ import {
 import Button from '../../components/Button';
 import TopHeader from '../../components/TopHeader';
 import { useNavigation } from '@react-navigation/native';
+import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
+import { useUserStore } from '../../stores/useUserStore';
+import { CANCEL_REASONS } from '../../utils/Enums';
+import useActionMutation from '../../queryFunctions/useActionMutation';
+import { showToast } from '../../utils/toastHelper';
+import { useRideStore } from '../../stores/rideStore';
 
 // Make sure to receive the navigation prop
 export default function CancelRide({
   headerShow = true,
   btnText = 'Cancel Ride',
+  route,
 }) {
-  const [selectedReason, setSelectedReason] = useState(null);
+  const [selectedReason, setSelectedReason] = useState({
+    index: null,
+    reason: '',
+  });
   const [issueDescription, setIssueDescription] = useState('');
   const navigation = useNavigation(); // ✅ this gives you access to navigate()
+  const tabBarHeight = useTabBarHeightHelper();
+  const { userData, role } = useUserStore();
+  const {setRideRequests} = useRideStore();
+  const { rideId } = route.params || {};
 
   // 2. State to control the modal's visibility
   const [isModalVisible, setModalVisible] = useState(false);
 
-  const reasons = [
-    'Driver Behavior (e.g., rude, unsafe)',
-    'Vehicle was not clean',
-    'Driver took a long route',
-    'Waited too long for driver',
-    'Other reason',
-  ];
+  const { triggerMutation, loading } = useActionMutation({
+    onSuccessCallback: async data => {
+      if (data?.success) {
+        setModalVisible(true);
+        setRideRequests(data?.data?._id);
+      }
+    },
+    onErrorCallback: errmsg => {
+      showToast({
+        type: 'error',
+        title: 'Login Failed',
+        message: errmsg || 'Please Try again!',
+      });
+    },
+  });
 
   // Function to handle the final cancellation
   const handleCancelRide = () => {
-    // Here you would typically send the cancellation reason to your server
-    console.log(
-      'Ride cancelled. Reason:',
-      selectedReason !== null ? reasons[selectedReason] : 'N/A',
-    );
-    console.log('Description:', issueDescription);
+    if (selectedReason?.index === null || selectedReason?.reason === '') {
+      showToast({
+        type: 'error',
+        title: 'Action Failed',
+        message: 'Please fill out all fields',
+      });
+      return;
+    }
+
+    const body = {
+      ride_id: rideId,
+      action: 'cancel',
+      category: selectedReason?.reason,
+      description: issueDescription,
+      action_performer: role,
+    };
+    triggerMutation({
+      endPoint: '/ride/request-ride-action',
+
+      body,
+      method: 'post',
+    });
+
     // Then, show the confirmation modal
-    setModalVisible(true);
   };
 
   const handleGoHome = () => {
     setModalVisible(false);
     // Navigate to the Home screen or any other screen as needed
-    navigation.navigate('Home');
+    navigation.navigate(role === "User"?'Home':'DriverHome');
+    if(role === "User"){
+
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Bookings' }], // 👈 take user to Home first
+    });
+
+    // Optionally also reset the Booking stack when user revisits it
+    setTimeout(() => {
+      navigation.navigate('Bookings', {
+        screen: 'BookingMain', // 👈 start fresh page 1
+      });
+    }, 300);
+    }
+
   };
 
   return (
@@ -74,29 +127,36 @@ export default function CancelRide({
 
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: tabBarHeight + 20 },
+          ]}
         >
           {/* Select Issue Category */}
           <View style={[{ marginTop: headerShow ? hp('2%') : 0 }, styles.card]}>
             <Text style={styles.sectionTitle}>Select Issue Category</Text>
 
-            {reasons.map((reason, index) => (
+            {CANCEL_REASONS[role]?.map((reason, index) => (
               <TouchableOpacity
                 key={index}
                 style={styles.radioOption}
-                onPress={() => setSelectedReason(index)}
+                onPress={() =>
+                  setSelectedReason({ index, reason: reason?.reason })
+                }
               >
                 <View
                   style={[
                     styles.radioButton,
-                    selectedReason === index && { borderColor: '#F8D833' }, // Highlight border when selected
+                    selectedReason.index === index && {
+                      borderColor: '#F8D833',
+                    }, // Highlight border when selected
                   ]}
                 >
-                  {selectedReason === index ? (
+                  {selectedReason.index === index ? (
                     <View style={styles.radioButtonSelected} />
                   ) : null}
                 </View>
-                <Text style={styles.radioLabel}>{reason}</Text>
+                <Text style={styles.radioLabel}>{reason?.reason}</Text>
               </TouchableOpacity>
             ))}
 
@@ -117,7 +177,7 @@ export default function CancelRide({
             </View>
             <View style={styles.btnContainer}>
               {/* 3. Add onPress to trigger the modal */}
-              <Button title={btnText} onPress={handleCancelRide} />
+              <Button isLoading={loading} title={btnText} onPress={handleCancelRide} />
             </View>
           </View>
         </ScrollView>

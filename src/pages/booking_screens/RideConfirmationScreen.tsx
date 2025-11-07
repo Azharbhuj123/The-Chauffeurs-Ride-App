@@ -32,6 +32,7 @@ import { showToast } from '../../utils/toastHelper';
 import useActionMutation from '../../queryFunctions/useActionMutation';
 import { showFlash } from '../../utils/flashMessageHelper';
 import { joinUserRoom, socket } from '../../utils/socket';
+import { useRideStore } from '../../stores/rideStore';
 
 // Get screen dimensions
 const { width, height } = Dimensions.get('window');
@@ -44,6 +45,7 @@ const RideConfirmationScreen = ({ navigation, route }) => {
   console.log(rideId, 'rideId');
 
   const { role, userData } = useUserStore();
+  const { clearRideRequests } = useRideStore();
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['ride_view', rideId],
@@ -51,7 +53,6 @@ const RideConfirmationScreen = ({ navigation, route }) => {
     keepPreviousData: true,
     enabled: !!rideId,
   });
- 
 
   useFocusEffect(
     useCallback(() => {
@@ -88,18 +89,28 @@ const RideConfirmationScreen = ({ navigation, route }) => {
 
   // Dummy driver data. In a real app, this would come from `route.params`
   const driver = {
-    name: data?.data?.driver?.name,
+    name: role === 'Driver' ? data?.data?.user?.name : data?.data?.driver?.name,
     initials: getInitials(data?.data?.driver?.name),
-    carModel: data?.data?.vehicle?.vehicle_model,
-    licensePlate: data?.data?.vehicle?.vehicle_plate_number,
-    rating: data?.data?.driver?.rating,
+    carModel:
+      role === 'Driver'
+        ? `${data?.data?.pickup_location?.famous_location} ➞ `
+        : data?.data?.vehicle?.vehicle_model,
+    licensePlate:
+      role === 'Driver'
+        ? `${data?.data?.drop_location?.famous_location}`
+        : data?.data?.vehicle?.vehicle_plate_number,
+    rating: role === 'Driver' ? 0 : data?.data?.driver?.rating,
   };
 
   const handlePress = async path => {
     try {
       // Always both key and value as strings
-      await AsyncStorage.setItem('CancelRide', 'true');
-      navigation.navigate(path);
+
+      navigation.navigate(path, {
+        rideId,
+        driver_id: data?.data?.driver?._id,
+        user_id: data?.data?.user?._id,
+      });
     } catch (error) {
       console.log('Error saving AsyncStorage:', error);
     }
@@ -121,8 +132,9 @@ const RideConfirmationScreen = ({ navigation, route }) => {
             const where_to_go =
               role === 'Driver' ? 'DriverHome' : 'RideComplete';
 
-            navigation.navigate(where_to_go,{
-              rideId:data?.ride_id
+            clearRideRequests();
+            navigation.navigate(where_to_go, {
+              rideId: data?.ride_id,
             });
 
             setTitle('Ride Has Been Completed');
@@ -130,11 +142,6 @@ const RideConfirmationScreen = ({ navigation, route }) => {
           }
         });
       }
-
-      return () => {
-        socket.off('ride_request');
-        console.log('ride_request listener removed ✅');
-      };
     }, [userData?._id]),
   );
 
@@ -225,24 +232,52 @@ const RideConfirmationScreen = ({ navigation, route }) => {
 
         {/* --- Driver Info Card --- */}
         <View style={styles.driverCard}>
-          <View style={styles.driverInfo}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{driver.initials}</Text>
-            </View>
+          {role === 'Driver' ? (
+            <View style={styles.driverInfo}>
+              <View style={styles.avatar}>
+                <Image
+                  source={{ uri: data?.data?.driver?.profile_image }}
+                  style={{ width: '100%', height: '100%', borderRadius: 50 }}
+                />
+              </View>
 
-            <View style={styles.driverDetails}>
-              <Text style={styles.driverName}>{driver.name}</Text>
-              <Text style={styles.carDetails}>
-                {driver.carModel}{' '}
-                <Text style={styles.licensePlate}>{driver.licensePlate}</Text>
-              </Text>
+              <View style={styles.driverDetails}>
+                <Text style={styles.driverName}>{driver.name}</Text>
+                <Text style={styles.carDetails}>
+                  {driver.carModel}{' '}
+                  <Text style={styles.licensePlate}>{driver.licensePlate}</Text>
+                </Text>
+              </View>
+              {driver.rating > 0 && (
+                <View style={styles.ratingContainer}>
+                  <Icon name="star" size={20} color="#FFD700" />
+                  <Text style={styles.ratingText}>{driver.rating}</Text>
+                </View>
+              )}
             </View>
+          ) : (
+            <View style={styles.driverInfo}>
+              <View style={styles.avatar}>
+                <Image
+                  source={{ uri: data?.data?.user?.profile_image }}
+                  style={{ width: '100%', height: '100%', borderRadius: 50 }}
+                />
+              </View>
 
-            <View style={styles.ratingContainer}>
-              <Icon name="star" size={20} color="#FFD700" />
-              <Text style={styles.ratingText}>{driver.rating}</Text>
+              <View style={styles.driverDetails}>
+                <Text style={styles.driverName}>{driver.name}</Text>
+                <Text style={styles.carDetails}>
+                  {driver.carModel}{' '}
+                  <Text style={styles.licensePlate}>{driver.licensePlate}</Text>
+                </Text>
+              </View>
+
+              <View style={styles.ratingContainer}>
+                <Icon name="star" size={20} color="#FFD700" />
+                <Text style={styles.ratingText}>{driver.rating}</Text>
+              </View>
             </View>
-          </View>
+          )}
 
           <View style={styles.actionButtons}>
             <TouchableOpacity

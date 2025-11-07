@@ -27,6 +27,9 @@ import TopHeader from '../../components/TopHeader';
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
+import { showToast } from '../../utils/toastHelper';
+import useActionMutation from '../../queryFunctions/useActionMutation';
+import { useUserStore } from '../../stores/useUserStore';
 
 const { width } = Dimensions.get('window');
 
@@ -35,6 +38,7 @@ export default function RideCompletedScreen({ navigation, route }) {
   const [note, setNote] = useState('');
   const { rideId } = route.params || {};
   const tabBarHeight = useTabBarHeightHelper();
+  const {userData} = useUserStore();
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['ride_view', rideId],
@@ -45,19 +49,91 @@ export default function RideCompletedScreen({ navigation, route }) {
 
   const payment_breakdown = data?.data?.payment_breakdown;
 
+const { triggerMutation, loading } = useActionMutation({
+    onSuccessCallback: async data => {
+        // Reset the Booking stack completely
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Bookings' }], // 👈 take user to Home first
+        });
+
+        // Optionally also reset the Booking stack when user revisits it
+        setTimeout(() => {
+          navigation.navigate('Bookings', {
+            screen: 'BookingMain', // 👈 start fresh page 1
+          });
+        }, 300);
+    },
+    onErrorCallback: errmsg => {
+      showToast({
+        type: 'error',
+        title: 'Login Failed',
+        message: errmsg || 'Please Try again!',
+      });
+    },
+  });
+
+  const handleReview = () =>{
+    if(rating === 0){
+      showToast({
+        type: 'error',
+        title: 'Action Failed',
+        message: 'Please fill out all fields',
+      })
+
+      return;
+    }
+ 
+
+    const data_obj = {
+      user:userData?._id,
+      rating: rating,
+      comment: note,
+      ride: rideId,
+      driver: data?.data?.driver?._id
+    };
+
+ 
+    
+
+triggerMutation({
+      endPoint: '/review/',
+      body: data_obj,
+      method: 'post',
+    });
+
+
+
+
+
+  }
+
   return (
     <KeyboardAvoidingView style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.container}>
+        <View
+          style={[
+            styles.container,
+            {
+              paddingBottom:
+                data?.data?.payment_method === 'Card'
+                  ? tabBarHeight + hp(2)
+                  : tabBarHeight + hp(7),
+            },
+          ]}
+        >
           {/* Header */}
 
-          <TopHeader title="Ride Completed" navigation={navigation} />
+          <TopHeader
+            title="Ride Completed"
+            navigation={navigation}
+            any_navigation={true}
+            navigate_to="Home"
+          />
+
           <ScrollView
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={[styles.scrollContent,{
-            paddingBottom: tabBarHeight + hp(7) 
-
-            }]}
+            contentContainerStyle={[styles.scrollContent]}
           >
             {/* Success Icon */}
             <View style={styles.successContainer}>
@@ -87,14 +163,14 @@ export default function RideCompletedScreen({ navigation, route }) {
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Base Fare:</Text>
                 <Text style={styles.summaryValue}>
-                  ${payment_breakdown?.driver_earning}
+                  ${payment_breakdown?.driver_earning?.toFixed(2)}
                 </Text>
               </View>
 
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Taxes & Fees:</Text>
                 <Text style={styles.summaryValue}>
-                  ${payment_breakdown?.platform_fee}
+                  ${payment_breakdown?.platform_fee?.toFixed(2)}
                 </Text>
               </View>
               {payment_breakdown?.dispatch_fee > 0 && (
@@ -117,7 +193,7 @@ export default function RideCompletedScreen({ navigation, route }) {
               <View style={[styles.summaryRow, styles.totalRow]}>
                 <Text style={styles.totalLabel}>Total Charged:</Text>
                 <Text style={styles.totalValue}>
-                  ${payment_breakdown?.total_fare}
+                  ${payment_breakdown?.total_fare?.toFixed(2)}
                 </Text>
               </View>
             </View>
@@ -134,9 +210,13 @@ export default function RideCompletedScreen({ navigation, route }) {
                   />
                 </View>
                 <View style={styles.driverDetails}>
-                  <Text style={styles.driverName}>{data?.data?.driver?.name}</Text>
+                  <Text style={styles.driverName}>
+                    {data?.data?.driver?.name}
+                  </Text>
                   <Text style={styles.driverCar}>
-                    {data?.data?.vehicle?.vehicle_make} {data?.data?.vehicle?.vehicle_model} · {data?.data?.vehicle?.vehicle_plate_number}
+                    {data?.data?.vehicle?.vehicle_make}{' '}
+                    {data?.data?.vehicle?.vehicle_model} ·{' '}
+                    {data?.data?.vehicle?.vehicle_plate_number}
                   </Text>
                 </View>
               </View>
@@ -167,18 +247,27 @@ export default function RideCompletedScreen({ navigation, route }) {
                 onChangeText={setNote}
                 multiline
               />
+              
+              <Button isLoading={loading} title='Submit' onPress={handleReview}/>
             </View>
           </ScrollView>
-
-          {/* Pay Now Button */}
           {data?.data?.payment_method === 'Card' && (
             <View style={styles.bottomContainer}>
               <Button
                 title="Pay Now"
-                onPress={() => navigation.navigate('PaymentSummaryScreen')}
+                onPress={() =>
+                  navigation.navigate('PaymentSummaryScreen', {
+                    total_fare: payment_breakdown?.total_fare?.toFixed(2),
+                    base_fare: payment_breakdown?.driver_earning?.toFixed(2),
+                    platform_fee: payment_breakdown?.platform_fee?.toFixed(2),
+                    rideId,
+                  })
+                }
               />
             </View>
           )}
+
+          {/* Pay Now Button */}
         </View>
       </SafeAreaView>
     </KeyboardAvoidingView>
@@ -347,6 +436,7 @@ const styles = StyleSheet.create({
     fontSize: wp('3.8%'),
     color: '#000',
     marginTop: hp('1%'),
+    marginBottom: hp('2%'),
     minHeight: hp('6%'),
     fontFamily: 'SF Pro',
   },

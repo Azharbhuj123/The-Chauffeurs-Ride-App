@@ -1,4 +1,4 @@
-import { showMessage, MessageType } from "react-native-flash-message";
+import { showMessage, MessageType } from 'react-native-flash-message';
 
 export type FlashMessageOptions = {
   type?: MessageType;
@@ -6,18 +6,18 @@ export type FlashMessageOptions = {
   message?: string;
   backgroundColor?: string;
   duration?: number;
-  icon?: "none" | "auto" | "success" | "info" | "warning" | "danger";
-  onPress?: () => void;   // ✅ add this
+  icon?: 'none' | 'auto' | 'success' | 'info' | 'warning' | 'danger';
+  onPress?: () => void; // ✅ add this
 };
 
 export const showFlash = ({
-  type = "success",
-  title = "",
-  message = "",
+  type = 'success',
+  title = '',
+  message = '',
   backgroundColor,
   duration = 3000,
-  icon = "auto",
-  onPress,               // ✅ accept press action
+  icon = 'auto',
+  onPress, // ✅ accept press action
 }: FlashMessageOptions) => {
   showMessage({
     message: title,
@@ -27,11 +27,11 @@ export const showFlash = ({
     icon,
     duration,
     floating: true,
-    onPress,             // ✅ attach callback
+    onPress, // ✅ attach callback
+    titleStyle: { fontFamily: 'Poppins-Regular', fontSize: 16, color: '#fff' },
+    textStyle: { fontFamily: 'Poppins-Regular', fontSize: 14, color: '#fff' },
   });
 };
-
-
 
 /*
 Usage Example:

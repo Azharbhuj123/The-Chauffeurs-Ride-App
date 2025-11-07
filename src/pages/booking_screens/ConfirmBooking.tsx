@@ -24,7 +24,7 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Button from '../../components/Button';
 import TopHeader from '../../components/TopHeader';
-import { useRidestore } from '../../stores/rideStore';
+
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
 
@@ -37,17 +37,18 @@ import { useFocusEffect } from '@react-navigation/native';
 import { joinUserRoom, socket } from '../../utils/socket';
 import { useUserStore } from '../../stores/useUserStore';
 import { showFlash } from '../../utils/flashMessageHelper';
+import { useRideStore } from '../../stores/rideStore';
 
 const ConfirmBooking = ({ navigation, route }) => {
   const [paymentMethod, setPaymentMethod] = useState('Card');
   const [pickup, setPickup] = useState('Current Location');
   const [dropoff, setDropoff] = useState('123 Luxury Tower, Downtown');
 
-  const [date, setDate] = useState(new Date());
-  const [time, setTime] = useState(new Date());
+  const [date, setDate] = useState();
+  const [time, setTime] = useState();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const { rideData } = useRidestore();
+  const { rideData } = useRideStore();
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   // New states for location suggestions
@@ -83,11 +84,28 @@ const ConfirmBooking = ({ navigation, route }) => {
       setPickupLocation(rideData.pick_location);
       setPickup(rideData.pick_location.address || 'Current Location');
     }
+
     if (rideData?.drop_location) {
       setDropoffLocation(rideData.drop_location);
       setDropoff(
         rideData.drop_location.address || '123 Luxury Tower, Downtown',
       );
+    }
+
+    if (rideData?.isScheduledRide) {
+      // 🗓️ Set date (ensure it's a Date object)
+      setDate(new Date(rideData?.dateTime?.date));
+
+      // ⏰ Convert "15:30" string to a Date object for picker
+      if (rideData?.dateTime?.time) {
+        const [hours, minutes] = rideData.dateTime.time.split(':').map(Number);
+        const newTime = new Date();
+        newTime.setHours(hours);
+        newTime.setMinutes(minutes);
+        newTime.setSeconds(0);
+        newTime.setMilliseconds(0);
+        setTime(newTime);
+      }
     }
   }, [rideData]);
 
@@ -98,9 +116,8 @@ const ConfirmBooking = ({ navigation, route }) => {
   };
 
   const onChangeTime = (event, selectedTime) => {
-    const currentTime = selectedTime || time;
     setShowTimePicker(false);
-    setTime(currentTime);
+    if (selectedTime) setTime(selectedTime);
   };
 
   // Open modal for location input
@@ -237,6 +254,10 @@ const ConfirmBooking = ({ navigation, route }) => {
 
   const { triggerMutation, loading } = useActionMutation({
     onSuccessCallback: async data => {
+      if(data?.is_schedule){
+        navigation.navigate('Home');
+        return;
+      }
       if (data?.data?._id) {
         startCountdown(); // ✅ start timer
         showFlash({
@@ -283,8 +304,34 @@ const ConfirmBooking = ({ navigation, route }) => {
       address: dropoffLocation?.address,
       famous_location: dropoffLocation?.shortAddress,
     };
+    if (
+      rideData?.isScheduledRide &&
+      date instanceof Date &&
+      time instanceof Date
+    ) {
+      const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
+      const hours = time.getHours().toString().padStart(2, '0');
+      const minutes = time.getMinutes().toString().padStart(2, '0');
+      const formattedTime = `${hours}:${minutes}`;
+
+      const timestamp = new Date(
+        `${formattedDate}T${formattedTime}:00`,
+      ).toISOString();
+
+      const schedule = {
+        date: formattedDate,
+        time: formattedTime,
+        timestamp,
+      };
+
+      console.log(schedule, '✅ final schedule');
+      body.schedule = schedule;
+    } else {
+      console.warn('⚠️ Date or time invalid', date, time);
+    }
 
     body.pickup_location = pickup_location;
+    body.drop_location = drop_location;
     body.drop_location = drop_location;
 
     triggerMutation({
@@ -318,8 +365,7 @@ const ConfirmBooking = ({ navigation, route }) => {
           if (data?.ride_accept) {
             navigation.navigate('RideConfirmationScreen', {
               rideId: data?.ride_id,
-              from:'user'
-
+              from: 'user',
             });
           }
         });
@@ -331,6 +377,8 @@ const ConfirmBooking = ({ navigation, route }) => {
       };
     }, [userData?._id]),
   );
+
+  console.log(rideData, 'rideData');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -568,7 +616,7 @@ const ConfirmBooking = ({ navigation, route }) => {
             </Text>
             <Icon name="pencil" size={wp(4)} color="#9CA3AF" />
           </TouchableOpacity>
-          {rideData?.is_schedule && (
+          {rideData?.isScheduledRide && (
             <View style={styles.dateTimeContainer}>
               {/* Date Picker Field */}
               <TouchableOpacity
@@ -577,7 +625,7 @@ const ConfirmBooking = ({ navigation, route }) => {
                 activeOpacity={0.8}
               >
                 <Text style={styles.textValue}>
-                  {date.toLocaleDateString('en-GB')}
+                  {date?.toLocaleDateString('en-US')}
                 </Text>
                 <Icon name="calendar-outline" size={wp(4.5)} color="#6B7280" />
               </TouchableOpacity>
@@ -589,11 +637,14 @@ const ConfirmBooking = ({ navigation, route }) => {
                 activeOpacity={0.8}
               >
                 <Text style={styles.textValue}>
-                  {time.toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
+                  {time
+                    ? time.toLocaleTimeString('en-GB', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
+                    : ''}
                 </Text>
+
                 <TimeIcon name="time-outline" size={wp(4.5)} color="#6B7280" />
               </TouchableOpacity>
             </View>
@@ -605,6 +656,7 @@ const ConfirmBooking = ({ navigation, route }) => {
               <DateTimePicker
                 value={date}
                 mode="date"
+                minimumDate={new Date()} // ⛔ Prevent past date
                 display="spinner"
                 onChange={onChangeDate}
                 style={{
@@ -682,7 +734,13 @@ const ConfirmBooking = ({ navigation, route }) => {
         <View style={styles.bottomButtons}>
           <Button
             disabled={loading || (timer < 30 && timer > 0)} // disable while counting
-            title={timer === 0 ? 'Confirm Booking' : `Waiting... ${timer}s`}
+            title={
+              timer > 0
+                ? `Waiting... ${timer}s`
+                : rideData?.isScheduledRide
+                ? 'Confirm Scheduled Ride'
+                : 'Confirm Booking'
+            }
             onPress={handleConfirmBooking}
           />
 

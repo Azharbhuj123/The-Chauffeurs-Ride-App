@@ -9,9 +9,11 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Image
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
   widthPercentageToDP as wp,
@@ -19,8 +21,13 @@ import {
 } from 'react-native-responsive-screen';
 import TopHeader from '../../components/TopHeader';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
+import useActionMutation from '../../queryFunctions/useActionMutation';
+import { showToast } from '../../utils/toastHelper';
+import { useUserStore } from '../../stores/useUserStore';
+import { useQuery } from '@tanstack/react-query';
+import { fetchData } from '../../queryFunctions/queryFunctions';
 
-export default function ChatScreen({ navigation }) {
+export default function ChatScreen({ navigation,route }) {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([
     {
@@ -44,29 +51,85 @@ export default function ChatScreen({ navigation }) {
       time: '8:30 pm',
     },
   ]);
-    const tabBarHeight = useTabBarHeightHelper();
+  const tabBarHeight = useTabBarHeightHelper();
+  const { userData , role } = useUserStore();
+  const { rideId, driver_id, user_id} = route.params;
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['chat', driver_id, user_id],
+    queryFn: () => fetchData('/chat/'),
+    keepPreviousData: true,
+  });
+
+
+  console.log(data,"data");
   
 
   const scrollViewRef = useRef(null);
 
+
+
+
+
+
+
+    const { triggerMutation, loading } = useActionMutation({
+    onSuccessCallback: async data => {
+
+      if(data?.sent){
+
+      }
+     
+    },
+    onErrorCallback: errmsg => {
+      showToast({
+        type: 'error',
+        title: 'Message Send Failed',
+        message: errmsg || 'Please Try again!',
+      });
+    },
+  });
+
   const handleSend = () => {
     if (message.trim() === '') return;
 
-    const newMessage = {
-      id: Date.now(),
-      text: message.trim(),
-      sender: 'user',
-      time: 'Just Now',
-    };
+    // const newMessage = {
+    //   id: Date.now(),
+    //   text: message.trim(),
+    //   sender: 'driver',
+    //   time: 'Just Now',
+    // };
 
-    setMessages((prev) => [...prev, newMessage]);
-    setMessage('');
+    // setMessages((prev) => [...prev, newMessage]);
+    // setMessage('');
+
+    const data_obj = {
+      sender: role === 'User' ? user_id : driver_id,
+      receiver: role === 'User' ? driver_id : user_id,
+      message: message.trim(),
+      ride:rideId
+    }
+
+    console.log(data_obj,"data");
+    
+
+
+    triggerMutation({
+      endPoint: '/chat/',
+      body: data_obj,
+      method: 'post',
+    });
+
+
 
     // Scroll to bottom after short delay
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100);
   };
+
+
+  
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -93,16 +156,13 @@ export default function ChatScreen({ navigation }) {
               {msg.sender === 'driver' ? (
                 // Driver Message
                 <View style={styles.driverMessageContainer}>
-                  {msg.showAvatar ? (
                     <View style={styles.avatar}>
-                      <View style={styles.avatarIcon}>
-                        <View style={styles.avatarHead} />
-                        <View style={styles.avatarBody} />
-                      </View>
+                       {/* <Image
+                                         source={{ uri: data?.data?.user?.profile_image }}
+                                         style={{ width: '100%', height: '100%', borderRadius: 50 }}
+                                       /> */}
                     </View>
-                  ) : (
-                    <View style={styles.avatarPlaceholder} />
-                  )}
+                  
                   <View style={styles.messageContent}>
                     <View style={styles.driverBubble}>
                       <Text style={styles.driverText}>{msg.text}</Text>
@@ -122,6 +182,11 @@ export default function ChatScreen({ navigation }) {
                         name="checkmark-done"
                         size={wp('4%')}
                         color="#FFD700"
+                      />
+                      <EvilIcons
+                        name="clock"
+                        size={wp('4%')}
+                        color="#999"
                       />
                       <Text style={styles.timeText}>{msg.time}</Text>
                     </View>

@@ -32,12 +32,12 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
-import { GOOGLE_MAP_API_KEY, no_found } from '../../utils/Enums';
+import { COLORS, GOOGLE_MAP_API_KEY, no_found } from '../../utils/Enums';
 import { useStore } from '../../stores/useStore';
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
 import UpgradeModal from '../../components/Upgrade';
-import { useRidestore } from '../../stores/rideStore';
+import { useRideStore } from '../../stores/rideStore';
 
 // --- Responsive Utility Functions (Mocking Libraries like 'react-native-responsive-screen') ---
 const { width, height } = Dimensions.get('window');
@@ -603,20 +603,19 @@ export default function BookingMain({ navigation }) {
   const [selectedClass, setSelectedClass] = useState('Economy');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isUpgradeClass, setIsUpgradeClass] = useState(false);
-
   const [fromClass, setFromClass] = useState('');
   const [toClass, setToClass] = useState('');
-
   const [upgradeShownOnce, setUpgradeShownOnce] = useState(false);
-
   const tabBarHeight = useTabBarHeightHelper();
   const { location } = useStore();
-  const { setRideData, rideData } = useRidestore();
+  const { setRideData, rideData } = useRideStore();
 
   const [dateTime, setDateTime] = useState({
     date: 'Select Date',
     time: 'Select Time',
   });
+  const resetDone = useRef(false);
+
   const { data, isLoading, refetch } = useQuery({
     queryKey: [
       'get-drivers',
@@ -684,6 +683,8 @@ export default function BookingMain({ navigation }) {
       !!selectedCar,
   });
 
+  console.log(dateTime, 'dateTime');
+
   useFocusEffect(
     useCallback(() => {
       setSelectedCar(data?.allDrivers[0]?.vehicle?._id);
@@ -704,17 +705,16 @@ export default function BookingMain({ navigation }) {
   }, [fromLocation, toLocation]);
 
   const onChange = (event, selectedDate) => {
-    setShowPicker(false);
     if (selectedDate) {
       const currentDate = new Date(selectedDate);
+
       if (pickerMode === 'date') {
-        const formattedDate = currentDate.toLocaleDateString();
+        const formattedDate = currentDate.toISOString().split('T')[0];
         setDateTime(prev => ({ ...prev, date: formattedDate }));
       } else {
-        const formattedTime = currentDate.toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-        });
+        const hours = currentDate.getHours().toString().padStart(2, '0');
+        const minutes = currentDate.getMinutes().toString().padStart(2, '0');
+        const formattedTime = `${hours}:${minutes}`;
         setDateTime(prev => ({ ...prev, time: formattedTime }));
       }
     }
@@ -748,11 +748,12 @@ export default function BookingMain({ navigation }) {
       selectedCar,
       is_upgrade_class: isUpgradeClass,
       is_schedule: false,
+      isScheduledRide,
+      dateTime,
     });
 
     navigation.navigate('ConfirmBooking');
   };
-
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -858,19 +859,33 @@ export default function BookingMain({ navigation }) {
                   <View style={styles.overlay}>
                     <View style={styles.pickerContainer}>
                       <DateTimePicker
-                        value={new Date()}
+                        value={
+                          pickerMode === 'date'
+                            ? new Date(dateTime.date)
+                            : new Date(dateTime.time)
+                        }
                         mode={pickerMode}
-                        display="spinner"
+                        display={'spinner'} // 👈 for date use 'default'
                         onChange={onChange}
                         textColor="black"
                         themeVariant="light"
+                        is24Hour={false}
                         minimumDate={new Date()} // ⛔ Prevent past date
                         style={{
                           marginTop: 10,
                           backgroundColor: '#f2f2f2',
                           borderRadius: 12,
+                      
                         }}
                       />
+                      <TouchableOpacity
+                        style={styles.doneBtn}
+                        onPress={() => setShowPicker(false)}
+                      >
+                        <Text style={{ color: '#000', fontSize: 16 ,textAlign:"center",}}>
+                          Done
+                        </Text>
+                      </TouchableOpacity>
                     </View>
                   </View>
                 )}
@@ -995,7 +1010,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: PADDING_HORIZONTAL,
   },
-
+  
   bottomContent: {
     paddingHorizontal: PADDING_HORIZONTAL,
     borderTopLeftRadius: 25,
@@ -1439,5 +1454,16 @@ const styles = StyleSheet.create({
     color: '#bbb',
     marginTop: 4,
   },
+
   no_aviable: no_found,
+  doneBtn:{
+    justifyContent:"center",
+    width:'100%', 
+    color:"#000",
+    backgroundColor: COLORS.warning,
+    alignItems:"center",
+    marginTop:hp(2),
+    padding:hp(1.5),
+    borderRadius:12
+  }
 });

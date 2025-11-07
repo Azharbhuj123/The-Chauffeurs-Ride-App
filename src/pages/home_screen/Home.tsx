@@ -41,7 +41,6 @@ export default function Home({ navigation }) {
     queryKey: ['user-home'],
     queryFn: () => fetchData('/ride/user-screen'),
     keepPreviousData: true,
-
   });
 
   useFocusEffect(
@@ -138,9 +137,10 @@ export default function Home({ navigation }) {
     }
   };
 
-  const handleNavigate = (rideId, status) => {
-    if(!rideId) return
+  const handleNavigate = (rideId, status = 'Pending') => {
+    if (!rideId) return;
     if (status === 'Pending') {
+       
       return;
     } else {
       navigation.navigate('Bookings', {
@@ -235,37 +235,37 @@ export default function Home({ navigation }) {
           </View>
 
           {/* Quick Destinations */}
-            {Array.isArray(data?.quick_destination) && data?.quick_destination?.length >0  && (
-              
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Quick Destinations</Text>
-              {data?.quick_destination?.map(des => (
-                <View key={des?._id} style={styles.destinationCard}>
-                  <View>
-                    <Text style={styles.destinationTitle}>
-                      {des?.pickup_location?.famous_location}
-                    </Text>
-                    <Text style={styles.destinationSubtitle}>
-                      Last Trip: {formatSmartDate(des?.ride_complete_at)} |{' '}
-                      {des?.distance}
-                    </Text>
+          {Array.isArray(data?.quick_destination) &&
+            data?.quick_destination?.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Quick Destinations</Text>
+                {data?.quick_destination?.map(des => (
+                  <View key={des?._id} style={styles.destinationCard}>
+                    <View>
+                      <Text style={styles.destinationTitle}>
+                        {des?.pickup_location?.famous_location}
+                      </Text>
+                      <Text style={styles.destinationSubtitle}>
+                        Last Trip: {formatSmartDate(des?.ride_complete_at)} |{' '}
+                        {des?.distance}
+                      </Text>
+                    </View>
+                    {/* <Icon name="chevron-forward" size={wp('5%')} color="#666" /> */}
+                    <TouchableOpacity>
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          color: '#FFD700',
+                          fontFamily: 'Poppins-Regular',
+                        }}
+                      >
+                        Book Again
+                      </Text>
+                    </TouchableOpacity>
                   </View>
-                  {/* <Icon name="chevron-forward" size={wp('5%')} color="#666" /> */}
-                  <TouchableOpacity>
-                    <Text
-                      style={{
-                        fontSize: 14,
-                        color: '#FFD700',
-                        fontFamily: 'Poppins-Regular',
-                      }}
-                    >
-                      Book Again
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              ))}
-          </View>
-  )}
+                ))}
+              </View>
+            )}
 
           {/* Bottom spacing to prevent content hiding behind tab bar */}
         </ScrollView>

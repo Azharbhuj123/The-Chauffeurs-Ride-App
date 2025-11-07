@@ -108,6 +108,8 @@ function DriverHomeStack() {
         name="RideConfirmationScreen"
         component={RideConfirmationScreen}
       />
+      <Stack.Screen name="CancelRide" component={CancelRide} />
+
       <Stack.Screen name="AddVehicle" component={VehicleRegistration} />
       <Stack.Screen name="AddChauffeurs" component={ChauffeursRegistration} />
 

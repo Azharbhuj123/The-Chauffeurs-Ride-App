@@ -8,12 +8,22 @@ import {
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 
-export default function TopHeader({ title, navigation, no_navigate = false }) {
+export default function TopHeader({
+  title,
+  navigation,
+  no_navigate = false,
+  any_navigation = false,
+  navigate_to,
+}) {
   return (
     <View style={styles.header}>
       {!no_navigate && (
         <TouchableOpacity
-          onPress={() => navigation?.goBack()}
+          onPress={() =>
+            any_navigation
+              ? navigation?.navigate(navigate_to)
+              : navigation?.goBack()
+          }
           activeOpacity={0.7}
         >
           <Ionicons name="chevron-back" size={wp(6)} color="#000" />
