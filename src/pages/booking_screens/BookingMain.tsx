@@ -38,6 +38,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
 import UpgradeModal from '../../components/Upgrade';
 import { useRideStore } from '../../stores/rideStore';
+import { showToast } from '../../utils/toastHelper';
 
 // --- Responsive Utility Functions (Mocking Libraries like 'react-native-responsive-screen') ---
 const { width, height } = Dimensions.get('window');
@@ -593,11 +594,15 @@ const CarCard = ({ car, isSelected, onSelect }) => {
 
 // --- Main App Component ---
 export default function BookingMain({ navigation }) {
+  const { setRideData, rideData } = useRideStore();
+
   const [isScheduledRide, setIsScheduledRide] = useState(false);
 
   const [selectedCar, setSelectedCar] = useState();
-  const [fromLocation, setFromLocation] = useState(null);
-  const [toLocation, setToLocation] = useState(null);
+  const [fromLocation, setFromLocation] = useState(
+    rideData?.pick_location  || null,
+  );
+  const [toLocation, setToLocation] = useState(rideData?.drop_location ||null);
   const [showPicker, setShowPicker] = useState(false);
   const [pickerMode, setPickerMode] = useState('date'); // 'date' | 'time'
   const [selectedClass, setSelectedClass] = useState('Economy');
@@ -608,13 +613,16 @@ export default function BookingMain({ navigation }) {
   const [upgradeShownOnce, setUpgradeShownOnce] = useState(false);
   const tabBarHeight = useTabBarHeightHelper();
   const { location } = useStore();
-  const { setRideData, rideData } = useRideStore();
 
   const [dateTime, setDateTime] = useState({
     date: 'Select Date',
     time: 'Select Time',
   });
   const resetDone = useRef(false);
+
+  console.log(fromLocation,"<<<<fromLocation");
+  console.log(toLocation,"<<<<toLocation");
+  
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: [
@@ -740,6 +748,9 @@ export default function BookingMain({ navigation }) {
   );
 
   const handleBooking = () => {
+ 
+    
+    
     setRideData({
       pick_location: fromLocation,
       drop_location: toLocation,
@@ -753,6 +764,22 @@ export default function BookingMain({ navigation }) {
     });
 
     navigation.navigate('ConfirmBooking');
+  };
+
+  const hanldeView = () => {
+    if (!fromLocation || !toLocation) {
+      showToast({
+        title: 'Action Failed',
+        message: 'Please enter pickup and drop location',
+        type: 'error',
+      });
+      return;
+    }
+    setRideData({
+      pick_location: fromLocation,
+      drop_location: toLocation,
+    });
+    navigation.navigate('SelectDriver');
   };
 
   return (
@@ -776,7 +803,7 @@ export default function BookingMain({ navigation }) {
 
       <TouchableWithoutFeedback onPress={() => setShowPicker(false)}>
         <ScrollView
-          contentContainerStyle={{ paddingBottom: tabBarHeight }}
+          contentContainerStyle={{ paddingBottom: tabBarHeight - 30 }}
           showsVerticalScrollIndicator={false}
         >
           {/* --- White Section (main content) --- */}
@@ -875,14 +902,19 @@ export default function BookingMain({ navigation }) {
                           marginTop: 10,
                           backgroundColor: '#f2f2f2',
                           borderRadius: 12,
-                      
                         }}
                       />
                       <TouchableOpacity
                         style={styles.doneBtn}
                         onPress={() => setShowPicker(false)}
                       >
-                        <Text style={{ color: '#000', fontSize: 16 ,textAlign:"center",}}>
+                        <Text
+                          style={{
+                            color: '#000',
+                            fontSize: 16,
+                            textAlign: 'center',
+                          }}
+                        >
                           Done
                         </Text>
                       </TouchableOpacity>
@@ -946,7 +978,7 @@ export default function BookingMain({ navigation }) {
                     Book Selected Driver
                   </Text>
                   <TouchableOpacity
-                    onPress={() => navigation.navigate('SelectDriver')}
+                    onPress={hanldeView}
                     style={{
                       flexDirection: 'row',
                       justifyContent: 'center',
@@ -1010,7 +1042,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: PADDING_HORIZONTAL,
   },
-  
+
   bottomContent: {
     paddingHorizontal: PADDING_HORIZONTAL,
     borderTopLeftRadius: 25,
@@ -1456,14 +1488,14 @@ const styles = StyleSheet.create({
   },
 
   no_aviable: no_found,
-  doneBtn:{
-    justifyContent:"center",
-    width:'100%', 
-    color:"#000",
+  doneBtn: {
+    justifyContent: 'center',
+    width: '100%',
+    color: '#000',
     backgroundColor: COLORS.warning,
-    alignItems:"center",
-    marginTop:hp(2),
-    padding:hp(1.5),
-    borderRadius:12
-  }
+    alignItems: 'center',
+    marginTop: hp(2),
+    padding: hp(1.5),
+    borderRadius: 12,
+  },
 });

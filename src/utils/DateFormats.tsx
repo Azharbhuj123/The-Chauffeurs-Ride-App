@@ -22,3 +22,25 @@ export const formatSmartDate = (isoDate: string): string => {
     optionsTime
   )}`;
 };
+
+
+export const formatReadableDate = (isoString:any) => {
+  if (!isoString) return '';
+
+  const date = new Date(isoString);
+
+  const options = {
+    month: 'short',   // "Oct"
+    day: 'numeric',   // "1"
+    year: 'numeric',  // "2025"
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  };
+
+  // Example: "Oct 1, 2025, 11:30 AM"
+  const formatted = date.toLocaleString('en-US', options);
+
+  // Replace the comma before time with " at "
+  return formatted.replace(',', ' at');
+};

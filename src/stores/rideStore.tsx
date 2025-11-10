@@ -12,6 +12,7 @@ export interface Ride {
   userName: string;
   payment_method: string;
   vehicle_type: string;
+  hasUnreadMessages: boolean;
 }
 
 // 🔹 Define the type for the store
@@ -20,7 +21,7 @@ interface RideStore {
   rideRequests: Ride[];
 
   setRideData: (data: Record<string, any>) => void;
-
+  sethasUnreadMessages: (data: Record<string, any>) => void;
   // ✅ Allow both a function updater or direct array/object
   setRideRequests: (updater: Ride | ((prev: Ride[]) => Ride[])) => void;
 
@@ -31,36 +32,39 @@ interface RideStore {
 export const useRideStore = create<RideStore>(set => ({
   rideData: {},
   rideRequests: [],
+  hasUnreadMessages: false,
 
-  setRideData: data => set({ rideData: data }),
+setRideData: data => set(state => ({ rideData: { ...state.rideData, ...data } })),
 
- setRideRequests: updater => {
-  if (typeof updater === 'function') {
-    // Functional update
-    set(state => ({
-      rideRequests: updater(state.rideRequests),
-    }));
-  } else if (typeof updater === 'string') {
-    // If updater is an id (string), remove the ride with that id
-    set(state => ({
-      rideRequests: state.rideRequests.filter(
-        ride => ride.id !== updater && ride._id !== updater
-      ),
-    }));
-  } else {
-    // If updater is an object (single ride)
-    set(state => {
-      const exists = state.rideRequests.some(
-        ride => ride.id === updater.id || ride._id === updater._id
-      );
 
-      return exists
-        ? state // no change if already exists
-        : { rideRequests: [updater, ...state.rideRequests] };
-    });
-  }
-},
+  setRideRequests: updater => {
+    if (typeof updater === 'function') {
+      // Functional update
+      set(state => ({
+        rideRequests: updater(state.rideRequests),
+      }));
+    } else if (typeof updater === 'string') {
+      // If updater is an id (string), remove the ride with that id
+      set(state => ({
+        rideRequests: state.rideRequests.filter(
+          ride => ride.id !== updater && ride._id !== updater,
+        ),
+      }));
+    } else {
+      // If updater is an object (single ride)
+      set(state => {
+        const exists = state.rideRequests.some(
+          ride => ride.id === updater.id || ride._id === updater._id,
+        );
 
+        return exists
+          ? state // no change if already exists
+          : { rideRequests: [updater, ...state.rideRequests] };
+      });
+    }
+  },
+
+  sethasUnreadMessages: hasUnreadMessages => set({ hasUnreadMessages }),
 
   clearRideRequests: () => set({ rideRequests: [], rideData: {} }),
 }));

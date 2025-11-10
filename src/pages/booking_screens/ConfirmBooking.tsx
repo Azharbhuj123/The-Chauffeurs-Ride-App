@@ -38,6 +38,7 @@ import { joinUserRoom, socket } from '../../utils/socket';
 import { useUserStore } from '../../stores/useUserStore';
 import { showFlash } from '../../utils/flashMessageHelper';
 import { useRideStore } from '../../stores/rideStore';
+import SkeletonContent from 'react-native-skeleton-content';
 
 const ConfirmBooking = ({ navigation, route }) => {
   const [paymentMethod, setPaymentMethod] = useState('Card');
@@ -48,7 +49,7 @@ const ConfirmBooking = ({ navigation, route }) => {
   const [time, setTime] = useState();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const { rideData } = useRideStore();
+  const { rideData, setRideData } = useRideStore();
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   // New states for location suggestions
@@ -76,6 +77,45 @@ const ConfirmBooking = ({ navigation, route }) => {
     },
     keepPreviousData: true,
   });
+
+  const { data: rideFare } = useQuery({
+    queryKey: ['ride-Fare', rideData],
+    queryFn: () => {
+      const {
+        drop_location,
+        pick_location,
+        selectedClass,
+        selectedCar,
+        isUpgradeClass,
+      } = rideData || {};
+      const params = new URLSearchParams({
+        pickup_lat: pick_location?.latitude,
+        pickup_lng: pick_location?.longitude,
+        drop_lat: drop_location?.latitude,
+        drop_lng: drop_location?.longitude,
+        category_type: selectedClass,
+        upgrade_class: isUpgradeClass || false,
+        vehicle_id: selectedCar || '',
+      }).toString();
+
+      return fetchData(`/ride/ride-estimation?${params}`);
+    },
+    keepPreviousData: true,
+    enabled:
+      !!rideData?.selectedClass &&
+      !!rideData?.drop_location?.latitude &&
+      !!rideData?.drop_location?.longitude &&
+      !!rideData?.pick_location?.latitude &&
+      !!rideData?.pick_location?.longitude &&
+      !!rideData?.selectedCar,
+  });
+
+  useEffect(() => {
+    setRideData({
+      ...rideFare?.data,
+    });
+  }, [rideFare]);
+
   const driver_own_vehicle = data?.driver_own_vehicle;
 
   // Initialize pickup and dropoff from rideData if available
@@ -194,9 +234,15 @@ const ConfirmBooking = ({ navigation, route }) => {
 
       if (activeInput === 'pickup') {
         setPickupLocation(locationData);
+        setRideData({
+          pick_location: locationData,
+        });
         setPickup(item.description);
       } else {
         setDropoffLocation(locationData);
+        setRideData({
+          drop_location: locationData,
+        });
         setDropoff(item.description);
       }
 
@@ -254,7 +300,7 @@ const ConfirmBooking = ({ navigation, route }) => {
 
   const { triggerMutation, loading } = useActionMutation({
     onSuccessCallback: async data => {
-      if(data?.is_schedule){
+      if (data?.is_schedule) {
         navigation.navigate('Home');
         return;
       }
@@ -713,7 +759,6 @@ const ConfirmBooking = ({ navigation, route }) => {
           </View>
         </View>
 
-        {/* Fare */}
         <View style={styles.fareCard}>
           <View style={styles.fareContent}>
             <View>

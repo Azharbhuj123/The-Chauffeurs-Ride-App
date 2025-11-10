@@ -15,6 +15,7 @@ import {
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
   Keyboard,
+  Modal,
 } from 'react-native';
 import {
   widthPercentageToDP as wp,
@@ -31,16 +32,20 @@ import {
   pickImageFromCamera,
   pickImageFromGallery,
 } from '../../utils/imagePickerHelper';
+import { useUserStore } from '../../stores/useUserStore';
+import useActionMutation from '../../queryFunctions/useActionMutation';
+import { showToast } from '../../utils/toastHelper';
 
 const { width, height } = Dimensions.get('window');
 
 export const EditProfileScreen = ({ navigation }) => {
-  const [name, setName] = useState('');
+  const { userData, setUserData, resetAll } = useUserStore();
+  const [name, setName] = useState(userData?.name || '');
   const [contact, setContact] = useState('');
   const [phone, setPhone] = useState('');
-  const [profileImage, setProfileImage] = useState(
-    'https://i.pravatar.cc/150?img=13',
-  );
+  const [profileImage, setProfileImage] = useState(userData?.profile_image);
+  const [profileImageurl, setProfileImageurl] = useState(null);
+  const [isModalVisible, setModalVisible] = useState(false);
 
   const pickImage = () => {
     Alert.alert('Select Option', 'Choose an image source', [
@@ -49,6 +54,7 @@ export const EditProfileScreen = ({ navigation }) => {
         onPress: async () => {
           const image = await pickImageFromCamera();
           if (image) setProfileImage(image.uri);
+          setProfileImageurl(image);
         },
       },
       {
@@ -56,10 +62,62 @@ export const EditProfileScreen = ({ navigation }) => {
         onPress: async () => {
           const image = await pickImageFromGallery();
           if (image) setProfileImage(image.uri);
+          setProfileImageurl(image);
         },
       },
       { text: 'Cancel', style: 'cancel' },
     ]);
+  };
+
+  const { triggerMutation, loading } = useActionMutation({
+    onSuccessCallback: async data => {
+      if (data?.delete) {
+        resetAll();
+        navigation.navigate('Login');
+        return;
+      }
+
+      setUserData(data?.user,data?.token);
+      showToast({
+        type: 'success',
+        title: 'Profile Updated',
+        message: 'Your profile has been updated successfully',
+      });
+    },
+    onErrorCallback: errmsg => {
+      showToast({
+        type: 'error',
+        title: 'Login Failed',
+        message: errmsg || 'Please Try again!',
+      });
+    },
+  });
+
+  const hanldeUpdate = async () => {
+    const form_data = new FormData();
+    if(profileImageurl){
+
+    form_data.append('file', {
+      uri: profileImageurl.uri,
+      type: profileImageurl.type,
+      name: profileImageurl.name || 'image.jpg',
+    });
+    }
+
+    form_data.append('name', name);
+
+    triggerMutation({
+      endPoint: '/auth/update-profile',
+      body: form_data,
+      method: 'put',
+    });
+  };
+
+  const hanldeDelete = () => {
+    triggerMutation({
+      endPoint: '/auth/delete-account',
+      method: 'delete',
+    });
   };
 
   return (
@@ -111,59 +169,99 @@ export const EditProfileScreen = ({ navigation }) => {
                   onChangeText={setName}
                   placeholder="Name"
                   placeholderTextColor="#999"
-                  returnKeyType="done"
                 />
               </View>
-
-              <View style={styles.inputWrapper}>
-                <Feather
-                  name="mail"
-                  size={wp(5)}
-                  color="#999"
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={styles.input}
-                  value={contact}
-                  onChangeText={setContact}
-                  placeholder="Email Or Phone No."
-                  placeholderTextColor="#999"
-                  keyboardType="email-address"
-                  returnKeyType="done"
-                />
-              </View>
-
-              <View style={styles.inputWrapper}>
-                <Feather
-                  name="lock"
-                  size={wp(5)}
-                  color="#999"
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={styles.input}
-                  value={phone}
-                  onChangeText={setPhone}
-                  placeholder="Phone Number"
-                  placeholderTextColor="#999"
-                  keyboardType="phone-pad"
-                  returnKeyType="done"
-                />
-              </View>
+              {userData?.contact?.includes('@') ? (
+                <View style={styles.inputWrapper}>
+                  <Feather
+                    name="mail"
+                    size={wp(5)}
+                    color="#999"
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    value={userData?.contact}
+                    onChangeText={setContact}
+                    placeholder="Email Or Phone No."
+                    placeholderTextColor="#999"
+                    keyboardType="email-address"
+                    editable={false}
+                  />
+                </View>
+              ) : (
+                <View style={styles.inputWrapper}>
+                  <Feather
+                    name="lock"
+                    size={wp(5)}
+                    color="#999"
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    value={userData?.contact}
+                    onChangeText={setPhone}
+                    disa
+                    placeholder="Phone Number"
+                    placeholderTextColor="#999"
+                    keyboardType="phone-pad"
+                    editable={false}
+                  />
+                </View>
+              )}
             </View>
 
             {/* Buttons */}
             <View style={styles.btnContainer}>
-              <Button title="Save Changes" />
+              <Button
+                isLoading={loading}
+                title="Save Changes"
+                onPress={hanldeUpdate}
+              />
               <Button
                 title="Delete Account"
                 color="#FF3A2F"
                 textColor="white"
+                onPress={() => setModalVisible(true)}
               />
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+        }}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalContainer}>
+            <Image source={require('../../assets/images/logout.png')} />
+            <Text style={styles.modalTitle}>Are you Sure? </Text>
+            <Text style={styles.modalSubtitle}>
+              Deleting your account will remove all of your information from our
+              database. This cannot be undone.
+            </Text>
+
+            <View style={styles.btnContainer2}>
+              <Button
+                isLoading={loading}
+                title="Delete"
+                textColor="white"
+                color="#FF3A2F"
+                onPress={hanldeDelete}
+              />
+              <Button
+                title="Cancel"
+                onPress={() => setModalVisible(false)}
+                color="#F1F1F1"
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -365,5 +463,66 @@ const styles = StyleSheet.create({
   },
   btnContainer: {
     paddingHorizontal: wp(5),
+  },
+
+  //model
+
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+  },
+  modalContainer: {
+    width: wp('85%'),
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 25,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    textAlign: 'center',
+    fontFamily: 'Poppins-Regular',
+
+    marginTop: 15,
+    marginBottom: 10,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    fontFamily: 'Poppins-Regular',
+
+    marginBottom: 25,
+  },
+  modalButton: {
+    backgroundColor: '#F8D833',
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    width: '100%',
+    alignItems: 'center',
+    fontFamily: 'Poppins-Regular',
+  },
+  modalButtonText: {
+    color: '#1F2937',
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Poppins-Regular',
+  },
+  btnContainer2: {
+    width: '100%',
   },
 });

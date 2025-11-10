@@ -6,75 +6,77 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-
   Dimensions,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from 'react-native-responsive-screen';
 import TopHeader from '../../components/TopHeader';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
+import { useQuery } from '@tanstack/react-query';
+import { fetchData } from '../../queryFunctions/queryFunctions';
+import { useRideStore } from '../../stores/rideStore';
+import AppLoader from '../../components/AppLoader';
+ 
 
 const { width } = Dimensions.get('window');
 
 const SelectDriver = ({ navigation }) => {
-    const tabBarHeight = useTabBarHeightHelper();
-  
-  const drivers = [
-    {
-      id: 1,
-      name: 'John Davis',
-      car: 'Mercedes S-Class',
-      rating: 4.8,
-      trips: '1,382 Trips',
-      price: 'Luxury Ride',
-    },
-    {
-      id: 2,
-      name: 'Sarah Miller',
-      car: 'BMW X5',
-      rating: 4.8,
-      trips: '1,161 Trips',
-      price: 'Premium RV',
-    },
-    {
-      id: 3,
-      name: 'Robert Adams',
-      car: 'Toyota Camry',
-      rating: 4.8,
-      trips: '1,094 Trips',
-      price: 'Premium Ride',
-    },
-  {
-    id: 4,
-    name: 'Robert Adams',
-    car: 'Toyota Camry',
-    rating: 4.8,
-    trips: '1,094 Trips',
-    price: 'Premium Ride',
-  },
-    {
-      id: 5,
-      name: 'Robert Adams',
-      car: 'Toyota Camry',
-      rating: 4.8,
-      trips: '1,094 Trips',
-      price: 'Premium Ride',
-    },
-    
-  ];
+  const tabBarHeight = useTabBarHeightHelper();
+  const { setRideData, rideData } = useRideStore();
 
-  const handleSelectDriver = (driver) => {
-    navigation.navigate('ConfirmBooking', { driver });
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['selected-driver'],
+    queryFn: () => fetchData(`/ride/select-driver`),
+    keepPreviousData: true,
+  });
+
+  console.log(data, 'datasss');
+
+  const drivers = Array.isArray(data)
+    ? data.map(driver => {
+        return {
+          id: driver?._id || '',
+          name: driver?.driver_name || '',
+          profile_image: driver?.driver_profile_image || '',
+          car: `${driver?.vehicle_make || '-'} ${driver?.vehicle_model || '-'}`,
+          rating: driver?.driver_rating || 0,
+          trips: `${driver?.total_completed_rides || 0} Trips`,
+          price: `${driver?.category_type || '-'} ${
+            driver?.vehicle_type || '-'
+          }`,
+          category_type: driver?.category_type || '',
+          vehicle_id: driver?.vehicle_id || '',
+        };
+      })
+    : [];
+
+  const handleSelectDriver = driver => {
+    console.log(driver,"cvlick driver");
+    
+    setRideData({
+      selectedClass:driver?.category_type,
+      selectedCar:driver?.vehicle_id,
+      is_upgrade_class: false,
+      is_schedule: false,
+      fareLoad:true
+    });
+    navigation.navigate('ConfirmBooking');
   };
 
+  if(isLoading){
+    return <AppLoader/>
+  }
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
 
-
-      <TopHeader title='Book Selected Driver' navigation={navigation}/>
-
+      <TopHeader title="Book Selected Driver" navigation={navigation} />
 
       {/* Filter and Sort */}
       <View style={styles.filterContainer}>
@@ -91,18 +93,22 @@ const SelectDriver = ({ navigation }) => {
       {/* Driver List */}
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={[{ paddingBottom: tabBarHeight + 10 }]}
-
+        contentContainerStyle={[{ paddingBottom: tabBarHeight + 30 }]}
         showsVerticalScrollIndicator={false}
       >
-        {drivers.map((driver) => (
+        {drivers?.map(driver => (
           <View key={driver.id} style={styles.driverCard}>
             <View style={styles.driverHeader}>
               <View style={styles.driverInfo}>
                 <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>
-                    {driver.name.split(' ').map(n => n[0]).join('')}
-                  </Text>
+                  <Image
+                    source={{ uri: driver?.profile_image }}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: 50,
+                    }}
+                  />
                 </View>
                 <View>
                   <Text style={styles.driverName}>{driver.name}</Text>
@@ -134,7 +140,6 @@ const SelectDriver = ({ navigation }) => {
             </View>
           </View>
         ))}
-        <Text style={styles.scrollText}>Scroll for more available chauffeurs</Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -156,15 +161,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#000',
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
   filterContainer: {
     flexDirection: 'row',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    justifyContent: "space-between",
-    gap: 10
+    justifyContent: 'space-between',
+    gap: 10,
   },
   filterButton: {
     flexDirection: 'row',
@@ -176,8 +180,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     gap: 8,
     width: '45%',
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
   filterText: {
     fontSize: 14,
@@ -186,7 +189,6 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
     paddingHorizontal: 16,
-
   },
   driverCard: {
     backgroundColor: '#FFFFFF',
@@ -200,7 +202,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
-
   },
   driverHeader: {
     flexDirection: 'row',
@@ -210,8 +211,7 @@ const styles = StyleSheet.create({
   driverInfo: {
     flexDirection: 'row',
     gap: 12,
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
   avatar: {
     width: 48,
@@ -225,15 +225,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#000',
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
   driverName: {
     fontSize: 16,
     fontWeight: '600',
     color: '#000',
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -258,15 +256,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#000',
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
   carPrice: {
     fontSize: 12,
     color: '#9CA3AF',
     marginTop: 2,
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
   driverFooter: {
     flexDirection: 'row',
@@ -287,16 +283,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#000',
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
   scrollText: {
     textAlign: 'center',
     color: '#9CA3AF',
     fontSize: 14,
     marginVertical: 16,
-       fontFamily:"SF Pro"
-
+    fontFamily: 'SF Pro',
   },
 });
 

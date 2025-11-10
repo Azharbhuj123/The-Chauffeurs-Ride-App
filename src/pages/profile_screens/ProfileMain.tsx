@@ -22,11 +22,14 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/Button';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
+import { useRideStore } from '../../stores/rideStore';
+import { useUserStore } from '../../stores/useUserStore';
 
 // ProfileMainScreen Component
 export const ProfileMainScreen = ({ navigation }) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const tabBarHeight = useTabBarHeightHelper();
+  const { userData, resetAll } = useUserStore();
 
   const menuItems = [
     { id: 1, icon: 'user', label: 'Edit Profile', screen: 'EditProfile' },
@@ -46,6 +49,8 @@ export const ProfileMainScreen = ({ navigation }) => {
 
   const handleLogout = () => {
     setModalVisible(false);
+    resetAll();
+
     navigation.navigate('Login');
   };
   return (
@@ -58,10 +63,13 @@ export const ProfileMainScreen = ({ navigation }) => {
         contentContainerStyle={[{ paddingBottom: tabBarHeight + 50 }]}
       >
         {/* Profile Section */}
-        <View style={styles.profileSection}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('EditProfile')}
+          style={styles.profileSection}
+        >
           <View style={styles.profileImageContainer}>
             <Image
-              source={{ uri: 'https://i.pravatar.cc/150?img=13' }}
+              source={{ uri: userData?.profile_image }}
               style={styles.profileImage}
             />
             <View style={styles.editBadge}>
@@ -70,7 +78,7 @@ export const ProfileMainScreen = ({ navigation }) => {
           </View>
           <Text style={styles.profileName}>John Doe</Text>
           <Text style={styles.profileEmail}>note@email.com</Text>
-        </View>
+        </TouchableOpacity>
 
         {/* Menu Items */}
         <View style={styles.menuContainer}>
@@ -376,7 +384,6 @@ const styles = StyleSheet.create({
     color: '#666',
     lineHeight: wp(4.5),
     fontFamily: 'SF Pro',
-
   },
 
   // Model
@@ -429,14 +436,12 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     fontFamily: 'Poppins-Regular',
-
   },
   modalButtonText: {
     color: '#1F2937',
     fontSize: 16,
     fontWeight: '600',
     fontFamily: 'Poppins-Regular',
-    
   },
   btnContainer: {
     width: '100%',

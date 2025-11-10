@@ -104,6 +104,8 @@ function DriverHomeStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="DriverHome" component={Driver_Home} />
+      <Stack.Screen name="Chat" component={Chat} />
+
         <Stack.Screen
         name="RideConfirmationScreen"
         component={RideConfirmationScreen}
@@ -321,7 +323,7 @@ export default function BottomTabs() {
           <Tab.Screen name="Loyalty" component={LoyaltyRewardsScreen} />
           <Tab.Screen name="Profile" component={ProfileStack} />
         </Tab.Navigator>
-      ) : (
+      ) :role === 'Driver' ?   (
         <Tab.Navigator
           tabBar={props => <CustomDriverTabBar {...props} />}
           screenOptions={{
@@ -340,7 +342,7 @@ export default function BottomTabs() {
 
           <Tab.Screen name="Profile" component={OperationsStack} />
         </Tab.Navigator>
-      )}
+      ):""}
     </>
   );
 }

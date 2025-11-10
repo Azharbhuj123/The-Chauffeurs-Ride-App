@@ -46,6 +46,7 @@ export default function RideCompletedScreen({ navigation, route }) {
     keepPreviousData: true,
     enabled: !!rideId,
   });
+  
 
   const payment_breakdown = data?.data?.payment_breakdown;
 

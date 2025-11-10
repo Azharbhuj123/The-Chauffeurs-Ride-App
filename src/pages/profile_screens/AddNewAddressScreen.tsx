@@ -1,6 +1,6 @@
 //@ts-nocheck
 
-import React, { useState } from 'react';
+import React, { useState ,useCallback} from 'react';
 import {
     View,
     Text,
@@ -13,6 +13,7 @@ import {
     StatusBar,
     Platform,
     Dimensions,
+    ActivityIndicator
 } from 'react-native';
 import {
     widthPercentageToDP as wp,
@@ -24,84 +25,114 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '../../components/Button';
 import TopHeader from '../../components/TopHeader';
+import { useQuery } from '@tanstack/react-query';
+import { fetchData } from '../../queryFunctions/queryFunctions';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import AppLoader from '../../components/AppLoader';
 
 const { width, height } = Dimensions.get('window');
 
 
 
 
+
 export const AddNewAddressScreen = ({ navigation }) => {
-  const [addresses] = useState([
-    {
-      id: 1,
-      type: 'Home',
-      address: 'Apartment 101, Palm View Towers, 123 Main Street,',
-      icon: 'home',
-      color: '#FDD835',
+  // ✅ Infinite Query with pagination
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: ['user-address'],
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await fetchData(`/address?page=${pageParam}`);
+      return res;
     },
-    {
-      id: 2,
-      type: 'Work',
-      address: 'Apartment 101, Palm View Towers, 123 Main Street,',
-      icon: 'briefcase',
-      color: '#FDD835',
+    getNextPageParam: (lastPage) => {
+      const { currentPage, totalPages } = lastPage;
+      return currentPage < totalPages ? currentPage + 1 : undefined;
     },
-    {
-      id: 3,
-      type: 'Home',
-      address: 'Apartment 101, Palm View Towers, 123 Main Street,',
-      icon: 'map-pin',
-      color: '#FDD835',
+    keepPreviousData: true,
+  });
+
+  // ✅ Combine paginated data
+  const addresses = data?.pages.flatMap((page) => page?.data || []) || [];
+
+  // ✅ Scroll end callback
+  const handleScroll = useCallback(
+    ({ nativeEvent }) => {
+      const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+      const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
+      if (isCloseToBottom && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
     },
-    {
-      id: 4,
-      type: 'Home',
-      address: 'Apartment 101, Palm View Towers, 123 Main Street,',
-      icon: 'map-pin',
-      color: '#FDD835',
-    },
-  ]);
+    [hasNextPage, isFetchingNextPage, fetchNextPage]
+  );
+
+  if (isLoading) {
+    return (
+     <AppLoader/>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-     <TopHeader title='Add New Address' navigation={navigation}/>
+      <TopHeader title="Add New Address" navigation={navigation} />
 
-      <ScrollView style={styles.scrollView}  showsVerticalScrollIndicator={false}
+      <ScrollView
+        style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-
+        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
-        {/* Add New Address Button */}
+        {/* ✅ Add New Address Button */}
         <TouchableOpacity style={styles.addAddressButton} activeOpacity={0.7}>
           <Ionicons name="add-circle-outline" size={wp(5)} color="#666" />
           <Text style={styles.addAddressText}>Add New Address</Text>
         </TouchableOpacity>
 
-        {/* Address List */}
+        {/* ✅ Dynamic Address List */}
         <View style={styles.addressListContainer}>
-          {addresses.map((address) => (
-            <View key={address.id} style={styles.addressCard}>
-              <View style={styles.addressLeft}>
-                <View style={[styles.addressIconContainer, { backgroundColor: address.color }]}>
-                  <Feather name={address.icon} size={wp(5)} color="#000" />
+          {addresses.length > 0 ? (
+            addresses.map((address, index) => (
+              <View key={address._id || index} style={styles.addressCard}>
+                <View style={styles.addressLeft}>
+                  <View style={[styles.addressIconContainer, { backgroundColor: '#FDD835' }]}>
+                    <Feather name="map-pin" size={wp(5)} color="#000" />
+                  </View>
+                  <View style={styles.addressInfo}>
+                    <Text style={styles.addressType}>{address.where || 'Address'}</Text>
+                    <Text style={styles.addressText}>{address.address}</Text>
+                  </View>
                 </View>
-                <View style={styles.addressInfo}>
-                  <Text style={styles.addressType}>{address.type}</Text>
-                  <Text style={styles.addressText}>{address.address}</Text>
-                </View>
+
+                <TouchableOpacity activeOpacity={0.7}>
+                  <Feather name="edit-2" size={wp(4.5)} color="#999" />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity activeOpacity={0.7}>
-                <Feather name="edit-2" size={wp(4.5)} color="#999" />
-              </TouchableOpacity>
-            </View>
-          ))}
+            ))
+          ) : (
+            <Text style={{ textAlign: 'center', marginTop: hp(5), color: '#777' }}>No addresses found</Text>
+          )}
         </View>
+
+        {/* ✅ Pagination Loading */}
+        {isFetchingNextPage && (
+          <ActivityIndicator size="small" color="#000" style={{ marginVertical: hp(2) }} />
+        )}
 
         <View style={{ height: hp(10) }} />
       </ScrollView>
     </SafeAreaView>
   );
 };
+
 
 
 

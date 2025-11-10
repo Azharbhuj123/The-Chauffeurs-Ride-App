@@ -1,5 +1,11 @@
 // @ts-nocheck
-import React, { useState, useRef } from 'react';
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from 'react';
 import {
   View,
   Text,
@@ -9,7 +15,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Image
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -26,110 +32,148 @@ import { showToast } from '../../utils/toastHelper';
 import { useUserStore } from '../../stores/useUserStore';
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
+import { joinUserRoom, socket } from '../../utils/socket';
+import { useFocusEffect } from '@react-navigation/native';
+import { useRideStore } from '../../stores/rideStore';
 
-export default function ChatScreen({ navigation,route }) {
+export default function ChatScreen({ navigation, route }) {
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      text: 'Good Evening!',
-      sender: 'driver',
-      time: '8:29 pm',
-      showAvatar: true,
-    },
-    {
-      id: 2,
-      text: 'Welcome to Car2go Customer Service',
-      sender: 'driver',
-      time: '8:29 pm',
-      showAvatar: false,
-    },
-    {
-      id: 3,
-      text: 'Thank you!',
-      sender: 'user',
-      time: '8:30 pm',
-    },
-  ]);
-  const tabBarHeight = useTabBarHeightHelper();
-  const { userData , role } = useUserStore();
-  const { rideId, driver_id, user_id} = route.params;
+  const scrollViewRef = useRef(null);
+  const [localMessages, setLocalMessages] = useState([]);
 
-  const { data, isLoading, refetch } = useQuery({
+  const { userData, role } = useUserStore();
+  const { rideId, driver_id, user_id } = route.params;
+  const tabBarHeight = 0; // replace with useTabBarHeightHelper() if needed
+  const { sethasUnreadMessages } = useRideStore();
+
+  // ✅ Fetch chat messages
+  const { data, isLoading } = useQuery({
     queryKey: ['chat', driver_id, user_id],
-    queryFn: () => fetchData('/chat/'),
+    queryFn: () => fetchData(`/chat?sender=${user_id}&receiver=${driver_id}`),
     keepPreviousData: true,
   });
 
-
-  console.log(data,"data");
-  
-
-  const scrollViewRef = useRef(null);
-
-
-
-
-
-
-
-    const { triggerMutation, loading } = useActionMutation({
-    onSuccessCallback: async data => {
-
-      if(data?.sent){
-
-      }
-     
-    },
+  const { triggerMutation } = useActionMutation({
+    onSuccessCallback: () => {},
     onErrorCallback: errmsg => {
-      showToast({
-        type: 'error',
-        title: 'Message Send Failed',
-        message: errmsg || 'Please Try again!',
-      });
+      console.log('Message send failed', errmsg);
     },
   });
 
+  // ✅ Send message with optimistic update
   const handleSend = () => {
     if (message.trim() === '') return;
 
-    // const newMessage = {
-    //   id: Date.now(),
-    //   text: message.trim(),
-    //   sender: 'driver',
-    //   time: 'Just Now',
-    // };
+    const tempId = Date.now().toString(); // unique temp id
 
-    // setMessages((prev) => [...prev, newMessage]);
-    // setMessage('');
+    const newMessage = {
+      id: tempId,
+      text: message.trim(),
+      sender: 'user',
+      time: new Date().toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      status: 'sending',
+    };
+
+    setLocalMessages(prev => [...prev, newMessage]);
 
     const data_obj = {
       sender: role === 'User' ? user_id : driver_id,
       receiver: role === 'User' ? driver_id : user_id,
       message: message.trim(),
-      ride:rideId
-    }
+      ride: rideId,
+    };
 
-    console.log(data_obj,"data");
-    
-
+    setMessage('');
 
     triggerMutation({
       endPoint: '/chat/',
       body: data_obj,
       method: 'post',
+      onSuccessCallback: res => {
+        setLocalMessages(prev =>
+          prev.map(m =>
+            m.id === tempId ? { ...m, status: 'sent', id: res?.data?._id } : m,
+          ),
+        );
+      },
+      onErrorCallback: errmsg => {
+        setLocalMessages(prev =>
+          prev.map(m => (m.id === tempId ? { ...m, status: 'failed' } : m)),
+        );
+      },
     });
 
-
-
-    // Scroll to bottom after short delay
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 100);
+    }, 300);
   };
 
+  // ✅ Format fetched messages for UI
+  const formattedMessages = useMemo(() => {
+    if (!Array.isArray(data)) return [];
+    return data
+      .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+      .map((msg, index, arr) => ({
+        id: msg._id,
+        text: msg.message,
+        sender: msg.sender?._id === userData?._id ? 'user' : 'driver',
+        time: new Date(msg.createdAt).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        showAvatar:
+          index === 0 || msg.sender?._id !== arr[index - 1]?.sender?._id,
+        status: 'sent',
+      }));
+  }, [data, userData?._id]);
 
-  
+  // ✅ Socket listener for incoming messages
+  useFocusEffect(
+    useCallback(() => {
+      if (!userData?._id) return;
+
+      const handleMessage = data => {
+        const newMessage = {
+          id: data?._id,
+          text: data?.message.trim(),
+          sender: data?.sender?._id === userData?._id ? 'user' : 'driver',
+          time: new Date(data?.createdAt).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          status: 'sent',
+        };
+        setLocalMessages(prev => [...prev, newMessage]);
+      };
+
+      socket.on('msg_received', handleMessage);
+
+      return () => {
+        socket.off('msg_received', handleMessage);
+      };
+    }, [userData?._id]),
+  );
+
+  // ✅ Combine API + local messages
+  const allMessages = useMemo(
+    () => [...formattedMessages, ...localMessages],
+    [formattedMessages, localMessages],
+  );
+
+  // ✅ Auto-scroll
+  useEffect(() => {
+    if (allMessages.length) {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [allMessages]);
+
+  // ✅ Mark as read
+  useEffect(() => {
+    if (allMessages.length) sethasUnreadMessages(false);
+  }, [allMessages, sethasUnreadMessages]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -138,69 +182,103 @@ export default function ChatScreen({ navigation,route }) {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        {/* Header */}
-       <TopHeader title='Chat' navigation={navigation}/>
+        <TopHeader title="Chat" navigation={navigation} />
 
-        {/* Chat Messages */}
         <ScrollView
           ref={scrollViewRef}
           style={styles.chatContainer}
-          contentContainerStyle={[styles.chatContent,{paddingBottom:tabBarHeight}]}
+          contentContainerStyle={[
+            styles.chatContent,
+            { paddingBottom: tabBarHeight },
+          ]}
           showsVerticalScrollIndicator={false}
           onContentSizeChange={() =>
             scrollViewRef.current?.scrollToEnd({ animated: true })
           }
         >
-          {messages.map((msg) => (
-            <View key={msg.id} style={styles.messageWrapper}>
-              {msg.sender === 'driver' ? (
-                // Driver Message
-                <View style={styles.driverMessageContainer}>
-                    <View style={styles.avatar}>
-                       {/* <Image
-                                         source={{ uri: data?.data?.user?.profile_image }}
-                                         style={{ width: '100%', height: '100%', borderRadius: 50 }}
-                                       /> */}
-                    </View>
-                  
-                  <View style={styles.messageContent}>
-                    <View style={styles.driverBubble}>
-                      <Text style={styles.driverText}>{msg.text}</Text>
-                    </View>
-                    <Text style={styles.timeText}>{msg.time}</Text>
-                  </View>
-                </View>
-              ) : (
-                // User Message
-                <View style={styles.userMessageContainer}>
-                  <View style={styles.messageContent}>
-                    <View style={styles.userBubble}>
-                      <Text style={styles.userText}>{msg.text}</Text>
-                    </View>
-                    <View style={styles.timeRow}>
-                      <Ionicons
-                        name="checkmark-done"
-                        size={wp('4%')}
-                        color="#FFD700"
-                      />
-                      <EvilIcons
-                        name="clock"
-                        size={wp('4%')}
-                        color="#999"
-                      />
+          {isLoading ? (
+            <Text style={{ textAlign: 'center', marginTop: 20 }}>
+              Loading chat...
+            </Text>
+          ) : allMessages.length === 0 ? (
+            <Text style={{ textAlign: 'center', marginTop: 20 }}>
+              No messages yet. Start chatting!
+            </Text>
+          ) : (
+            allMessages.map(msg => (
+              <View key={msg.id} style={styles.messageWrapper}>
+                {msg.sender === 'driver' ? (
+                  <View style={styles.driverMessageContainer}>
+                    {msg.showAvatar && (
+                      <View style={styles.avatar}>
+                        <Image
+                          source={{
+                            uri:
+                              msg?.sender === 'driver'
+                                ? data?.[0]?.receiver?.profile_image
+                                : data?.[0]?.sender?.profile_image,
+                          }}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            borderRadius: 50,
+                          }}
+                        />
+                      </View>
+                    )}
+                    <View style={styles.messageContent}>
+                      <View style={styles.driverBubble}>
+                        <Text style={styles.driverText}>{msg.text}</Text>
+                      </View>
                       <Text style={styles.timeText}>{msg.time}</Text>
                     </View>
                   </View>
-                </View>
-              )}
-            </View>
-          ))}
+                ) : (
+                  <View style={styles.userMessageContainer}>
+                    <View style={styles.messageContent}>
+                      <View style={styles.userBubble}>
+                        <Text style={styles.userText}>{msg.text}</Text>
+                      </View>
+                      <View style={styles.timeRow}>
+                        {msg.status === 'sending' && (
+                          <EvilIcons
+                            name="clock"
+                            size={wp('4%')}
+                            color="#999"
+                          />
+                        )}
+                        {msg.status === 'sent' && (
+                          <Ionicons
+                            name="checkmark-done"
+                            size={wp('4%')}
+                            color="#FFD700"
+                          />
+                        )}
+                        {msg.status === 'failed' && (
+                          <Ionicons
+                            name="close-circle"
+                            size={wp('4%')}
+                            color="red"
+                          />
+                        )}
+                        <Text style={styles.timeText}>{msg.time}</Text>
+                      </View>
+                    </View>
+                  </View>
+                )}
+              </View>
+            ))
+          )}
         </ScrollView>
 
         {/* Input Box */}
         <View style={styles.inputContainer}>
           <TouchableOpacity style={styles.iconButton}>
-            <Ionicons name="add-circle-outline" size={wp('6.5%')} color="#888" />
+            <Ionicons
+              name="add-circle-outline"
+              size={wp('6.5%')}
+              color="#888"
+            />
           </TouchableOpacity>
 
           <TextInput
@@ -380,4 +458,3 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
-

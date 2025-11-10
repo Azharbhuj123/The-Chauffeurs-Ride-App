@@ -28,6 +28,7 @@ import { useLoaderStore } from '../../stores/useLoaderStore';
 import AppLoader from '../../components/AppLoader';
 import { useStore } from '../../stores/useStore';
 import { socket, joinUserRoom } from '../../utils/socket';
+import { useRideStore } from '../../stores/rideStore';
 
 export default function Home({ navigation }) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -36,6 +37,7 @@ export default function Home({ navigation }) {
   const { token, userData } = useUserStore();
   const { showLoader, hideLoader } = useLoaderStore();
   const { location } = useStore();
+  const { setRideData } = useRideStore();
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['user-home'],
@@ -43,11 +45,29 @@ export default function Home({ navigation }) {
     keepPreviousData: true,
   });
 
+  const { data: userLastRide } = useQuery({
+    queryKey: ['user-last-ride'],
+    queryFn: () => fetchData('/ride/user-last-ride'),
+    keepPreviousData: true,
+  });
+
   useFocusEffect(
     useCallback(() => {
+      if (!userLastRide) return; // wait until userLastRide is defined
+
+      console.log(userLastRide, 'userLastRide');
+
+      if (!userLastRide.IsPaid) {
+        navigation.navigate('Bookings', {
+          screen: 'RideComplete',
+          params: { rideId: userLastRide.ride_id },
+        });
+      }
+
       refetch();
-    }, []),
+    }, [userLastRide, navigation, refetch]),
   );
+
   useFocusEffect(
     useCallback(() => {
       console.log(userData?._id, 'userData?._id');
@@ -140,7 +160,6 @@ export default function Home({ navigation }) {
   const handleNavigate = (rideId, status = 'Pending') => {
     if (!rideId) return;
     if (status === 'Pending') {
-       
       return;
     } else {
       navigation.navigate('Bookings', {
@@ -149,6 +168,38 @@ export default function Home({ navigation }) {
       });
     }
   };
+
+const handleBookAgain = (data) => {
+  console.log(data, 'again');
+
+  // Extract coordinates
+  const pickLat = data?.pickup_location?.coordinates[1];
+  const pickLng = data?.pickup_location?.coordinates[0];
+
+  const dropLat = data?.drop_location?.coordinates[1];
+  const dropLng = data?.drop_location?.coordinates[0];
+  console.log(data?.drop_location?.famous_location,"data?.drop_location?.famous_location");
+  
+  // Build pickup and drop objects
+  const pick_location = {
+    latitude: pickLat,
+    longitude: pickLng,
+    address: data?.pickup_location?.address,
+    shortAddress: data?.pickup_location?.famous_location,
+  };
+
+  const drop_location = {
+    latitude: dropLat,
+    longitude: dropLng,
+    address: data?.drop_location?.address,
+    shortAddress: data?.drop_location?.famous_location,
+  };
+  
+  // Update ride data
+  setRideData({ pick_location,  drop_location });
+  navigation.navigate('Bookings')
+};
+
 
   if (isLoading) {
     return <AppLoader />;
@@ -251,7 +302,7 @@ export default function Home({ navigation }) {
                       </Text>
                     </View>
                     {/* <Icon name="chevron-forward" size={wp('5%')} color="#666" /> */}
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleBookAgain(des)}>
                       <Text
                         style={{
                           fontSize: 14,

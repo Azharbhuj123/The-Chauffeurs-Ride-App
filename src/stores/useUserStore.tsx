@@ -14,6 +14,7 @@ interface CounterState {
   setRole: (newRole: Role) => void;
   setUserData: (user: string, token: string) => Promise<void>;
   loadStoredData: () => Promise<void>;
+  resetAll: () => Promise<void>;
 }
 
 export const useUserStore = create<CounterState>(set => ({
@@ -29,9 +30,19 @@ export const useUserStore = create<CounterState>(set => ({
 
   // ✅ Save to async storage + state
   setUserData: async (user, token) => {
-    await AsyncStorage.setItem('userData', JSON.stringify(user));
-    await AsyncStorage.setItem('token', token);
-    set({ userData: user, token, role: user?.role });
+    try {
+      // Always store user data
+      await AsyncStorage.setItem('userData', JSON.stringify(user));
+
+      // If a new token is provided, overwrite it; otherwise, keep existing token
+
+      await AsyncStorage.setItem('token', token);
+
+      // Update Zustand state
+      set({ userData: user, token, role: user?.role });
+    } catch (err) {
+      console.error('Error setting user data:', err);
+    }
   },
 
   // ✅ Load values from async storage on app start
@@ -45,5 +56,21 @@ export const useUserStore = create<CounterState>(set => ({
       role: parse_user?.role || '',
       hydrated: true, // ✅ finished loading
     });
+  },
+
+  resetAll: async () => {
+    try {
+      await AsyncStorage.multiRemove(['userData', 'token']); // clear both keys
+
+      set({
+        isForgot: false,
+        role: '',
+        token: null,
+        userData: null,
+        hydrated: false,
+      });
+    } catch (err) {
+      console.error('Error resetting store:', err);
+    }
   },
 }));

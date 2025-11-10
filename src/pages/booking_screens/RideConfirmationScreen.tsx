@@ -45,7 +45,7 @@ const RideConfirmationScreen = ({ navigation, route }) => {
   console.log(rideId, 'rideId');
 
   const { role, userData } = useUserStore();
-  const { clearRideRequests } = useRideStore();
+  const { clearRideRequests,sethasUnreadMessages ,hasUnreadMessages} = useRideStore();
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['ride_view', rideId],
@@ -141,6 +141,11 @@ const RideConfirmationScreen = ({ navigation, route }) => {
             setRideStatus(data?.ride_status);
           }
         });
+        socket.on('msg_received', data => {
+          if(data?._id){
+            sethasUnreadMessages(true)
+          }
+        });
       }
     }, [userData?._id]),
   );
@@ -232,7 +237,7 @@ const RideConfirmationScreen = ({ navigation, route }) => {
 
         {/* --- Driver Info Card --- */}
         <View style={styles.driverCard}>
-          {role === 'Driver' ? (
+          {role === 'User' ? (
             <View style={styles.driverInfo}>
               <View style={styles.avatar}>
                 <Image
@@ -291,8 +296,26 @@ const RideConfirmationScreen = ({ navigation, route }) => {
               onPress={() => handlePress('Chat')}
               style={styles.contactButton}
             >
+              {/* Red dot */}
+              
+
               <Icon name="message-processing" size={20} color="#000" />
               <Text style={styles.contactButtonText}>Contact Driver</Text>
+              {hasUnreadMessages && (
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: hp(1.2),
+                    left: hp(2),
+                    right: 0,
+                    width: 10,
+                    height: 10,
+                    borderRadius: 5,
+                    backgroundColor: 'red',
+                    zIndex: 10,
+                  }}
+                />
+              )}
             </TouchableOpacity>
           </View>
           {role === 'Driver' &&

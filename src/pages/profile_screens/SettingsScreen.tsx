@@ -43,7 +43,7 @@ export const SettingsScreen = ({ navigation }) => {
                         />
                     </View>
                     <View style={styles.divider} />
-                    <TouchableOpacity style={styles.row} activeOpacity={0.6}>
+                    {/* <TouchableOpacity style={styles.row} activeOpacity={0.6}>
                         <Text style={styles.rowText}>Dark Mode</Text>
                         <Switch
                             value={darkMode}
@@ -51,7 +51,7 @@ export const SettingsScreen = ({ navigation }) => {
                             trackColor={{ false: '#767577', true: '#FDD835' }}
                             thumbColor={'#f4f3f4'}
                         />
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                     <View style={styles.divider} />
                     <TouchableOpacity style={styles.row} activeOpacity={0.6}>
                         <Text style={styles.rowText}>Default Map View</Text>
