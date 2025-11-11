@@ -388,64 +388,7 @@ const styles = StyleSheet.create({
 
   // Model
 
-  modalBackdrop: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
-  },
-  modalContainer: {
-    width: wp('85%'),
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 25,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    textAlign: 'center',
-    fontFamily: 'Poppins-Regular',
-
-    marginTop: 15,
-    marginBottom: 10,
-  },
-  modalSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    textAlign: 'center',
-    fontFamily: 'Poppins-Regular',
-
-    marginBottom: 25,
-  },
-  modalButton: {
-    backgroundColor: '#F8D833',
-    borderRadius: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    width: '100%',
-    alignItems: 'center',
-    fontFamily: 'Poppins-Regular',
-  },
-  modalButtonText: {
-    color: '#1F2937',
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Poppins-Regular',
-  },
-  btnContainer: {
-    width: '100%',
-  },
+  
 });
 
 export default ProfileMainScreen;

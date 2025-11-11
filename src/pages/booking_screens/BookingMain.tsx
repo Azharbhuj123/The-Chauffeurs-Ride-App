@@ -600,9 +600,9 @@ export default function BookingMain({ navigation }) {
 
   const [selectedCar, setSelectedCar] = useState();
   const [fromLocation, setFromLocation] = useState(
-    rideData?.pick_location  || null,
+    rideData?.pick_location || null,
   );
-  const [toLocation, setToLocation] = useState(rideData?.drop_location ||null);
+  const [toLocation, setToLocation] = useState(rideData?.drop_location || null);
   const [showPicker, setShowPicker] = useState(false);
   const [pickerMode, setPickerMode] = useState('date'); // 'date' | 'time'
   const [selectedClass, setSelectedClass] = useState('Economy');
@@ -620,9 +620,8 @@ export default function BookingMain({ navigation }) {
   });
   const resetDone = useRef(false);
 
-  console.log(fromLocation,"<<<<fromLocation");
-  console.log(toLocation,"<<<<toLocation");
-  
+  console.log(fromLocation, '<<<<fromLocation');
+  console.log(toLocation, '<<<<toLocation');
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: [
@@ -748,19 +747,24 @@ export default function BookingMain({ navigation }) {
   );
 
   const handleBooking = () => {
- 
-    
-    
+    let voucher_ids = [];
+    if(isUpgradeClass){
+      voucher_ids.push(voucherData?.voucher?._id);
+    }
+
     setRideData({
       pick_location: fromLocation,
       drop_location: toLocation,
       selectedClass,
+      for_api_class:fromClass == '' ? selectedClass : fromClass,
       ...ridefare?.data,
       selectedCar,
       is_upgrade_class: isUpgradeClass,
       is_schedule: false,
       isScheduledRide,
       dateTime,
+      voucher_ids,
+
     });
 
     navigation.navigate('ConfirmBooking');
@@ -779,7 +783,9 @@ export default function BookingMain({ navigation }) {
       pick_location: fromLocation,
       drop_location: toLocation,
     });
-    navigation.navigate('SelectDriver');
+    navigation.navigate('SelectDriver',{
+      voucher_id: voucherData?.sec_voucher?._id
+    });
   };
 
   return (

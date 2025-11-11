@@ -21,10 +21,11 @@ import { heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { COLORS } from './src/utils/Enums';
 import AppLoader from './src/components/AppLoader';
 import { PERMISSIONS, request, check, RESULTS } from 'react-native-permissions';
-import Geolocation from 'react-native-geolocation-service';
+// import Geolocation from 'react-native-geolocation-service';
+import Geolocation from '@react-native-community/geolocation';
 
 import { useStore } from './src/stores/useStore';
-import { joinUserRoom } from './src/utils/socket';
+import { joinUserRoom, socket } from './src/utils/socket';
 import { useUserStore } from './src/stores/useUserStore';
 import { initSocketListeners } from './src/utils/socketEvents';
 import { useNavigation } from '@react-navigation/native';
@@ -84,10 +85,9 @@ export default function App() {
     ),
   };
 
-
   const [permissionStatus, setPermissionStatus] = useState('');
 
-    useEffect(() => {
+  useEffect(() => {
     if (userData?._id) {
       joinUserRoom(userData?._id);
       initSocketListeners(role); // ✅ no navigation passed
@@ -118,7 +118,16 @@ export default function App() {
   const getUserLocation = () => {
     Geolocation.getCurrentPosition(
       position => {
+        console.log(position?.coords, 'position?.coords');
+
         setLocation(position?.coords);
+        const data = {
+          userId: userData?._id.toString(),
+          lat: position?.coords?.latitude,
+          lng: position?.coords?.longitude,
+        };
+
+        socket.emit('user-location', data);
       },
       error => {
         console.log('Error getting location:', error);
@@ -143,7 +152,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
         <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-        <MainNavigation  />
+        <MainNavigation />
         <Toast config={toastConfig} />
         <FlashMessage position="top" />
       </SafeAreaProvider>

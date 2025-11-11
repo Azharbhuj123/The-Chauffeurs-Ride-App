@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
-import { pick, types, isCancel } from '@react-native-documents/picker';
+// import { pick, types, isCancel } from '@react-native-documents/picker';
 
 export const pickImageFromCamera = async () => {
   return new Promise((resolve, reject) => {
@@ -52,6 +52,7 @@ export const pickImageFromGallery = async () => {
   });
 };
 export const pickFile = async () => {
+  return null;
   try {
     const results = await pick({
       type: [types.allFiles],

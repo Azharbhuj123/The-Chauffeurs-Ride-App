@@ -21,14 +21,13 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
 import { useRideStore } from '../../stores/rideStore';
 import AppLoader from '../../components/AppLoader';
- 
 
 const { width } = Dimensions.get('window');
 
-const SelectDriver = ({ navigation }) => {
+const SelectDriver = ({ navigation, route }) => {
   const tabBarHeight = useTabBarHeightHelper();
   const { setRideData, rideData } = useRideStore();
-
+  const { voucher_id } = route.params || {};
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['selected-driver'],
@@ -57,20 +56,23 @@ const SelectDriver = ({ navigation }) => {
     : [];
 
   const handleSelectDriver = driver => {
-    console.log(driver,"cvlick driver");
-    
+    let voucher_ids = [];
+
+    voucher_ids.push(voucher_id);
+
     setRideData({
-      selectedClass:driver?.category_type,
-      selectedCar:driver?.vehicle_id,
+      selectedClass: driver?.category_type,
+      selectedCar: driver?.vehicle_id,
       is_upgrade_class: false,
       is_schedule: false,
-      fareLoad:true
+      fareLoad: true,
+      voucher_ids,
     });
     navigation.navigate('ConfirmBooking');
   };
 
-  if(isLoading){
-    return <AppLoader/>
+  if (isLoading) {
+    return <AppLoader />;
   }
   return (
     <SafeAreaView style={styles.container}>

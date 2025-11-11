@@ -59,6 +59,7 @@ const ConfirmBooking = ({ navigation, route }) => {
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [pickupLocation, setPickupLocation] = useState(null);
   const [dropoffLocation, setDropoffLocation] = useState(null);
+  const [totalFare, setTotalFare] = useState(0.0);
   const [timer, setTimer] = useState(0);
   const [ride_id, setRide_id] = useState(null);
   const intervalRef = useRef(null);
@@ -85,16 +86,17 @@ const ConfirmBooking = ({ navigation, route }) => {
         drop_location,
         pick_location,
         selectedClass,
+        for_api_class,
         selectedCar,
-        isUpgradeClass,
+        is_upgrade_class,
       } = rideData || {};
       const params = new URLSearchParams({
         pickup_lat: pick_location?.latitude,
         pickup_lng: pick_location?.longitude,
         drop_lat: drop_location?.latitude,
         drop_lng: drop_location?.longitude,
-        category_type: selectedClass,
-        upgrade_class: isUpgradeClass || false,
+        category_type: for_api_class,
+        upgrade_class: is_upgrade_class || false,
         vehicle_id: selectedCar || '',
       }).toString();
 
@@ -102,7 +104,7 @@ const ConfirmBooking = ({ navigation, route }) => {
     },
     keepPreviousData: true,
     enabled:
-      !!rideData?.selectedClass &&
+      !!rideData?.for_api_class &&
       !!rideData?.drop_location?.latitude &&
       !!rideData?.drop_location?.longitude &&
       !!rideData?.pick_location?.latitude &&
@@ -110,10 +112,22 @@ const ConfirmBooking = ({ navigation, route }) => {
       !!rideData?.selectedCar,
   });
 
+  const { data: voucherData } = useQuery({
+    queryKey: ['check-voucher'],
+    queryFn: () => {
+      return fetchData(`/voucher/check-status?type=free_ride`);
+    },
+    keepPreviousData: true,
+  });
+
   useEffect(() => {
-    setRideData({
-      ...rideFare?.data,
-    });
+    if (rideFare?.data) {
+      setRideData({ ...rideFare.data });
+
+      if (rideFare.data.totalFare) {
+        setTotalFare(rideFare.data.totalFare);
+      }
+    }
   }, [rideFare]);
 
   const driver_own_vehicle = data?.driver_own_vehicle;
@@ -324,6 +338,15 @@ const ConfirmBooking = ({ navigation, route }) => {
   });
 
   const handleConfirmBooking = () => {
+
+     
+    let final_voucher_ids = [...rideData?.voucher_ids];
+
+    if(paymentMethod === 'Free' && voucherData?.voucher?._id){
+      final_voucher_ids.push(voucherData?.voucher?._id);
+    }
+
+
     let body = {
       vehicle: rideData?.selectedCar,
       payment_method: paymentMethod,
@@ -335,6 +358,7 @@ const ConfirmBooking = ({ navigation, route }) => {
       is_upgrade_class: rideData?.is_upgrade_class,
       duration: rideData?.duration_min_value,
       distance: rideData?.distance,
+      voucher_ids: final_voucher_ids,
     };
 
     const pickup_location = {
@@ -424,6 +448,14 @@ const ConfirmBooking = ({ navigation, route }) => {
     }, [userData?._id]),
   );
 
+  const hanldePayFreeRide = action => {
+    setPaymentMethod(action);
+    if (action === 'Free') {
+      setTotalFare(0.0);
+    } else {
+      setTotalFare(rideData?.totalFare);
+    }
+  };
   console.log(rideData, 'rideData');
 
   return (
@@ -741,7 +773,7 @@ const ConfirmBooking = ({ navigation, route }) => {
                 styles.paymentButton,
                 paymentMethod === 'Card' && styles.paymentButtonActive,
               ]}
-              onPress={() => setPaymentMethod('Card')}
+              onPress={() => hanldePayFreeRide('Card')}
             >
               <Icon name="credit-card" size={18} color="#000" />
               <Text style={styles.paymentText}>Card</Text>
@@ -751,19 +783,34 @@ const ConfirmBooking = ({ navigation, route }) => {
                 styles.paymentButton,
                 paymentMethod === 'Cash' && styles.paymentButtonActive,
               ]}
-              onPress={() => setPaymentMethod('Cash')}
+              onPress={() => hanldePayFreeRide('Cash')}
             >
               <Icon name="cash" size={18} color="#000" />
               <Text style={styles.paymentText}>Cash</Text>
             </TouchableOpacity>
           </View>
+          {voucherData?.voucher && (
+            <TouchableOpacity
+              style={[
+                styles.paymentButton,
+                paymentMethod === 'Free' && styles.paymentButtonActive,
+                { marginTop: 20 },
+              ]}
+              onPress={() => hanldePayFreeRide('Free')}
+            >
+              <MaterialIcons name="money-off" size={18} color="#000" />
+              <Text style={styles.paymentText}>Free Ride</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.fareCard}>
           <View style={styles.fareContent}>
             <View>
               <Text style={styles.fareLabel}>Total Estimated Fare</Text>
-              <Text style={styles.fareAmount}>${rideData?.totalFare}</Text>
+              <Text style={styles.fareAmount}>
+                ${Number(totalFare)?.toFixed(2)}
+              </Text>
             </View>
             <View style={styles.fareDetails}>
               <Text style={styles.fareClass}>
@@ -1030,8 +1077,9 @@ const styles = StyleSheet.create({
     fontFamily: 'SF Pro',
   },
   paymentButtonActive: {
-    backgroundColor: '#F8D833',
-    borderColor: '#F8D833',
+    backgroundColor: 'rgba(254, 220, 50, 0.10)',
+    borderColor: '#FEDC32',
+    borderWidth: 1,
   },
   paymentText: {
     fontSize: 14,

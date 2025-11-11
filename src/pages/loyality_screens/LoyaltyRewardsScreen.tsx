@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,12 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import TopHeader from '../../components/TopHeader';
 import Button from '../../components/Button';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
+import { useQuery } from '@tanstack/react-query';
+import { fetchData } from '../../queryFunctions/queryFunctions';
+import { useFocusEffect } from '@react-navigation/native';
+import AppLoader from '../../components/AppLoader';
+import { showToast } from '../../utils/toastHelper';
+import useActionMutation from '../../queryFunctions/useActionMutation';
 
 const { width } = Dimensions.get('window');
 
@@ -51,22 +57,6 @@ const tiers = [
   },
 ];
 
-const rewards = [
-  { id: '1', title: 'Free Ride Voucher', cost: '1,000 Points', type: 'redeem' },
-  {
-    id: '2',
-    title: 'Upgrade Vehicle Class',
-    cost: '500 Points',
-    type: 'redeem',
-  },
-  {
-    id: '3',
-    title: 'Exclusive: Book Selected Driver',
-    cost: 'Gold Tier Benefit',
-    type: 'unlocked',
-  },
-];
-
 const activities = [
   { id: '1', title: 'Redeemed Free Ride Voucher', points: -1000 },
   { id: '2', title: 'Referral Bonus', points: 500 },
@@ -78,12 +68,53 @@ const activities = [
 
 export const LoyaltyRewardsScreen = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
+  const [currentPoints, setCurrentPoints] = useState({});
   const tabBarHeight = useTabBarHeightHelper();
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['user-wallet'],
+    queryFn: () => fetchData('/user/user-wallet'),
+    keepPreviousData: true,
+  });
+
+  const wallet_data = data?.wallet;
+  const wallet_data_balance = data?.wallet?.balance;
+  const transactions = wallet_data?.transactions;
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, []),
+  );
 
   // --- Carousel Logic ---
   const tierCardWidth = wp('45%'); // Card width
   const tierCardMargin = wp('4%'); // Margin between cards
   const snapInterval = tierCardWidth + tierCardMargin;
+
+  const rewards = [
+    {
+      id: '1',
+      title: 'Free Ride Voucher',
+      cost: '1000 Points',
+      type: wallet_data_balance >= 1000 ? 'redeem' : 'unlocked',
+      voucher_type: 'free_ride',
+    },
+    {
+      id: '2',
+      title: 'Upgrade Vehicle Class',
+      cost: '500 Points',
+      type: wallet_data_balance >= 500 ? 'redeem' : 'unlocked',
+      voucher_type: 'upgrade_vehicle',
+    },
+    {
+      id: '3',
+      title: 'Exclusive: Book Selected Driver',
+      cost: '5000 Points',
+      type: wallet_data_balance >= 5000 ? 'redeem' : 'unlocked',
+      voucher_type: 'book_driver',
+    },
+  ];
 
   const renderTierCard = ({ item }) => (
     <View style={[styles.tierCard, item.isUnlocked && styles.unlockedTierCard]}>
@@ -98,16 +129,75 @@ export const LoyaltyRewardsScreen = ({ navigation }) => {
     </View>
   );
 
+  const handleViewReward = item => {
+    if (item.type === 'redeem') {
+      setModalVisible(true);
+      setCurrentPoints({
+        cost: parseInt(item?.cost),
+        title: item?.title,
+        type: item?.voucher_type,
+      });
+    }
+  };
+
+  const { triggerMutation, loading } = useActionMutation({
+    onSuccessCallback: async data => {
+      if (data?.success) {
+        setModalVisible(false);
+
+        showToast({
+          type: 'success',
+          title: 'Redem Success',
+          message: data?.message || 'Successfully Redeemed!',
+        });
+        refetch();
+      }
+    },
+    onErrorCallback: errmsg => {
+      showToast({
+        type: 'error',
+        title: 'Redem Failed',
+        message: errmsg || 'Please Try again!',
+      });
+    },
+  });
+
+  const handleSubmit = () => {
+    const data_obj = {
+      points: currentPoints?.cost,
+      type: currentPoints?.type,
+      title: currentPoints?.title,
+    };
+    triggerMutation({
+      endPoint: '/voucher/',
+      body: data_obj,
+      method: 'post',
+    });
+  };
+
+  if (isLoading) return <AppLoader />;
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#f8f8f8" />
-      <TopHeader title="Loyalty & Rewards" />
+      <TopHeader
+        title="Loyalty & Rewards"
+        navigation={navigation}
+        any_navigation={true}
+        navigate_to="Home"
+      />
 
-      <ScrollView contentContainerStyle={[{ paddingBottom: tabBarHeight }]}>
+      <ScrollView
+        contentContainerStyle={[{ paddingBottom: tabBarHeight + 35 }]}
+      >
         {/* Balance Card */}
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>Your Current Balance</Text>
-          <Text style={styles.balancePoints}>1,200 Points</Text>
+
+          <Text style={styles.balancePoints}>
+            {wallet_data_balance > 10000 ? '10000+' : wallet_data_balance}{' '}
+            Points
+          </Text>
           <Text style={styles.balanceSub}>
             Use your points for free rides & premium features.
           </Text>
@@ -138,7 +228,7 @@ export const LoyaltyRewardsScreen = ({ navigation }) => {
               {item.type === 'redeem' ? (
                 <TouchableOpacity
                   style={styles.redeemButton}
-                  onPress={() => setModalVisible(true)}
+                  onPress={() => handleViewReward(item)}
                 >
                   <Text style={styles.redeemButtonText}>Redeem</Text>
                 </TouchableOpacity>
@@ -156,25 +246,33 @@ export const LoyaltyRewardsScreen = ({ navigation }) => {
         </View>
 
         {/* Points Activity */}
-        <Text style={styles.sectionTitle}>Points Activity</Text>
-        <View style={styles.listContainer2}>
-          {activities.map(item => (
-            <View key={item.id} style={styles.listItem}>
-              <Text style={styles.listItemTitle}>{item.title}</Text>
-              <Text
-                style={[
-                  styles.activityPoints,
-                  item.points > 0
-                    ? styles.pointsPositive
-                    : styles.pointsNegative,
-                ]}
-              >
-                {item.points > 0 ? '+' : ''}
-                {item.points.toLocaleString()} pts
-              </Text>
+        {transactions?.length > 0 && (
+          <View>
+            <Text style={styles.sectionTitle}>Points Activity</Text>
+            <View style={styles.listContainer2}>
+              {transactions?.map(item => (
+                <View key={item.id} style={styles.listItem}>
+                  <Text style={styles.listItemTitle}>
+                    {item.description?.length > 28
+                      ? item.description.slice(0, 28) + '...'
+                      : item.description}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.activityPoints,
+                      item.amount > 0
+                        ? styles.pointsPositive
+                        : styles.pointsNegative,
+                    ]}
+                  >
+                    {item.amount > 0 ? '+' : ''}
+                    {item.amount.toLocaleString()} pts
+                  </Text>
+                </View>
+              ))}
             </View>
-          ))}
-        </View>
+          </View>
+        )}
       </ScrollView>
 
       {/* Redemption Modal */}
@@ -200,11 +298,13 @@ export const LoyaltyRewardsScreen = ({ navigation }) => {
             />
             <Text style={styles.modalTitle}>Confirm Redemption</Text>
             <Text style={styles.modalSub}>You are about to redeem:</Text>
-            <Text style={styles.modalItem}>Free Ride Voucher</Text>
+            <Text style={styles.modalItem}>{currentPoints?.title}</Text>
 
             <View style={styles.modalPointsBox}>
               <Text style={styles.modalPointsLabel}>Cost in Points:</Text>
-              <Text style={styles.modalPointsValue}>1,000 Points</Text>
+              <Text style={styles.modalPointsValue}>
+                {currentPoints?.cost} Points
+              </Text>
             </View>
             <Text style={styles.modalWarning}>
               This action cannot be undone
@@ -212,8 +312,9 @@ export const LoyaltyRewardsScreen = ({ navigation }) => {
 
             <View style={styles.btnContainer}>
               <Button
+                isLoading={loading}
                 title="Confirm Redemption"
-                onPress={() => setModalVisible(false)}
+                onPress={handleSubmit}
               />
             </View>
           </View>
@@ -234,8 +335,7 @@ const styles = StyleSheet.create({
     marginHorizontal: wp('5%'),
     marginTop: hp('3%'),
     marginBottom: hp('1.5%'),
-    fontFamily:'Poppins-Regular'
-
+    fontFamily: 'Poppins-Regular',
   },
 
   // Balance Card
@@ -276,14 +376,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000',
     marginTop: hp('1%'),
-    fontFamily:'Poppins-Regular'
+    fontFamily: 'Poppins-Regular',
   },
   tierPoints: {
     fontSize: wp('3.2%'),
     color: '#888',
     marginVertical: hp('0.5%'),
-    fontFamily:'Poppins-Regular'
-
+    fontFamily: 'Poppins-Regular',
   },
   tierPerks: {
     fontSize: wp('3.2%'),
@@ -293,8 +392,7 @@ const styles = StyleSheet.create({
     paddingTop: hp(1),
     borderTopWidth: 1,
     borderTopColor: '#999',
-    fontFamily:'Poppins-Regular'
-
+    fontFamily: 'Poppins-Regular',
   },
 
   // Lists (Redeem & Activity)
@@ -302,7 +400,6 @@ const styles = StyleSheet.create({
   listContainer2: {
     marginHorizontal: wp('5%'),
     overflow: 'hidden',
-    marginBottom: hp(10),
   },
   listItem: {
     flexDirection: 'row',
@@ -315,18 +412,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '1px solid rgba(17, 17, 17, 0.10)',
   },
-  listItemTitle: { fontSize: wp('3.75%'), color: '#000', fontWeight: '500',
-    fontFamily:'Poppins-Regular'
-
-
-   },
+  listItemTitle: {
+    fontSize: wp('3.75%'),
+    color: '#000',
+    fontWeight: '500',
+    fontFamily: 'Poppins-Regular',
+  },
   listItemSubtitle: {
     fontSize: wp('3.5%'),
     color: '#888',
     marginTop: hp('0.3%'),
     color: '#FDD835',
-    fontFamily:'Poppins-Regular'
-
+    fontFamily: 'Poppins-Regular',
   },
   redeemButton: {
     backgroundColor: '#FDD835',
@@ -334,18 +431,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp('4%'),
     borderRadius: 20,
   },
-  redeemButtonText: { color: '#000', fontWeight: '600', fontSize: wp('3%') ,
-    fontFamily:'Poppins-Regular'
-
+  redeemButtonText: {
+    color: '#000',
+    fontWeight: '600',
+    fontSize: wp('3%'),
+    fontFamily: 'Poppins-Regular',
   },
-  unlockedButton: { backgroundColor: '#e0e0e0',
-    fontFamily:'Poppins-Regular'
-
-   },
-  unlockedButtonText: { color: '#888',
-    fontFamily:'Poppins-Regular'
-
-   },
+  unlockedButton: { backgroundColor: '#e0e0e0', fontFamily: 'Poppins-Regular' },
+  unlockedButtonText: { color: '#888', fontFamily: 'Poppins-Regular' },
   activityPoints: { fontSize: wp('4%'), fontWeight: '600' },
   pointsPositive: { color: 'green' },
   pointsNegative: { color: 'red' },
@@ -391,7 +484,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     fontFamily: 'SF Pro',
   },
-  modalPointsLabel: { fontSize: wp('3.5%'), color: '#666' ,
+  modalPointsLabel: {
+    fontSize: wp('3.5%'),
+    color: '#666',
     fontFamily: 'SF Pro',
   },
   modalPointsValue: {
@@ -401,9 +496,12 @@ const styles = StyleSheet.create({
     marginTop: hp('0.5%'),
     fontFamily: 'SF Pro',
   },
-  modalWarning: { fontSize: wp('3.5%'), color: 'red', marginBottom: hp('2%'),
+  modalWarning: {
+    fontSize: wp('3.5%'),
+    color: 'red',
+    marginBottom: hp('2%'),
     fontFamily: 'SF Pro',
-   },
+  },
   btnContainer: {
     paddingHorizontal: wp(5),
     width: '115%',

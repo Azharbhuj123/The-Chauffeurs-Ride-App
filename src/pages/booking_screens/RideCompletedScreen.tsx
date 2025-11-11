@@ -109,6 +109,8 @@ triggerMutation({
 
   }
 
+
+  const is_free_ride = data?.data?.payment_method === 'Free';
   return (
     <KeyboardAvoidingView style={{ flex: 1 }}>
       <SafeAreaView style={styles.safeArea}>
@@ -164,21 +166,21 @@ triggerMutation({
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Base Fare:</Text>
                 <Text style={styles.summaryValue}>
-                  ${payment_breakdown?.driver_earning?.toFixed(2)}
+                  ${is_free_ride ? '0' :payment_breakdown?.driver_earning?.toFixed(2)}
                 </Text>
               </View>
 
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Taxes & Fees:</Text>
                 <Text style={styles.summaryValue}>
-                  ${payment_breakdown?.platform_fee?.toFixed(2)}
+                  ${is_free_ride ? '0' :payment_breakdown?.platform_fee?.toFixed(2)}
                 </Text>
               </View>
               {payment_breakdown?.dispatch_fee > 0 && (
                 <View style={styles.summaryRow}>
                   <Text style={styles.summaryLabel}>Dispatch Fees:</Text>
                   <Text style={styles.summaryValue}>
-                    ${payment_breakdown?.dispatch_fee}
+                    ${ is_free_ride ? '0' :payment_breakdown?.dispatch_fee}
                   </Text>
                 </View>
               )}
@@ -186,7 +188,7 @@ triggerMutation({
                 <View style={styles.summaryRow}>
                   <Text style={styles.summaryLabel}>Referral Fees:</Text>
                   <Text style={styles.summaryValue}>
-                    ${payment_breakdown?.referral_fee}
+                    ${is_free_ride ? '0' :payment_breakdown?.referral_fee}
                   </Text>
                 </View>
               )}
@@ -194,7 +196,7 @@ triggerMutation({
               <View style={[styles.summaryRow, styles.totalRow]}>
                 <Text style={styles.totalLabel}>Total Charged:</Text>
                 <Text style={styles.totalValue}>
-                  ${payment_breakdown?.total_fare?.toFixed(2)}
+                  ${is_free_ride ? '0' :payment_breakdown?.total_fare?.toFixed(2)}
                 </Text>
               </View>
             </View>

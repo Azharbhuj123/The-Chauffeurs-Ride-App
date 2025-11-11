@@ -33,6 +33,7 @@ import useActionMutation from '../../queryFunctions/useActionMutation';
 import { showFlash } from '../../utils/flashMessageHelper';
 import { joinUserRoom, socket } from '../../utils/socket';
 import { useRideStore } from '../../stores/rideStore';
+import MapScreen from '../../components/MapScreen';
 
 // Get screen dimensions
 const { width, height } = Dimensions.get('window');
@@ -45,7 +46,8 @@ const RideConfirmationScreen = ({ navigation, route }) => {
   console.log(rideId, 'rideId');
 
   const { role, userData } = useUserStore();
-  const { clearRideRequests,sethasUnreadMessages ,hasUnreadMessages} = useRideStore();
+  const { clearRideRequests, sethasUnreadMessages, hasUnreadMessages } =
+    useRideStore();
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['ride_view', rideId],
@@ -131,6 +133,7 @@ const RideConfirmationScreen = ({ navigation, route }) => {
           if (data?.ride_completed) {
             const where_to_go =
               role === 'Driver' ? 'DriverHome' : 'RideComplete';
+            console.log(where_to_go, 'where_to_go');
 
             clearRideRequests();
             navigation.navigate(where_to_go, {
@@ -142,8 +145,8 @@ const RideConfirmationScreen = ({ navigation, route }) => {
           }
         });
         socket.on('msg_received', data => {
-          if(data?._id){
-            sethasUnreadMessages(true)
+          if (data?._id) {
+            sethasUnreadMessages(true);
           }
         });
       }
@@ -192,10 +195,10 @@ const RideConfirmationScreen = ({ navigation, route }) => {
       >
         {/* --- Map Container View --- */}
         <View style={styles.mapContainer}>
-          <Image
+          {/* <Image
             style={styles.mapImage}
             source={require('../../assets/images/newmap.png')}
-          />
+          /> */}
 
           {/* ETA Banner */}
           {rideStatus === 'Accepted' ? (
@@ -209,7 +212,7 @@ const RideConfirmationScreen = ({ navigation, route }) => {
           )}
 
           {/* Pickup Location Marker */}
-          <View style={styles.pickupMarkerContainer}>
+          {/* <View style={styles.pickupMarkerContainer}>
             <View style={styles.pickupPin}>
               <View style={styles.pickupIcon}>
                 <Ionicon name="man" size={20} color="white" />
@@ -226,123 +229,125 @@ const RideConfirmationScreen = ({ navigation, route }) => {
               />
             </View>
             <View style={styles.pinCircle} />
-          </View>
+          </View> */}
 
           {/* Static route line */}
-          <Image
-            source={require('../../assets/images/route-line.png')}
-            style={styles.routeLine}
-          />
+          <MapScreen />
         </View>
 
         {/* --- Driver Info Card --- */}
-        <View style={styles.driverCard}>
-          {role === 'User' ? (
-            <View style={styles.driverInfo}>
-              <View style={styles.avatar}>
-                <Image
-                  source={{ uri: data?.data?.driver?.profile_image }}
-                  style={{ width: '100%', height: '100%', borderRadius: 50 }}
-                />
-              </View>
-
-              <View style={styles.driverDetails}>
-                <Text style={styles.driverName}>{driver.name}</Text>
-                <Text style={styles.carDetails}>
-                  {driver.carModel}{' '}
-                  <Text style={styles.licensePlate}>{driver.licensePlate}</Text>
-                </Text>
-              </View>
-              {driver.rating > 0 && (
-                <View style={styles.ratingContainer}>
-                  <Icon name="star" size={20} color="#FFD700" />
-                  <Text style={styles.ratingText}>{driver.rating}</Text>
-                </View>
-              )}
+      </ScrollView>
+      <View
+        style={[
+          styles.driverCard,
+          { marginBottom: role === 'Driver' ? hp(0.5) : hp(5) },
+        ]}
+      >
+        {role === 'User' ? (
+          <View style={styles.driverInfo}>
+            <View style={styles.avatar}>
+              <Image
+                source={{ uri: data?.data?.driver?.profile_image }}
+                style={{ width: '100%', height: '100%', borderRadius: 50 }}
+              />
             </View>
-          ) : (
-            <View style={styles.driverInfo}>
-              <View style={styles.avatar}>
-                <Image
-                  source={{ uri: data?.data?.user?.profile_image }}
-                  style={{ width: '100%', height: '100%', borderRadius: 50 }}
-                />
-              </View>
 
-              <View style={styles.driverDetails}>
-                <Text style={styles.driverName}>{driver.name}</Text>
-                <Text style={styles.carDetails}>
-                  {driver.carModel}{' '}
-                  <Text style={styles.licensePlate}>{driver.licensePlate}</Text>
-                </Text>
-              </View>
-
+            <View style={styles.driverDetails}>
+              <Text style={styles.driverName}>{driver.name}</Text>
+              <Text style={styles.carDetails}>
+                {driver.carModel}{' '}
+                <Text style={styles.licensePlate}>{driver.licensePlate}</Text>
+              </Text>
+            </View>
+            {driver.rating > 0 && (
               <View style={styles.ratingContainer}>
                 <Icon name="star" size={20} color="#FFD700" />
                 <Text style={styles.ratingText}>{driver.rating}</Text>
               </View>
-            </View>
-          )}
-
-          <View style={styles.actionButtons}>
-            <TouchableOpacity
-              onPress={() => handlePress('CancelRide')}
-              style={styles.cancelButton}
-            >
-              <Text style={styles.cancelButtonText}>Cancel Ride</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => handlePress('Chat')}
-              style={styles.contactButton}
-            >
-              {/* Red dot */}
-              
-
-              <Icon name="message-processing" size={20} color="#000" />
-              <Text style={styles.contactButtonText}>Contact Driver</Text>
-              {hasUnreadMessages && (
-                <View
-                  style={{
-                    position: 'absolute',
-                    top: hp(1.2),
-                    left: hp(2),
-                    right: 0,
-                    width: 10,
-                    height: 10,
-                    borderRadius: 5,
-                    backgroundColor: 'red',
-                    zIndex: 10,
-                  }}
-                />
-              )}
-            </TouchableOpacity>
+            )}
           </View>
-          {role === 'Driver' &&
-            (rideStatus === 'Accepted' ? (
-              <View style={{ marginTop: hp(3) }}>
-                <Button
-                  onPress={() => handleAction('arrived')}
-                  title="Mark as Arrived"
-                />
+        ) : (
+          <View style={styles.driverInfo}>
+            <View style={styles.avatar}>
+              <Image
+                source={{ uri: data?.data?.user?.profile_image }}
+                style={{ width: '100%', height: '100%', borderRadius: 50 }}
+              />
+            </View>
+
+            <View style={styles.driverDetails}>
+              <Text style={styles.driverName}>{driver.name}</Text>
+              <Text style={styles.carDetails}>
+                {driver.carModel}{' '}
+                <Text style={styles.licensePlate}>{driver.licensePlate}</Text>
+              </Text>
+            </View>
+            {driver.rating > 0 && (
+              <View style={styles.ratingContainer}>
+                <Icon name="star" size={20} color="#FFD700" />
+                <Text style={styles.ratingText}>{driver.rating}</Text>
               </View>
-            ) : rideStatus === 'Arrived' ? (
-              <View style={{ marginTop: hp(3) }}>
-                <Button
-                  onPress={() => handleAction('ride_start')}
-                  title="Start The Ride"
-                />
-              </View>
-            ) : (
-              <View style={{ marginTop: hp(3) }}>
-                <Button
-                  onPress={() => handleAction('ride_completed')}
-                  title="Mark As Completed"
-                />
-              </View>
-            ))}
+            )}
+          </View>
+        )}
+
+        <View style={styles.actionButtons}>
+          <TouchableOpacity
+            onPress={() => handlePress('CancelRide')}
+            style={styles.cancelButton}
+          >
+            <Text style={styles.cancelButtonText}>Cancel Ride</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => handlePress('Chat')}
+            style={styles.contactButton}
+          >
+            {/* Red dot */}
+
+            <Icon name="message-processing" size={20} color="#000" />
+            <Text style={styles.contactButtonText}>Contact Driver</Text>
+            {hasUnreadMessages && (
+              <View
+                style={{
+                  position: 'absolute',
+                  top: hp(1.2),
+                  left: hp(2),
+                  right: 0,
+                  width: 10,
+                  height: 10,
+                  borderRadius: 5,
+                  backgroundColor: 'red',
+                  zIndex: 10,
+                }}
+              />
+            )}
+          </TouchableOpacity>
         </View>
-      </ScrollView>
+        {role === 'Driver' &&
+          (rideStatus === 'Accepted' ? (
+            <View style={{ marginTop: hp(3) }}>
+              <Button
+                onPress={() => handleAction('arrived')}
+                title="Mark as Arrived"
+              />
+            </View>
+          ) : rideStatus === 'Arrived' ? (
+            <View style={{ marginTop: hp(3) }}>
+              <Button
+                onPress={() => handleAction('ride_start')}
+                title="Start The Ride"
+              />
+            </View>
+          ) : (
+            <View style={{ marginTop: hp(3) }}>
+              <Button
+                onPress={() => handleAction('ride_completed')}
+                title="Mark As Completed"
+              />
+            </View>
+          ))}
+      </View>
     </SafeAreaView>
   );
 };
@@ -469,6 +474,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: 20,
     paddingBottom: hp(12),
+
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     elevation: 10,

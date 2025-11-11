@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import TopHeader from '../../components/TopHeader';
@@ -15,8 +16,20 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
+import { useUserStore } from '../../stores/useUserStore';
+import Button from '../../components/Button';
 
 const Operations = ({ navigation }) => {
+    const [isModalVisible, setModalVisible] = useState(false);
+  
+  const { userData, resetAll } = useUserStore();
+
+    const handleLogout = () => {
+    setModalVisible(false);
+    resetAll();
+
+    navigation.navigate('Login');
+  };
   return (
     <SafeAreaView style={styles.container}>
       <TopHeader title="Operations" navigation={navigation} />
@@ -76,8 +89,56 @@ const Operations = ({ navigation }) => {
               </Text>
             </View>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.OperationsCard}
+            onPress={() => setModalVisible(true)}
+          >
+            <View style={styles.OperationsIconBox}>
+              <Image style={{ width: 30, height: 30 }} source={require('../../assets/images/logout.png')} />
+            </View>
+            <View style={styles.OperationsCardTital}>
+              <Text style={styles.OperationsCardHeading}>
+                Logout
+              </Text>
+              <Text style={styles.OperationsCardPara}>
+Safely log out from your account.              </Text>
+            </View>
+          </TouchableOpacity>
         </View>
       </ScrollView>
+        <Modal
+              animationType="fade"
+              transparent={true}
+              visible={isModalVisible}
+              onRequestClose={() => {
+                setModalVisible(false);
+              }}
+            >
+              <View style={styles.modalBackdrop}>
+                <View style={styles.modalContainer}>
+                  <Image source={require('../../assets/images/logout.png')} />
+                  <Text style={styles.modalTitle}>Confirm Logout</Text>
+                  <Text style={styles.modalSubtitle}>
+                    Are you sure you want to log out of your PrimeRide account? You
+                    will need to sign in again to book a ride.{' '}
+                  </Text>
+      
+                  <View style={styles.btnContainer}>
+                    <Button
+                      title="Logout"
+                      textColor="white"
+                      color="#FF3A2F"
+                      onPress={handleLogout}
+                    />
+                    <Button
+                      title="Cancel"
+                      onPress={() => setModalVisible(false)}
+                      color="#F1F1F1"
+                    />
+                  </View>
+                </View>
+              </View>
+            </Modal>
     </SafeAreaView>
   );
 };
@@ -139,5 +200,67 @@ const styles = StyleSheet.create({
 
   bottomSpacing: {
     marginBottom: 100,
+  },
+
+
+
+
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+  },
+  modalContainer: {
+    width: wp('85%'),
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 25,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    textAlign: 'center',
+    fontFamily: 'Poppins-Regular',
+
+    marginTop: 15,
+    marginBottom: 10,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    fontFamily: 'Poppins-Regular',
+
+    marginBottom: 25,
+  },
+  modalButton: {
+    backgroundColor: '#F8D833',
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    width: '100%',
+    alignItems: 'center',
+    fontFamily: 'Poppins-Regular',
+  },
+  modalButtonText: {
+    color: '#1F2937',
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Poppins-Regular',
+  },
+  btnContainer: {
+    width: '100%',
   },
 });
