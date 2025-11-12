@@ -31,6 +31,7 @@ import { showToast } from '../../utils/toastHelper';
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
 import { useRideStore } from '../../stores/rideStore';
+import AppLoader from '../../components/AppLoader';
 
 const { width, height } = Dimensions.get('window');
 
@@ -44,44 +45,25 @@ export default function HomeScreen({ navigation }) {
   const tabBarHeight = useTabBarHeightHelper();
   const { token, userData } = useUserStore();
   const { location } = useStore();
-  const { setRideRequests ,rideRequests } = useRideStore();
+  const { setRideRequests, rideRequests } = useRideStore();
+ 
+  const { data: homeData, isLoading } = useQuery({
+    queryKey: ['driver-home'],
+    queryFn: () => fetchData('/driver/fleet-history'),
+    keepPreviousData: true,
+  });
 
-  const [fleetStatus] = useState([
-    {
-      id: 1,
-      driver: 'Mercedes E-Class',
-      status: 'Available',
-      statusColor: '#4CAF50',
-    },
-    {
-      id: 2,
-      driver: 'Mercedes E-Class',
-      status: 'Busy',
-      statusColor: '#F44336',
-    },
-    {
-      id: 3,
-      driver: 'Toyota Camry Hybrid',
-      status: 'Offline',
-      statusColor: '#9E9E9E',
-    },
-    {
-      id: 4,
-      driver: 'BMW 7 Series',
-      status: 'Available',
-      statusColor: '#4CAF50',
-    },
-  ]);
-
-  const { data, isLoading, refetch } = useQuery({
+  const {
+    data,
+    isLoading: isLoadingRide,
+    refetch,
+  } = useQuery({
     queryKey: ['driver-latest-ride', userData],
     queryFn: () => fetchData('/ride/driver-latest-ride'),
     keepPreviousData: true,
   });
 
 
- 
-  
   useFocusEffect(
     useCallback(() => {
       if (data?.in_progress) {
@@ -99,8 +81,8 @@ export default function HomeScreen({ navigation }) {
 
   const handleManageChauffeur = () => {
     console.log('Manage Chauffeur pressed');
-    navigation.navigate('AddChauffeurs');
-    // navigation.navigate('Chauffeur');
+    // navigation.navigate('AddChauffeurs');
+    navigation.navigate('Chauffeur');
   };
 
   useFocusEffect(
@@ -115,7 +97,6 @@ export default function HomeScreen({ navigation }) {
         };
 
         socket.emit('user-location', data);
-         
       }
 
       // ✅ Cleanup on screen blur / unmount
@@ -138,7 +119,6 @@ export default function HomeScreen({ navigation }) {
   });
 
   const handleAccept = ride => {
-    console.log('Accepted ride:', ride);
     const body = {
       ride_id: ride?.id,
       action: 'accept',
@@ -161,6 +141,9 @@ export default function HomeScreen({ navigation }) {
     setShowRejectPopup(false);
     // Add your logic here
   };
+
+  if (isLoadingRide) return <AppLoader />;
+  if (isLoading) return <AppLoader />;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -199,12 +182,12 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.fleetSection}>
           <Text style={styles.sectionTitle}>Fleet Status</Text>
 
-          {fleetStatus.map((item, index) => (
+          {homeData?.fleet?.map((item, index) => (
             <View
-              key={item.id}
+              key={item.index}
               style={[
                 styles.fleetCard,
-                index === fleetStatus.length - 1 && styles.fleetCardLast,
+                index === homeData?.fleet?.length - 1 && styles.fleetCardLast,
               ]}
             >
               <View style={styles.fleetCardLeft}>
@@ -212,9 +195,9 @@ export default function HomeScreen({ navigation }) {
                   <Icon name="car" size={24} color="#fff" />
                 </View>
                 <View>
-                  <Text style={styles.vehicleName}>{item.driver}</Text>
+                  <Text style={styles.vehicleName}>{item.vehicle_name}</Text>
                   <Text style={{ color: 'rgba(17, 17, 17, 0.70)' }}>
-                    MIA-7G8H
+                    {item?.plate_number}
                   </Text>
                 </View>
               </View>
@@ -222,7 +205,7 @@ export default function HomeScreen({ navigation }) {
               <View
                 style={[
                   styles.statusBadge,
-                  { backgroundColor: item.statusColor },
+                  { backgroundColor: item.status_color },
                 ]}
               >
                 <Text style={styles.statusText}>{item.status}</Text>
@@ -237,8 +220,8 @@ export default function HomeScreen({ navigation }) {
             </Text>
 
             {/* Ride Request Cards */}
-            {rideRequests.map(ride => (
-              <View key={ride.id} style={styles.rideCard}>
+            {rideRequests.map((ride,index) => (
+              <View key={index} style={styles.rideCard}>
                 {/* Pickup Location */}
                 <View style={styles.locationRow1}>
                   <Icon name="location" size={20} color="#000" />

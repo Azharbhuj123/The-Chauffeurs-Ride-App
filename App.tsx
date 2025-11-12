@@ -7,7 +7,13 @@
 
 // App.tsx
 import React, { useEffect, useState } from 'react';
-import { Platform, StatusBar, StyleSheet, useColorScheme } from 'react-native';
+import {
+  AppState,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  useColorScheme,
+} from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MainNavigation from './src/navigation/MainNavigation';
 import {
@@ -30,13 +36,19 @@ import { useUserStore } from './src/stores/useUserStore';
 import { initSocketListeners } from './src/utils/socketEvents';
 import { useNavigation } from '@react-navigation/native';
 import { navigationRef } from './src/utils/NavigationService';
+import { useRideStore } from './src/stores/rideStore';
 
 export default function App() {
   const isDarkMode = useColorScheme() === 'dark';
   const { setLocation } = useStore();
   const { userData, role } = useUserStore();
   const queryClient = new QueryClient();
+  const { rideId } = useRideStore(); // get latest rideId
 
+  const [permissionStatus, setPermissionStatus] = useState('');
+  const [appState, setAppState] = useState(AppState.currentState);
+
+  // Toast configuration
   const toastConfig = {
     success: props => (
       <BaseToast
@@ -44,7 +56,7 @@ export default function App() {
         style={{
           borderLeftColor: '#000',
           backgroundColor: '#fff',
-          marginTop: hp(3),
+          marginTop: Platform.OS === 'ios' ? hp(3) : 2,
         }}
         contentContainerStyle={{ paddingHorizontal: 15 }}
         text1Style={{
@@ -60,7 +72,6 @@ export default function App() {
         }}
       />
     ),
-
     error: props => (
       <ErrorToast
         {...props}
@@ -68,7 +79,7 @@ export default function App() {
           borderLeftColor: COLORS.error,
           backgroundColor: '#fff',
           fontFamily: 'Poppins-Regular',
-          marginTop: hp(3),
+          marginTop: Platform.OS === 'ios' ? hp(3) : 2,
         }}
         text1Style={{
           fontSize: 16,
@@ -85,69 +96,99 @@ export default function App() {
     ),
   };
 
-  const [permissionStatus, setPermissionStatus] = useState('');
-
+  // Socket & user room initialization
   useEffect(() => {
     if (userData?._id) {
-      joinUserRoom(userData?._id);
-      initSocketListeners(role); // ✅ no navigation passed
+      joinUserRoom(userData._id);
+      initSocketListeners(role);
     }
   }, [userData?._id]);
 
+  // Request location permissions (foreground + background)
   const requestLocationPermission = async () => {
-    const permission =
-      Platform.OS === 'ios'
-        ? PERMISSIONS.IOS.LOCATION_WHEN_IN_USE
-        : PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION;
+  try {
+    if (Platform.OS === 'ios') {
+      // Step 1: Request "When In Use" permission first
+      const whenInUse = await request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
+      console.log('When In Use:', whenInUse);
 
-    const result = await request(permission);
-    console.log('Permission result:', result);
-    setPermissionStatus(result);
+      if (whenInUse === RESULTS.GRANTED) {
+        // Step 2: Then request "Always" permission
+        const always = await request(PERMISSIONS.IOS.LOCATION_ALWAYS);
+        console.log('Always permission:', always);
 
-    if (result === RESULTS.GRANTED) {
-      getUserLocation();
+        setPermissionStatus(always);
+
+        // Start tracking once we have any permission
+        if (always === RESULTS.GRANTED || whenInUse === RESULTS.GRANTED) {
+          startLocationTracking();
+        }
+      } else {
+        console.warn('Location permission not granted.');
+      }
+    } else {
+      // Android flow
+      const fine = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
+      const background = await request(
+        PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION,
+      );
+
+      console.log('Fine location:', fine);
+      console.log('Background location:', background);
+
+      setPermissionStatus(fine);
+      if (fine === RESULTS.GRANTED) startLocationTracking();
     }
-  };
+  } catch (error) {
+    console.error('Permission request error:', error);
+  }
+};
 
+
+  // Check permission on app start
   useEffect(() => {
-    requestLocationPermission().then(result => {
-      console.log('Permission result:', result);
-    });
+    requestLocationPermission();
   }, []);
 
-  const getUserLocation = () => {
-    Geolocation.getCurrentPosition(
+  // Track user location continuously
+  const startLocationTracking = () => {
+    Geolocation.watchPosition(
       position => {
-        console.log(position?.coords, 'position?.coords');
+        console.log('User location:', position.coords);
+        setLocation(position.coords);
 
-        setLocation(position?.coords);
-        const data = {
-          userId: userData?._id.toString(),
-          lat: position?.coords?.latitude,
-          lng: position?.coords?.longitude,
-        };
-
-        socket.emit('user-location', data);
+        if (userData?._id) {
+          socket.emit('user-location', {
+            rideId: rideId || '',
+            userId: userData._id.toString(),
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        }
       },
-      error => {
-        console.log('Error getting location:', error);
+      error => console.error('Location watch error:', error),
+      {
+        enableHighAccuracy: true, // Use GPS for precise location
+        distanceFilter: 5, // Trigger update only if user moves 5 meters
+        interval: 2000, // Android: attempt update every 2 sec
+        fastestInterval: 1000, // Android: min interval 1 sec
+        forceRequestLocation: true, // Force location fetch
+        useSignificantChanges: false, // iOS: ignore only significant changes
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
     );
   };
 
+  // Optional: handle app state changes (pause/resume tracking)
   useEffect(() => {
-    check(
-      Platform.OS === 'ios'
-        ? PERMISSIONS.IOS.LOCATION_WHEN_IN_USE
-        : PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
-    ).then(result => {
-      setPermissionStatus(result);
-      if (result === RESULTS.GRANTED) {
-        getUserLocation();
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      setAppState(nextAppState);
+      if (nextAppState === 'active' && permissionStatus === RESULTS.GRANTED) {
+        startLocationTracking();
       }
     });
-  }, []);
+    return () => subscription.remove();
+  }, [permissionStatus]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>

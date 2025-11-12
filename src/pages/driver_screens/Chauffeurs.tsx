@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import React, { useState } from 'react';
 import {
   View,
@@ -6,7 +8,9 @@ import {
   TouchableOpacity,
   Switch,
   ScrollView,
- 
+  FlatList,
+  Modal,
+  Pressable,
 } from 'react-native';
 import {
   widthPercentageToDP as wp,
@@ -14,84 +18,168 @@ import {
 } from 'react-native-responsive-screen';
 import Button from '../../components/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import TopHeader from '../../components/TopHeader';
+import { COLORS } from '../../utils/Enums';
+import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { fetchData } from '../../queryFunctions/queryFunctions';
+import AppLoader from '../../components/AppLoader';
+import CustomDropdown from '../../components/CustomDropdown';
 
-const ChauffeurBookingScreen = () => {
+const ChauffeurBookingScreen = ({ navigation }) => {
+  const tabBarHeight = useTabBarHeightHelper();
   const [chauffeurEnabled, setChauffeurEnabled] = useState(true);
+  const [selectedChauffeur, setSelectedChauffeur] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+const { data: vehicleDataApi } = useQuery({
+    queryKey: ['my-vehicles'],
+    queryFn: () => fetchData('/driver/available-vehicles'),
+    keepPreviousData: true,
+  });
+  const fetchChauffeurs = async ({ pageParam = 1 }) => {
+    const res = await fetchData(`/driver/my-chauffeurs?page=${pageParam}&limit=5`);
+    return res;
+  };
 
-  const chauffeurs = [
-    { id: 1, name: 'Liam Jones', rating: '4.8', model: 'Tesla Model 3' },
-    { id: 2, name: 'Olivia Brown', rating: '4.8', model: 'Mercedes E-Class' },
-    { id: 3, name: 'Noah Davis', rating: 'N/A', model: 'Unassigned' },
-  ];
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ['my-Chauffeurs'],
+    queryFn: fetchChauffeurs,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.currentPage < lastPage.totalPages) {
+        return lastPage.currentPage + 1;
+      }
+      return undefined;
+    },
+  });
 
+    const vehicle_for = Array.isArray(vehicleDataApi?.vehicles)
+    ? vehicleDataApi.vehicles.map((vehicle) => ({
+        label: `${vehicle?.vehicle_make} (${vehicle?.vehicle_model})`,
+        value: vehicle?._id,
+      }))
+    : [];
+  const allChauffeurs = data?.pages?.flatMap(page => page.data) || [];
+
+
+  if(isLoading) return <AppLoader/>
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Chauffeur Availability Card */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Chauffeur Availability</Text>
+      <TopHeader title="Chauffeurs" navigation={navigation} />
 
-          {/* Date Row */}
-          <View style={styles.dateRow}>
-            <Text style={styles.dateText}>Today: Oct 25 (Monthly View)</Text>
-            <TouchableOpacity style={styles.monthlyBadge}>
-              <Text style={styles.monthlyText}>Monthly ▼</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Chauffeur Joe Card */}
-          <View style={styles.chauffeurJoeCard}>
-            <View>
-              <Text style={styles.joeTitle}>Chauffeur Joe</Text>
-              <Text style={styles.joeSubtitle}>08:00 - 16:00 Shift</Text>
-            </View>
-            <View style={styles.onlineSwitch}>
-              <Text style={styles.onlineText}>Online</Text>
-              <Switch
-                value={chauffeurEnabled}
-                onValueChange={setChauffeurEnabled}
-                trackColor={{ false: '#e0e0e0', true: '#34C759' }}
-                thumbColor="#fff"
-                style={styles.switch}
-              />
-            </View>
-          </View>
-
-          {/* Block All Slots Button */}
-          <TouchableOpacity style={styles.blockButton}>
-            <Text style={styles.blockButtonText}>Block All Slots</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* All Chauffeurs Section */}
-        <View style={styles.allChauffeursSection}>
-          <Text style={styles.allChauffeursTitle}>All Chauffeurs</Text>
-
-          {chauffeurs.map((chauffeur) => (
-            <View key={chauffeur.id} style={styles.chauffeurCard}>
-              <View style={styles.chauffeurContent}>
-                <View style={styles.chauffeurLeft}>
-                  <Text style={styles.chauffeurName}>{chauffeur.name}</Text>
-                  <Text style={styles.chauffeurDetails}>
-                    ⭐ {chauffeur.rating} {chauffeur.model}
-                  </Text>
-                  <View style={styles.availableBadge}>
-                    <Text style={styles.availableText}>Available</Text>
-                  </View>
+      <FlatList
+        data={allChauffeurs}
+        keyExtractor={(item) => item._id}
+        onEndReached={() => {
+          if (hasNextPage) fetchNextPage();
+        }}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={() =>
+          isFetchingNextPage ? <ActivityIndicator size="small" /> : null
+        }
+        ListHeaderComponent={
+          <>
+            {/* Chauffeur Availability Card */}
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Chauffeur Availability</Text>
+              <View style={styles.dateRow}>
+                <Text style={styles.dateText}>Today: Oct 25 (Monthly View)</Text>
+                <TouchableOpacity style={styles.monthlyBadge}>
+                  <Text style={styles.monthlyText}>Monthly ▼</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.chauffeurJoeCard}>
+                <View>
+                  <Text style={styles.joeTitle}>Chauffeur Joe</Text>
+                  <Text style={styles.joeSubtitle}>08:00 - 16:00 Shift</Text>
                 </View>
-                <TouchableOpacity style={styles.menuDots}>
-                  <Text style={styles.dotsText}>⋮</Text>
+                <View style={styles.onlineSwitch}>
+                  <Text style={styles.onlineText}>Online</Text>
+                  <Switch
+                    value={chauffeurEnabled}
+                    onValueChange={setChauffeurEnabled}
+                    trackColor={{ false: '#e0e0e0', true: '#34C759' }}
+                    thumbColor="#fff"
+                    style={styles.switch}
+                  />
+                </View>
+              </View>
+              <TouchableOpacity style={styles.blockButton}>
+                <Text style={styles.blockButtonText}>Block All Slots</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* All Chauffeurs Header */}
+            <View style={styles.allChauffeursSection}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  marginBottom: hp(2),
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={styles.allChauffeursTitle}>All Chauffeurs</Text>
+                <TouchableOpacity onPress={() => navigation.navigate('AddChauffeurs')}>
+                  <Text style={styles.allChauffeursBtn}>Add Chauffeurs</Text>
                 </TouchableOpacity>
               </View>
             </View>
-          ))}
-        </View>
+          </>
+        }
+        renderItem={({ item }) => (
+          <View style={styles.chauffeurCard}>
+            <View style={styles.chauffeurContent}>
+              <View style={styles.chauffeurLeft}>
+                <Text style={styles.chauffeurName}>{item.name}</Text>
+                <Text style={styles.chauffeurDetails}>
+                  ⭐ {item.rating || 'N/A'} {item.assign_Vehicle?.vehicle_model || 'Unassigned'}
+                </Text>
+                <View style={styles.availableBadge}>
+                  <Text style={styles.availableText}>Available</Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                style={styles.menuDots}
+                onPress={() => {
+                  setSelectedChauffeur(item);
+                  setModalVisible(true);
+                }}
+              >
+                <Text style={styles.dotsText}>⋮</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+        contentContainerStyle={{ paddingBottom: tabBarHeight + 35 }}
+        showsVerticalScrollIndicator={false}
+      />
 
-        {/* Bottom Button */}
-        <View style={styles.bottomBar}>
-           <Button title='Next'/>
+      {/* Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Assign Vehicle</Text>
+            <CustomDropdown data={vehicle_for}/>
+            <Pressable
+              style={styles.modalCloseBtn}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.modalCloseText}>Close</Text>
+            </Pressable>
+          </View>
         </View>
-      </ScrollView>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -203,10 +291,16 @@ const styles = StyleSheet.create({
     color: '#000',
     marginBottom: hp(1.5),
   },
+  allChauffeursBtn: {
+    backgroundColor: COLORS.warning,
+    padding: 10,
+    borderRadius: 10,
+  },
   chauffeurCard: {
     backgroundColor: '#fff',
     borderRadius: wp(2.5),
-    padding: wp(3),
+     margin: wp(4),
+    padding: wp(4),
     marginBottom: hp(2.5),
     borderWidth: 1,
     borderColor: '#E8E8E8',
@@ -265,6 +359,46 @@ const styles = StyleSheet.create({
     fontSize: wp(4),
     fontWeight: '700',
   },
+
+
+
+
+  modalOverlay: {
+  flex: 1,
+  backgroundColor: 'rgba(0,0,0,0.5)',
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+modalContainer: {
+  width: '90%',
+  backgroundColor: '#fff',
+  borderRadius: 10,
+  padding: 20,
+  alignItems: 'center',
+},
+modalTitle: {
+  fontSize: 30,
+  fontWeight: '700',
+  marginBottom: 15,
+  fontFamily: 'Poppins-Regular',
+},
+modalSubTitle: {
+  fontSize: 16,
+  marginBottom: 20,
+},
+modalCloseBtn: {
+  backgroundColor: '#FFD600',
+  paddingVertical: 10,
+  paddingHorizontal: 25,
+  borderRadius: 8,
+},
+modalCloseText: {
+  fontWeight: '600',
+  color: '#000',
+  fontFamily: 'Poppins-Regular',
+
+},
+
 });
 
 export default ChauffeurBookingScreen;

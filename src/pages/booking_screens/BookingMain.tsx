@@ -809,7 +809,7 @@ export default function BookingMain({ navigation }) {
 
       <TouchableWithoutFeedback onPress={() => setShowPicker(false)}>
         <ScrollView
-          contentContainerStyle={{ paddingBottom: tabBarHeight - 30 }}
+          contentContainerStyle={{ paddingBottom: tabBarHeight - 20 }}
           showsVerticalScrollIndicator={false}
         >
           {/* --- White Section (main content) --- */}

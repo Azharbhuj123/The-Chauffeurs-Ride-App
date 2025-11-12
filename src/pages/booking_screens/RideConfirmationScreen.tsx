@@ -34,6 +34,7 @@ import { showFlash } from '../../utils/flashMessageHelper';
 import { joinUserRoom, socket } from '../../utils/socket';
 import { useRideStore } from '../../stores/rideStore';
 import MapScreen from '../../components/MapScreen';
+import { useDriverLocationStore } from '../../stores/driverLocationStore';
 
 // Get screen dimensions
 const { width, height } = Dimensions.get('window');
@@ -44,6 +45,7 @@ const RideConfirmationScreen = ({ navigation, route }) => {
   const tabBarHeight = useTabBarHeightHelper();
   const { rideId, from } = route.params || {};
   console.log(rideId, 'rideId');
+  const { startTracking, stopTracking } = useDriverLocationStore();
 
   const { role, userData } = useUserStore();
   const { clearRideRequests, sethasUnreadMessages, hasUnreadMessages } =
@@ -55,6 +57,15 @@ const RideConfirmationScreen = ({ navigation, route }) => {
     keepPreviousData: true,
     enabled: !!rideId,
   });
+
+  useEffect(() => {
+    const driver_id = data?.data?.driver?._id;
+    console.log('RideId:', rideId, 'DriverId:', driver_id);
+
+    if (rideId && driver_id && role === 'Driver') {
+      startTracking(rideId, driver_id);
+    }
+  }, [rideId, data?.data?.driver?._id, role]);
 
   useFocusEffect(
     useCallback(() => {
@@ -136,6 +147,7 @@ const RideConfirmationScreen = ({ navigation, route }) => {
             console.log(where_to_go, 'where_to_go');
 
             clearRideRequests();
+            stopTracking();
             navigation.navigate(where_to_go, {
               rideId: data?.ride_id,
             });
@@ -177,6 +189,15 @@ const RideConfirmationScreen = ({ navigation, route }) => {
     });
   };
 
+  const driver_loc = {
+    lat: data?.data?.driver?.location?.coordinates[1],
+    long: data?.data?.driver?.location?.coordinates[0],
+  };
+  const user_loc = {
+    lat: data?.data?.user?.location?.coordinates[1],
+    long: data?.data?.user?.location?.coordinates[0],
+  };
+
   if (isLoading) {
     return <AppLoader />;
   }
@@ -185,8 +206,8 @@ const RideConfirmationScreen = ({ navigation, route }) => {
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <TopHeader title={title} navigation={navigation} />
 
-      <ScrollView
-        contentContainerStyle={{
+      <View
+        style={{
           flexGrow: 1,
           paddingBottom:
             role === 'Driver' ? tabBarHeight * 0.1 : tabBarHeight * 0.4,
@@ -210,37 +231,19 @@ const RideConfirmationScreen = ({ navigation, route }) => {
           ) : (
             ''
           )}
-
-          {/* Pickup Location Marker */}
-          {/* <View style={styles.pickupMarkerContainer}>
-            <View style={styles.pickupPin}>
-              <View style={styles.pickupIcon}>
-                <Ionicon name="man" size={20} color="white" />
-              </View>
-              <View style={styles.pickupAddressBox}>
-                <Text style={styles.pickupLabel}>PICK UP AT</Text>
-                <Text style={styles.pickupAddress}>325 5th Ave, NY...</Text>
-              </View>
-              <Icon
-                name="chevron-right"
-                size={22}
-                color="#888"
-                style={{ alignSelf: 'center' }}
-              />
-            </View>
-            <View style={styles.pinCircle} />
-          </View> */}
-
-          {/* Static route line */}
-          <MapScreen />
+          <MapScreen
+            driverLoc={driver_loc}
+            userLoc={user_loc}
+            rideId={rideId}
+          />
         </View>
 
         {/* --- Driver Info Card --- */}
-      </ScrollView>
+      </View>
       <View
         style={[
           styles.driverCard,
-          { marginBottom: role === 'Driver' ? hp(0.5) : hp(5) },
+          { paddingBottom: role === 'Driver' ? hp(14) : hp(18) },
         ]}
       >
         {role === 'User' ? (
@@ -259,10 +262,15 @@ const RideConfirmationScreen = ({ navigation, route }) => {
                 <Text style={styles.licensePlate}>{driver.licensePlate}</Text>
               </Text>
             </View>
-            {driver.rating > 0 && (
+            {driver.rating > 0 ? (
               <View style={styles.ratingContainer}>
                 <Icon name="star" size={20} color="#FFD700" />
                 <Text style={styles.ratingText}>{driver.rating}</Text>
+              </View>
+            ) : (
+              <View style={styles.ratingContainer}>
+                <Icon name="star" size={20} color="#FFD700" />
+                <Text style={styles.ratingText}>N/A</Text>
               </View>
             )}
           </View>
@@ -282,10 +290,15 @@ const RideConfirmationScreen = ({ navigation, route }) => {
                 <Text style={styles.licensePlate}>{driver.licensePlate}</Text>
               </Text>
             </View>
-            {driver.rating > 0 && (
+            {driver.rating > 0 ? (
               <View style={styles.ratingContainer}>
                 <Icon name="star" size={20} color="#FFD700" />
                 <Text style={styles.ratingText}>{driver.rating}</Text>
+              </View>
+            ) : (
+              <View style={styles.ratingContainer}>
+                <Icon name="star" size={20} color="#FFD700" />
+                <Text style={styles.ratingText}>N/A</Text>
               </View>
             )}
           </View>
@@ -473,7 +486,6 @@ const styles = StyleSheet.create({
   driverCard: {
     backgroundColor: 'white',
     padding: 20,
-    paddingBottom: hp(12),
 
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,

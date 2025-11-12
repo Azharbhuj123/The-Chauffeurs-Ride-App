@@ -19,11 +19,16 @@ export interface Ride {
 interface RideStore {
   rideData: Record<string, any>;
   rideRequests: Ride[];
+  rideId: string | null;
+  hasUnreadMessages: boolean;
 
   setRideData: (data: Record<string, any>) => void;
-  sethasUnreadMessages: (data: Record<string, any>) => void;
-  // ✅ Allow both a function updater or direct array/object
-  setRideRequests: (updater: Ride | ((prev: Ride[]) => Ride[])) => void;
+  setRideId: (id: string) => void;
+  sethasUnreadMessages: (hasUnreadMessages: boolean) => void;
+  
+  setRideRequests: (
+    updater: Ride | string | ((prev: Ride[]) => Ride[])
+  ) => void;
 
   clearRideRequests: () => void;
 }
@@ -32,39 +37,37 @@ interface RideStore {
 export const useRideStore = create<RideStore>(set => ({
   rideData: {},
   rideRequests: [],
+  rideId: null,
   hasUnreadMessages: false,
 
-setRideData: data => set(state => ({ rideData: { ...state.rideData, ...data } })),
-
+  setRideData: data => set(state => ({ rideData: { ...state.rideData, ...data } })),
+  
+  setRideId: id => set({ rideId: id }),
+  
+  sethasUnreadMessages: hasUnreadMessages => set({ hasUnreadMessages }),
 
   setRideRequests: updater => {
     if (typeof updater === 'function') {
-      // Functional update
       set(state => ({
         rideRequests: updater(state.rideRequests),
       }));
     } else if (typeof updater === 'string') {
-      // If updater is an id (string), remove the ride with that id
       set(state => ({
         rideRequests: state.rideRequests.filter(
-          ride => ride.id !== updater && ride._id !== updater,
+          ride => ride.id !== updater
         ),
       }));
     } else {
-      // If updater is an object (single ride)
       set(state => {
         const exists = state.rideRequests.some(
-          ride => ride.id === updater.id || ride._id === updater._id,
+          ride => ride.id === updater.id
         );
-
         return exists
-          ? state // no change if already exists
+          ? state
           : { rideRequests: [updater, ...state.rideRequests] };
       });
     }
   },
-
-  sethasUnreadMessages: hasUnreadMessages => set({ hasUnreadMessages }),
 
   clearRideRequests: () => set({ rideRequests: [], rideData: {} }),
 }));

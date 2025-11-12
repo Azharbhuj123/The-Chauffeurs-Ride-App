@@ -219,8 +219,8 @@ export const LoyaltyRewardsScreen = ({ navigation }) => {
         {/* Redeem Rewards */}
         <Text style={styles.sectionTitle}>Redeem Rewards</Text>
         <View style={styles.listContainer}>
-          {rewards.map(item => (
-            <View key={item.id} style={styles.listItem}>
+          {rewards.map((item,index) => (
+            <View key={index} style={styles.listItem}>
               <View>
                 <Text style={styles.listItemTitle}>{item.title}</Text>
                 <Text style={styles.listItemSubtitle}>{item.cost}</Text>
@@ -250,8 +250,8 @@ export const LoyaltyRewardsScreen = ({ navigation }) => {
           <View>
             <Text style={styles.sectionTitle}>Points Activity</Text>
             <View style={styles.listContainer2}>
-              {transactions?.map(item => (
-                <View key={item.id} style={styles.listItem}>
+              {transactions?.map((item , index) => (
+                <View key={index} style={styles.listItem}>
                   <Text style={styles.listItemTitle}>
                     {item.description?.length > 28
                       ? item.description.slice(0, 28) + '...'

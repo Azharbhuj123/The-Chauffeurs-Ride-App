@@ -146,6 +146,9 @@ export default function Home({ navigation }) {
         return 'Searching for a driver...';
       case 'Accepted':
         return 'Driver accepted your ride, on the way!';
+      case 'Arrived':
+        return 'The driver has arrived at your location';
+
       case 'Started':
         return 'Your trip has started';
       case 'Completed':
@@ -169,37 +172,39 @@ export default function Home({ navigation }) {
     }
   };
 
-const handleBookAgain = (data) => {
-  console.log(data, 'again');
+  const handleBookAgain = data => {
+    console.log(data, 'again');
 
-  // Extract coordinates
-  const pickLat = data?.pickup_location?.coordinates[1];
-  const pickLng = data?.pickup_location?.coordinates[0];
+    // Extract coordinates
+    const pickLat = data?.pickup_location?.coordinates[1];
+    const pickLng = data?.pickup_location?.coordinates[0];
 
-  const dropLat = data?.drop_location?.coordinates[1];
-  const dropLng = data?.drop_location?.coordinates[0];
-  console.log(data?.drop_location?.famous_location,"data?.drop_location?.famous_location");
-  
-  // Build pickup and drop objects
-  const pick_location = {
-    latitude: pickLat,
-    longitude: pickLng,
-    address: data?.pickup_location?.address,
-    shortAddress: data?.pickup_location?.famous_location,
+    const dropLat = data?.drop_location?.coordinates[1];
+    const dropLng = data?.drop_location?.coordinates[0];
+    console.log(
+      data?.drop_location?.famous_location,
+      'data?.drop_location?.famous_location',
+    );
+
+    // Build pickup and drop objects
+    const pick_location = {
+      latitude: pickLat,
+      longitude: pickLng,
+      address: data?.pickup_location?.address,
+      shortAddress: data?.pickup_location?.famous_location,
+    };
+
+    const drop_location = {
+      latitude: dropLat,
+      longitude: dropLng,
+      address: data?.drop_location?.address,
+      shortAddress: data?.drop_location?.famous_location,
+    };
+
+    // Update ride data
+    setRideData({ pick_location, drop_location });
+    navigation.navigate('Bookings');
   };
-
-  const drop_location = {
-    latitude: dropLat,
-    longitude: dropLng,
-    address: data?.drop_location?.address,
-    shortAddress: data?.drop_location?.famous_location,
-  };
-  
-  // Update ride data
-  setRideData({ pick_location,  drop_location });
-  navigation.navigate('Bookings')
-};
-
 
   if (isLoading) {
     return <AppLoader />;
@@ -214,7 +219,7 @@ const handleBookAgain = (data) => {
           style={styles.scrollView}
           contentContainerStyle={[
             styles.scrollContent,
-            { paddingBottom: tabBarHeight + 10 },
+            { paddingBottom: tabBarHeight + 20 },
           ]}
           showsVerticalScrollIndicator={false}
         >

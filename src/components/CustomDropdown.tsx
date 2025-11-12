@@ -52,6 +52,7 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
 
 const styles = StyleSheet.create({
   container: {
+    width:"100%",
     marginBottom:hp(2)
   },
   dropdown: {

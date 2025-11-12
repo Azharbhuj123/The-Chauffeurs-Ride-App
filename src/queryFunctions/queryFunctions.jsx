@@ -2,7 +2,6 @@ import axios from "axios";
 import base_url from "../utils/BaseUrl"
 import { useUserStore } from "../stores/useUserStore";
 
-const token = useUserStore.getState().token;
  
 
 const api = axios.create({
@@ -10,15 +9,19 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(
-  (config) => {
+  async (config) => {
+    // ✅ Always fetch the latest token dynamically
+    const token = useUserStore.getState().token;
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => Promise.reject(error)
-  
 );
+
 
 // api.interceptors.response.use(
 //   (response) => response,

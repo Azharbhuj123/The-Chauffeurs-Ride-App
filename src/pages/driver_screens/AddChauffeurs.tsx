@@ -21,38 +21,227 @@ import TopHeader from '../../components/TopHeader';
 import Button from '../../components/Button';
 import { useNavigation } from '@react-navigation/native';
 import {
+  pickFile,
   pickImageFromCamera,
   pickImageFromGallery,
 } from '../../utils/imagePickerHelper';
 import { Checkbox } from 'react-native-paper';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
-
+import CustomDropdown from '../../components/CustomDropdown';
+import { useQuery } from '@tanstack/react-query';
+import { fetchData } from '../../queryFunctions/queryFunctions';
+import { useForm, Controller } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+import { COLORS, error_msg } from '../../utils/Enums';
+import { useStore } from '../../stores/useStore';
+import useActionMutation from '../../queryFunctions/useActionMutation';
+import { showToast } from '../../utils/toastHelper';
 // Import your existing components
 // import TopHeader from './TopHeader';
 // import Button from './Button';
 
+
+
+const step1Schema = yup.object().shape({
+  fullName: yup
+    .string()
+    .required('Full name is required')
+    .min(3, 'Full name must be at least 3 characters')
+    .matches(/^[a-zA-Z\s]+$/, 'Full name should only contain letters'),
+  phoneNumber: yup
+    .string()
+    .required('Phone number is required')
+    .matches(/^[\d\s()+-]+$/, 'Please enter a valid phone number')
+    .min(10, 'Phone number must be at least 10 digits'),
+  emailAddress: yup
+    .string()
+    .required('Email address is required')
+    .email('Please enter a valid email address'),
+});
+
+const step2Schema = yup.object().shape({
+  drivingLicense: yup
+    .mixed()
+    .required('Driving license is required')
+    .test('fileSize', 'File is required', (value) => value !== null),
+  nationalId: yup
+    .mixed()
+    .required('National ID/Passport is required')
+    .test('fileSize', 'File is required', (value) => value !== null),
+  commercialInsurance: yup
+    .mixed()
+    .required('Commercial insurance is required')
+    .test('fileSize', 'File is required', (value) => value !== null),
+});
+
+const step3Schema = yup.object().shape({
+  assignedVehicle: yup
+    .string()
+    .nullable()
+    .notRequired(),
+});
+
 export default function ChauffeursRegistration({ navigation }) {
   const [currentStep, setCurrentStep] = useState(1);
-  const [checked, setChecked] = useState(false);
-  const [documents, setDocuments] = useState({
-    driverLicense: null,
-    vehicleInsurance: null,
-    vehicleRegistration: null,
+  const tabBarHeight = useTabBarHeightHelper();
+  const { vehicleData, setVehicleData, resetVehicleData } = useStore();
 
-    frontView: null,
-    backView: null,
-    sideView: null,
-    interiorView: null,
+  const { data: vehicleDataApi } = useQuery({
+    queryKey: ['my-vehicles'],
+    queryFn: () => fetchData('/driver/available-vehicles'),
+    keepPreviousData: true,
   });
 
-      const tabBarHeight = useTabBarHeightHelper();
-  
-  const updateFormData = (field, value) => {
-    setFormData({ ...formData, [field]: value });
-  };
+  const vehicle_for = Array.isArray(vehicleDataApi?.vehicles)
+    ? vehicleDataApi.vehicles.map((vehicle) => ({
+        label: `${vehicle?.vehicle_make} (${vehicle?.vehicle_model})`,
+        value: vehicle?._id,
+      }))
+    : [];
 
-  const nextStep = () => {
-    if (currentStep < 5) setCurrentStep(currentStep + 1);
+  // Form for Step 1
+  const {
+    control: control1,
+    handleSubmit: handleSubmit1,
+    formState: { errors: errors1 },
+    trigger: trigger1,
+  } = useForm({
+    resolver: yupResolver(step1Schema),
+    mode: 'onChange',
+    defaultValues: {
+      fullName: '',
+      phoneNumber: '',
+      emailAddress: '',
+    },
+  });
+
+  // Form for Step 2
+  const {
+    control: control2,
+    handleSubmit: handleSubmit2,
+    formState: { errors: errors2 },
+    setValue: setValue2,
+    trigger: trigger2,
+  } = useForm({
+    resolver: yupResolver(step2Schema),
+    mode: 'onChange',
+    defaultValues: {
+      drivingLicense: null,
+      nationalId: null,
+      commercialInsurance: null,
+    },
+  });
+
+  // Form for Step 3
+  const {
+    control: control3,
+    handleSubmit: handleSubmit3,
+    formState: { errors: errors3 },
+    trigger: trigger3,
+
+  } = useForm({
+    resolver: yupResolver(step3Schema),
+    mode: 'onChange',
+    defaultValues: {
+      assignedVehicle: null,
+    },
+  });
+
+
+
+
+
+const { triggerMutation, loading } = useActionMutation({
+    onSuccessCallback: async data => {
+      if (data?.success) {
+        showToast({
+          type: 'success',
+          title: 'Vehicle Registration Success',
+          message: data?.message,
+        });
+        setCurrentStep(5);
+        resetVehicleData();
+      }
+    },
+    onErrorCallback: errmsg => {
+      showToast({
+        type: 'error',
+        title: 'Vehicle Registration Failed',
+        message: errmsg || 'Please Try again!',
+      });
+    },
+  });
+
+
+  const nextStep = async () => {
+    let isValid = false;
+
+  if (currentStep === 4) {
+      const formData = new FormData();
+
+      // Step 1 fields
+      formData.append('contact', vehicleData.emailAddress);
+      formData.append('name', vehicleData.fullName);
+      if(vehicleData.assignedVehicle){
+
+        formData.append('assign_Vehicle', vehicleData.assignedVehicle);
+      }
+       
+ 
+      // Step 2: Upload documents (binary)
+      const documents = {
+        driver_License: vehicleData.drivingLicense,
+        national_Id: vehicleData.nationalId,
+        commercial_Insurances: vehicleData.commercialInsurance,
+      };
+
+      Object.entries(documents).forEach(([key, file]) => {
+        if (file) {
+          formData.append(key, {
+            uri: file.uri, // React Native image picker uri
+            name: file.fileName || `${key}.jpg`, // fallback filename
+            type: file.type || 'image/jpeg', // fallback type
+          });
+        }
+      });
+
+      triggerMutation({
+        endPoint: '/auth/add-chauffeurs',
+        body: formData,
+        method: 'post',
+      });
+      return;
+    }
+
+    if (currentStep === 1) {
+      isValid = await trigger1();
+      if (isValid) {
+        handleSubmit1((data) => {
+          setVehicleData(data);
+          console.log('Step 1 Data:', data);
+          setCurrentStep(2);
+        })();
+      }
+    } else if (currentStep === 2) {
+      isValid = await trigger2();
+      if (isValid) {
+        handleSubmit2((data) => {
+          setVehicleData(data);
+          console.log('Step 2 Data:', data);
+          setCurrentStep(3);
+        })();
+      }
+    } else if (currentStep === 3) {
+      isValid = await trigger3();
+      if (isValid) {
+        handleSubmit3((data) => {
+          setVehicleData(data);
+          console.log('Step 3 Data:', data);
+          setCurrentStep(4);
+        })();
+      }
+    } 
   };
 
   const prevStep = () => {
@@ -61,7 +250,7 @@ export default function ChauffeursRegistration({ navigation }) {
 
   const renderProgressBar = () => (
     <View style={styles.progressContainer}>
-      {[1, 2, 3, 4].map(step => (
+      {[1, 2, 3, 4].map((step) => (
         <View
           key={step}
           style={[
@@ -79,150 +268,121 @@ export default function ChauffeursRegistration({ navigation }) {
 
       <View style={styles.inputGroup}>
         <Text style={styles.label}>Full Name</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="e.g, Jane Doe"
-          placeholderTextColor="#999"
-          // value={formData.vehicleMake}
-          // onChangeText={text => updateFormData('vehicleMake', text)}
+        <Controller
+          control={control1}
+          name="fullName"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              style={[styles.input, errors1.fullName && styles.inputError]}
+              placeholder="e.g, Jane Doe"
+              placeholderTextColor="#999"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+            />
+          )}
         />
-      </View>
-
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Model</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="e.g, S-class"
-          placeholderTextColor="#999"
-          // value={formData.model}
-          // onChangeText={text => updateFormData('model', text)}
-        />
-      </View>
-
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Year of Manufacture</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="e.g. 2005"
-          placeholderTextColor="#999"
-          keyboardType="numeric"
-          // value={formData.manufacturingYear}
-          // onChangeText={text => updateFormData('manufacturingYear', text)}
-        />
+        {errors1.fullName && (
+          <Text style={styles.errorText}>{errors1.fullName.message}</Text>
+        )}
       </View>
 
       <View style={styles.inputGroup}>
         <Text style={styles.label}>Phone Number</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="e.g, (555) 123 4567"
-          placeholderTextColor="#999"
-          // value={formData.licensePlateNumber}
-          // onChangeText={text => updateFormData('licensePlateNumber', text)}
+        <Controller
+          control={control1}
+          name="phoneNumber"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              style={[styles.input, errors1.phoneNumber && styles.inputError]}
+              placeholder="e.g, (555) 123 4567"
+              placeholderTextColor="#999"
+              keyboardType="phone-pad"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+            />
+          )}
         />
+        {errors1.phoneNumber && (
+          <Text style={styles.errorText}>{errors1.phoneNumber.message}</Text>
+        )}
       </View>
 
       <View style={styles.inputGroup}>
         <Text style={styles.label}>Email Address</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="e.g, janedoe12@mail.com"
-          placeholderTextColor="#999"
-          // value={formData.licensePlateNumber}
-          // onChangeText={text => updateFormData('licensePlateNumber', text)}
+        <Controller
+          control={control1}
+          name="emailAddress"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              style={[styles.input, errors1.emailAddress && styles.inputError]}
+              placeholder="e.g, janedoe12@mail.com"
+              placeholderTextColor="#999"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+            />
+          )}
         />
+        {errors1.emailAddress && (
+          <Text style={styles.errorText}>{errors1.emailAddress.message}</Text>
+        )}
       </View>
     </View>
   );
 
   const renderStep2 = () => {
-    const handleFileUpload = async documentType => {
-      try {
-        const file = await pickFile();
-        if (file) {
-          setDocuments(prev => ({
-            ...prev,
-            [documentType]: file,
-          }));
-        }
-      } catch (error) {
-        Alert.alert('Error', 'Failed to upload file');
-      }
-    };
-
-    const handleCamera = async documentType => {
-      try {
-        const image = await pickImageFromCamera();
-        if (image) {
-          setDocuments(prev => ({
-            ...prev,
-            [documentType]: image,
-          }));
-        }
-      } catch (error) {
-        Alert.alert('Error', 'Failed to capture image');
-      }
-    };
-
-    const handleGallery = async documentType => {
-      try {
-        const image = await pickImageFromGallery();
-        if (image) {
-          setDocuments(prev => ({
-            ...prev,
-            [documentType]: image,
-          }));
-        }
-      } catch (error) {
-        Alert.alert('Error', 'Failed to select image');
-      }
-    };
-
-    const handleRemoveDocument = documentType => {
-      Alert.alert(
-        'Remove Document',
-        'Are you sure you want to remove this document?',
-        [
-          {
-            text: 'Cancel',
-            style: 'cancel',
-          },
-          {
-            text: 'Remove',
-            onPress: () => {
-              setDocuments(prev => ({
-                ...prev,
-                [documentType]: null,
-              }));
-            },
-            style: 'destructive',
-          },
-        ],
-      );
-    };
-
-    const handleImageSelection = documentType => {
+    const handleImageSelection = (documentType, fieldName) => {
       const isFileAllowed = [
-        'driverLicense',
-        'vehicleInsurance',
-        'vehicleRegistration',
-      ].includes(documentType);
+        'drivingLicense',
+        'nationalId',
+        'commercialInsurance',
+      ].includes(fieldName);
 
       const options = [
         {
           text: 'Take Photo',
-          onPress: () => handleCamera(documentType),
+          onPress: async () => {
+            try {
+              const image = await pickImageFromCamera();
+              if (image) {
+                setValue2(fieldName, image);
+                trigger2(fieldName);
+              }
+            } catch (error) {
+              Alert.alert('Error', 'Failed to capture image');
+            }
+          },
         },
         {
           text: 'Choose from Gallery',
-          onPress: () => handleGallery(documentType),
+          onPress: async () => {
+            try {
+              const image = await pickImageFromGallery();
+              if (image) {
+                setValue2(fieldName, image);
+                trigger2(fieldName);
+              }
+            } catch (error) {
+              Alert.alert('Error', 'Failed to select image');
+            }
+          },
         },
       ];
 
       if (isFileAllowed) {
         options.push({
           text: 'Upload File (PDF, DOC, etc.)',
-          onPress: () => handleFileUpload(documentType),
+          onPress: async () => {
+             const file = await pickFile();
+              if (file) {
+                setValue2(fieldName, file);
+                trigger2(fieldName);
+              }
+          },
         });
       }
 
@@ -236,6 +396,27 @@ export default function ChauffeursRegistration({ navigation }) {
       });
     };
 
+    const handleRemoveDocument = (fieldName) => {
+      Alert.alert(
+        'Remove Document',
+        'Are you sure you want to remove this document?',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Remove',
+            onPress: () => {
+              setValue2(fieldName, null);
+              trigger2(fieldName);
+            },
+            style: 'destructive',
+          },
+        ],
+      );
+    };
+
     return (
       <View>
         <Text style={styles.stepTitle}>Step 2: Upload Documents</Text>
@@ -244,17 +425,61 @@ export default function ChauffeursRegistration({ navigation }) {
           <Text style={styles.sectionTitle}>Required Documents</Text>
         </View>
 
-        <DocumentUploadItem
-          title="Driving License"
-          // uploaded={formData.documents.vehicleRegistration}
+        <Controller
+          control={control2}
+          name="drivingLicense"
+          render={({ field: { value } }) => (
+            <>
+              <DocumentUploadItem
+                title="Driving License"
+                uploaded={value}
+                onUpload={() => handleImageSelection('drivingLicense', 'drivingLicense')}
+                onRemove={() => handleRemoveDocument('drivingLicense')}
+                hasError={!!errors2.drivingLicense}
+              />
+              {errors2.drivingLicense && (
+                <Text style={styles.errorText}>{errors2.drivingLicense.message}</Text>
+              )}
+            </>
+          )}
         />
-        <DocumentUploadItem
-          title="National ID/Passport"
-          // uploaded={formData.documents.insurancePapers}
+
+        <Controller
+          control={control2}
+          name="nationalId"
+          render={({ field: { value } }) => (
+            <>
+              <DocumentUploadItem
+                title="National ID/Passport"
+                uploaded={value}
+                onUpload={() => handleImageSelection('nationalId', 'nationalId')}
+                onRemove={() => handleRemoveDocument('nationalId')}
+                hasError={!!errors2.nationalId}
+              />
+              {errors2.nationalId && (
+                <Text style={styles.errorText}>{errors2.nationalId.message}</Text>
+              )}
+            </>
+          )}
         />
-        <DocumentUploadItem
-          title="Commercial Insurance"
-          // uploaded={formData.documents.roadworthiness}
+
+        <Controller
+          control={control2}
+          name="commercialInsurance"
+          render={({ field: { value } }) => (
+            <>
+              <DocumentUploadItem
+                title="Commercial Insurance"
+                uploaded={value}
+                onUpload={() => handleImageSelection('commercialInsurance', 'commercialInsurance')}
+                onRemove={() => handleRemoveDocument('commercialInsurance')}
+                hasError={!!errors2.commercialInsurance}
+              />
+              {errors2.commercialInsurance && (
+                <Text style={styles.errorText}>{errors2.commercialInsurance.message}</Text>
+              )}
+            </>
+          )}
         />
       </View>
     );
@@ -264,39 +489,29 @@ export default function ChauffeursRegistration({ navigation }) {
     <View>
       <Text style={styles.stepTitle}>Step 3: Assign Vehicle/Avail.</Text>
 
-      <View style={styles.inputGroup}>
+      <View style={{}}>
         <Text style={styles.label}>Assign Vehicle (Optional)</Text>
-        <View style={styles.pickerContainer}>
-          <Text style={styles.pickerText}>
-            No Chauffeur Assigned (Self Drive)
-          </Text>
-          <Text style={styles.pickerText}></Text>
-          <Icon name="chevron-down" size={wp(5)} color="#666" />
-        </View>
+        <Controller
+          control={control3}
+          name="assignedVehicle"
+          render={({ field: { onChange, value } }) => (
+            <>
+              <CustomDropdown 
+                data={vehicle_for} 
+                value={value}
+                  onChange={(selectedItem: { label: string; value: string }) => {
+                  onChange(selectedItem.value); // pass only the string to RHF
+                }}
+              />
+              {errors3.assignedVehicle && (
+                <Text style={styles.errorText}>{errors3.assignedVehicle.message}</Text>
+              )}
+            </>
+          )}
+        />
       </View>
 
       <Text style={styles.subtitle}>Only "Available" vehicles are shown.</Text>
-
-      <View style={styles.card1}>
-        {/* Header Row */}
-        <View style={styles.headerRow1}>
-          <View style={styles.headerLeft1}>
-            <Icon name="calendar" size={wp(5)} color="#000" />
-            <Text style={styles.headerText1}>Initial Availability</Text>
-          </View>
-          <Icon name="chevron-down" size={wp(5)} color="#000" />
-        </View>
-
-        {/* Subtitle */}
-        <Text style={styles.subtitle1}>
-          This will open a calendar interface in a production app.
-        </Text>
-
-        {/* Button */}
-        <TouchableOpacity style={styles.button1}>
-          <Text style={styles.buttonText1}>Set Default Shifts</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 
@@ -304,31 +519,28 @@ export default function ChauffeursRegistration({ navigation }) {
     <View>
       <Text style={styles.stepTitle}>Step 4: Review & Submit</Text>
       <View style={styles.container}>
-        {/* ✅ Vehicle Info */}
         <View style={styles.card}>
-          <Text style={styles.vehicleName}>Mercedes</Text>
+          <Text style={styles.vehicleName}>Jane Doe</Text>
           <View style={styles.flexbox}>
             <Image source={require('../../assets/images/name.png')} />
-            <Text style={styles.vehicleInfo}> Jane Doe</Text>
+            <Text style={styles.vehicleInfo}> {vehicleData?.fullName}</Text>
           </View>
-           <View style={styles.flexbox}>
-          <Image source={require('../../assets/images/mail.png')} />
-          <Text style={styles.vehicleInfo}> Janedoe12@mail.com</Text>
+          <View style={styles.flexbox}>
+            <Image source={require('../../assets/images/mail.png')} />
+            <Text style={styles.vehicleInfo}> {vehicleData?.emailAddress}</Text>
           </View>
         </View>
 
-        {/* ✅ Assignment Status */}
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Vehicle Assignment</Text>
           <View style={styles.row}>
-              <View style={styles.flexbox}>
-          <Image source={require('../../assets/images/caricon.png')} />
-          <Text style={styles.vehicleInfo}> No vehicle assigned yet.</Text>
-          </View>
+            <View style={styles.flexbox}>
+              <Image source={require('../../assets/images/caricon.png')} />
+              <Text style={styles.vehicleInfo}> {vehicleData?.assignedVehicle ? 'Vehicle Assigned':"No Vehicle Assigned"}</Text>
+            </View>
           </View>
         </View>
 
-        {/* ✅ Documents & Photos */}
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Documents Status</Text>
 
@@ -356,7 +568,7 @@ export default function ChauffeursRegistration({ navigation }) {
         Silently Pending Admin Approval
       </Text>
       <Text style={styles.successMessage}>
-        Your Vehicle Mercedes (ABC-123) has been Submitted for review. You'll be
+        Your chauffeur registration has been submitted for review. You'll be
         notified via email once our administrative team verifies the documents
         and grants approval.
       </Text>
@@ -365,15 +577,19 @@ export default function ChauffeursRegistration({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* TopHeader Component */}
-
-      <TopHeader title="Add Chauffeurs" navigation={navigation} />
+      <TopHeader title="Add Chauffeurs"
+      navigation={navigation}
+        any_navigation={currentStep == 5 ? true : false}
+        navigate_to={currentStep == 5 ? 'DriverHome' : ''}
+      />
 
       {currentStep < 5 && renderProgressBar()}
       <ScrollView
         style={styles.formContainer}
-        contentContainerStyle={[styles.scrollContent,{ paddingBottom: tabBarHeight }]}
-
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: tabBarHeight },
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.content}>
@@ -387,8 +603,9 @@ export default function ChauffeursRegistration({ navigation }) {
         {currentStep < 5 && (
           <View style={styles.buttonContainer}>
             <Button
+            isLoading={loading}
               title={currentStep === 4 ? 'Submit for Approval' : 'Next'}
-              onPress={currentStep === 4 ? () => setCurrentStep(5) : nextStep}
+              onPress={nextStep}
             />
           </View>
         )}
@@ -400,7 +617,7 @@ export default function ChauffeursRegistration({ navigation }) {
               onPress={() => navigation?.navigate('Home')}
               activeOpacity={0.8}
             >
-              <Text style={styles.buttonText}>Submit for Approval</Text>
+              <Text style={styles.buttonText}>Go to Home</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -409,22 +626,24 @@ export default function ChauffeursRegistration({ navigation }) {
   );
 }
 
-const DocumentUploadItem = ({ title, uploaded }) => (
-  <View style={styles.documentItem}>
+const DocumentUploadItem = ({ title, uploaded, onUpload, onRemove, hasError }) => (
+  <View style={[styles.documentItem, hasError && styles.documentItemError]}>
     <View style={styles.documentLeft}>
       <Image source={require('../../assets/images/upload.png')} />
       <Text style={styles.documentTitle}>{title}</Text>
     </View>
-    <TouchableOpacity style={styles.uploadButton}>
-      <Text style={styles.uploadButtonText}>Upload</Text>
-    </TouchableOpacity>
-  </View>
-);
-
-const PhotoUploadBox = ({ label }) => (
-  <View style={styles.photoBox}>
-    <Icon name="camera-outline" size={wp(10)} color="#999" />
-    <Text style={styles.photoLabel}>{label}</Text>
+    {uploaded ? (
+      <View style={{ flexDirection: 'row', gap: wp(2) }}>
+        <Icon name="checkmark-circle" size={wp(6)} color="#10B981" />
+        <TouchableOpacity onPress={onRemove}>
+          <Icon name="close-circle" size={wp(6)} color="#EF4444" />
+        </TouchableOpacity>
+      </View>
+    ) : (
+      <TouchableOpacity style={styles.uploadButton} onPress={onUpload}>
+        <Text style={styles.uploadButtonText}>Upload</Text>
+      </TouchableOpacity>
+    )}
   </View>
 );
 
@@ -744,11 +963,7 @@ const styles = StyleSheet.create({
     borderRadius: wp(3),
     padding: wp(4),
     marginVertical: hp(1.5),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
+    boxShadow: '0 0 30px 0 rgba(0, 0, 0, 0.10)',
   },
   headerRow1: {
     flexDirection: 'row',
@@ -785,11 +1000,15 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
-    flexbox: {
-display:'flex',
-alignItems:'center',
-gap:wp(1),
-flexDirection:'row',
-paddingTop:wp(3),
+  flexbox: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: wp(1),
+    flexDirection: 'row',
+    paddingTop: wp(3),
   },
+  inputError: {
+    borderColor:COLORS.error,
+  },
+  errorText: error_msg,
 });

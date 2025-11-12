@@ -43,4 +43,27 @@ export const CANCEL_REASONS = {
   ],
 };
 
+
+export const vehicle_class = [
+  { label: "Hatchback", value: "Hatchback" },
+  { label: "Sedan", value: "Sedan" },
+  { label: "SUV", value: "SUV" },
+  { label: "Van / MPV", value: "Van / MPV" },
+  { label: "XL / Large", value: "XL / Large" },
+  { label: "Luxury Sedan", value: "Luxury Sedan" },
+  { label: "Prestige Sedan", value: "Prestige Sedan" },
+  { label: "Luxury SUV", value: "Luxury SUV" },
+  { label: "Electric (EV)", value: "Electric (EV)" },
+  { label: "Motorbike", value: "Motorbike" },
+  { label: "Auto Rickshaw", value: "Auto Rickshaw" },
+  { label: "Chauffeur Class", value: "Chauffeur Class" },
+];
+
+export const category_class = [
+  { label: "Luxury", value: "Luxury" },
+  { label: "Business", value: "Business" },
+  { label: "Economy", value: "Economy" },
+];
+
+
 export const GOOGLE_MAP_API_KEY = 'AIzaSyD0s3-mEKBypeL1z_jFhoCa0NfqVK80U-8';
