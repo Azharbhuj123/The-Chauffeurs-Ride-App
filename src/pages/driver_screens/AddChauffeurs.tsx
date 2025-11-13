@@ -614,7 +614,7 @@ const { triggerMutation, loading } = useActionMutation({
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={styles.button}
-              onPress={() => navigation?.navigate('Home')}
+              onPress={() => navigation?.navigate('DriverHome')}
               activeOpacity={0.8}
             >
               <Text style={styles.buttonText}>Go to Home</Text>

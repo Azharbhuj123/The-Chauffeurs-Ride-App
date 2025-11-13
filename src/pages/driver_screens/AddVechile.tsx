@@ -25,31 +25,31 @@ import {
   pickImageFromCamera,
   pickImageFromGallery,
 } from '../../utils/imagePickerHelper';
-import { Checkbox } from 'react-native-paper';
+
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 import CustomDropdown from '../../components/CustomDropdown';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { category_class, COLORS, error_msg, vehicle_class } from '../../utils/Enums';
+import {
+  category_class,
+  COLORS,
+  error_msg,
+  vehicle_class,
+} from '../../utils/Enums';
 import { useStore } from '../../stores/useStore';
 import useActionMutation from '../../queryFunctions/useActionMutation';
 import { showToast } from '../../utils/toastHelper';
 import { useUserStore } from '../../stores/useUserStore';
+import CheckBox from '@react-native-community/checkbox';
+import { useQuery } from '@tanstack/react-query';
+import { fetchData } from '../../queryFunctions/queryFunctions';
+
 // Import your existing components
 // import TopHeader from './TopHeader';
 // import Button from './Button';
 
-const options = [
-  {
-    label: 'For Self Drive',
-    value: 'Self Drive',
-  },
-  {
-    label: 'For Chauffeur',
-    value: 'Chauffeur',
-  },
-];
+
 
 // Validation schemas for each step
 const step1Schema = yup.object().shape({
@@ -111,19 +111,24 @@ const step2Schema = yup.object().shape({
 });
 
 const step3Schema = yup.object().shape({
-  chauffeurType: yup
-    .string()
-    .required('Please select chauffeur type')
-    .default('Self Drive'),
   inviteDriver: yup.boolean().default(false),
-  driverEmail: yup.string().when('inviteDriver', {
-    is: true,
+
+  chauffeurType: yup.string().when('inviteDriver', {
+    is: false,
     then: schema =>
       schema
-        .required('Driver email is required')
-        .email('Please enter a valid email'),
+        .required('Assign any chauffeur'),
     otherwise: schema => schema.notRequired(),
   }),
+
+  // driverEmail: yup.string().when('inviteDriver', {
+  //   is: true,
+  //   then: schema =>
+  //     schema
+  //       .required('Driver email is required')
+  //       .email('Please enter a valid email'),
+  //   otherwise: schema => schema.notRequired(),
+  // }),
 });
 
 export default function VehicleRegistration({ route, navigation }) {
@@ -195,7 +200,27 @@ export default function VehicleRegistration({ route, navigation }) {
     },
   });
 
+    const { data, isLoading, refetch } = useQuery({
+    queryKey: ['my-chauffeurs'],
+    queryFn: () => fetchData('/driver/my-free-chauffeurs'),
+    keepPreviousData: true,
+  });
+
+const permanentOption = { label: 'For Self Drive', value: 'Self Drive' };
+console.log(data,"data");
+
+const options = [
+  permanentOption,
+  ...(Array.isArray(data)
+    ? data.map(item => ({
+        label: `${item?.name} (Chauffeur)` ?? 'Unknown',
+        value: item?._id,
+      }))
+    : []),
+];
+
   const inviteDriver = watch3('inviteDriver');
+  const chauffeurType = watch3('chauffeurType');
 
   const { triggerMutation, loading } = useActionMutation({
     onSuccessCallback: async data => {
@@ -237,12 +262,12 @@ export default function VehicleRegistration({ route, navigation }) {
 
       // Step 3: Chauffeur / Self Drive logic
       const vehicleFor =
-        vehicleData.chauffeurType === 'Self Drive' ? 'Self Drive' : 'Chauffeur';
-      formData.append('vehicle_for', vehicleFor);
+        vehicleData.chauffeurType === 'Self Drive' ? 'Self Drive' : vehicleData.chauffeurType;
+      formData.append('inviteDriver', vehicleData.inviteDriver);
 
       // Vehicle driver
-      const vehicleDriver = vehicleFor === 'Self Drive' ? userData?._id : null;
-      if (vehicleDriver) formData.append('vehicle_driver', vehicleDriver);
+      const vehicleDriver = vehicleFor === 'Self Drive' ? userData?._id : vehicleData.chauffeurType;
+      if (vehicleDriver) formData.append('vehicle_for', vehicleDriver);
 
       // Step 2: Upload documents (binary)
       const documents = {
@@ -301,7 +326,9 @@ export default function VehicleRegistration({ route, navigation }) {
 
       isValid = await trigger3();
 
+      console.log(errors3, 'isValid');
       if (isValid) {
+
         handleSubmit3(data => {
           setVehicleData(data);
           console.log('Step 3 Data:', data);
@@ -771,7 +798,7 @@ export default function VehicleRegistration({ route, navigation }) {
         self-driving/personal use
       </Text>
 
-      <View style={styles.inputGroup}>
+      <View style={{}}>
         <Text style={styles.label}>Select Chauffeur</Text>
         <Controller
           control={control3}
@@ -794,8 +821,11 @@ export default function VehicleRegistration({ route, navigation }) {
           )}
         />
       </View>
+          {
+            chauffeurType === '' && (
 
-      {/* <Controller
+           
+      <Controller
         control={control3}
         name="inviteDriver"
         render={({ field: { onChange, value } }) => (
@@ -803,17 +833,23 @@ export default function VehicleRegistration({ route, navigation }) {
             style={styles.linkContainer}
             onPress={() => onChange(!value)}
           >
-            <Checkbox
+            <CheckBox
               value={value}
               onValueChange={onChange}
-              tintColors={{ true: '#007bff', false: '#666' }}
+              tintColors={{ true: COLORS.warning, false: '#000' }}
+              onCheckColor={COLORS.warning} // ✅ tick color
+              onTintColor={COLORS.warning}
+              boxType="square"
+              style={{ transform: [{ scale: 0.8 }] }} // 👈 smaller size
             />
             <Text style={styles.linkText}>
               Invite a New Driver (You send email to mail)
             </Text>
           </TouchableOpacity>
         )}
-      /> */}
+      />
+       )
+          }
 
       {/* {inviteDriver && (
         <View style={styles.inputGroup}>
@@ -842,7 +878,7 @@ export default function VehicleRegistration({ route, navigation }) {
     </View>
   );
 
-   const renderStep4 = () => (
+  const renderStep4 = () => (
     <View>
       <Text style={styles.stepTitle}>Step 4: Review & Submit</Text>
       <View style={styles.container}>
@@ -867,9 +903,9 @@ export default function VehicleRegistration({ route, navigation }) {
             />
             <Text style={styles.statusText}>
               Chauffeur:{' '}
-              {vehicleData?.chauffeurType === 'Self Drive'
+              {vehicleData?.chauffeurType === "" && vehicleData?.inviteDriver ? 'Not Assigned' : vehicleData?.chauffeurType === 'Self Drive'
                 ? 'Self Drive'
-                : 'Assigned Chauffeur'}
+                :  'Assigned Chauffeur'}
             </Text>
           </View>
         </View>
@@ -959,7 +995,7 @@ export default function VehicleRegistration({ route, navigation }) {
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={styles.button}
-              onPress={() => navigation?.navigate('Home')}
+              onPress={() => navigation?.navigate('DriverHome')}
               activeOpacity={0.8}
             >
               <Text style={styles.buttonText}>Go to Home</Text>
@@ -1175,7 +1211,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: wp(2),
-    marginTop: hp(2),
+    marginBottom: hp(2),
   },
   linkText: {
     fontSize: wp(3.5),
@@ -1340,6 +1376,6 @@ const styles = StyleSheet.create({
     marginTop: hp(0.3),
   },
   inputError: {
-    borderColor:COLORS.error,
+    borderColor: COLORS.error,
   },
 });

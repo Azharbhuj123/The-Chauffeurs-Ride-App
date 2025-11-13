@@ -346,7 +346,6 @@ const styles = StyleSheet.create({
     width: wp('10%'),
     height: wp('10%'),
     borderRadius: wp('5%'),
-    backgroundColor: '#E8F4FF',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: wp('2%'),

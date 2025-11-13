@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -15,52 +15,36 @@ import {
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import Icon from 'react-native-vector-icons/Ionicons';
-
-const customers = [
-  {
-    id: 1,
-    name: 'John Williams',
-    initials: 'JD',
-    loyalty: 'Platinum',
-    phone: '+1 987 654 3210',
-    lastRide: 'Oct 5, 2025',
-    totalRides: 12,
-    loyaltyPercent: '85%',
-    rating: 4.9,
-    tagStyle: null, // default tag style
-  },
-  {
-    id: 2,
-    name: 'John Williams',
-    initials: 'JD',
-    loyalty: 'Gold',
-    phone: '+1 987 654 3210',
-    lastRide: 'Oct 5, 2025',
-    totalRides: 12,
-    loyaltyPercent: '85%',
-    rating: 4.9,
-    tagStyle: 'Gold', // applies styles.Gold
-  },
-  {
-    id: 3,
-    name: 'John Williams',
-    initials: 'JD',
-    loyalty: 'Bronze',
-    phone: '+1 987 654 3210',
-    lastRide: 'Oct 5, 2025',
-    totalRides: 12,
-    loyaltyPercent: '85%',
-    rating: 4.9,
-    tagStyle: 'Bronze',
-  },
-];
+import { useQuery } from '@tanstack/react-query';
+import { fetchData } from '../../queryFunctions/queryFunctions';
+import { useFocusEffect } from '@react-navigation/native';
+import { formatReadableDate, formatSmartDate } from '../../utils/DateFormats';
+import SkeletonBox from '../../utils/SkeletonBox';
 
 const OwnershipList = ({ navigation }) => {
   const [notes, setNotes] = useState('Saved locally in client ledger.');
   const [showModal, setShowModal] = useState(false);
+  const [search, setSearch] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleSaveNotes = () => setShowModal(true);
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['client-ownership', search],
+    queryFn: () => fetchData(`/driver/client-ownership?search=${search}&page=1&limit=10`),
+    keepPreviousData: true,
+  });
+
+  const client_list = data?.data;
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, []),
+  );
+
+  console.log(data, 'data');
+
   const handleConfirm = () => {
     setShowModal(false);
     setShowSuccessModal(true);
@@ -81,6 +65,7 @@ const OwnershipList = ({ navigation }) => {
             style={styles.inputBoxIcon}
           />
           <TextInput
+            onChangeText={text => setSearch(text)}
             placeholder="Search by client name or phone number..."
             placeholderTextColor="#999"
           />
@@ -88,77 +73,105 @@ const OwnershipList = ({ navigation }) => {
 
         {/* Contact & Loyalty Info */}
         <Text style={styles.contactHeading}>Client List</Text>
+        {isLoading ? (
+  <>
+    <SkeletonBox height={200} marginTop={0} />
+    <SkeletonBox height={200} marginTop={0} />
+    <SkeletonBox height={200} marginTop={0} />
+  </>
+) : client_list?.length === 0 ? (
+  <View
+    style={{
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: hp(5),
+    }}
+  >
+    <Text
+      style={{ fontSize: wp(4), fontStyle: 'italic', color: '#999' }}
+    >
+      No Client Found
+    </Text>
+  </View>
+) : (
+  client_list?.map(customer => (
+    <TouchableOpacity
+      key={customer._id}
+      style={styles.card}
+      onPress={() => navigation.navigate('CustomerProfile',{
+        customerId:customer._id,
+        customer,
+      })}
+    >
+      <View style={styles.headerRow}>
+        <View style={styles.avatar}>
+          <Image
+            source={{ uri: customer?.profile_image }}
+            style={{ width: '100%', height: '100%', borderRadius: 50 }}
+          />
+        </View>
 
-        {customers.map(customer => (
-          <TouchableOpacity
-            key={customer.id}
-            style={styles.card}
-            onPress={() => navigation.navigate('CustomerProfile')}
-          >
-            <View style={styles.headerRow}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{customer.initials}</Text>
-              </View>
-
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={styles.name}>{customer.name}</Text>
-                <View
-                  style={[
-                    styles.loyaltyTag,
-                    customer.tagStyle && styles[customer.tagStyle],
-                  ]}
-                >
-                  <Text style={styles.loyaltyText}>{customer.loyalty}</Text>
-                </View>
-              </View>
-
-              <View style={styles.ratingBox}>
-                <Icon name="star" size={20} color="#F8D833" />
-                <Text style={styles.ratingValue}>{customer.rating}</Text>
-              </View>
+        <View style={{ flex: 1, marginLeft: 12 }}>
+          <Text style={styles.name}>{customer.name}</Text>
+          {customer.category && (
+            <View
+              style={[
+                styles.loyaltyTag,
+                customer.category && styles[customer.category],
+              ]}
+            >
+              <Text style={styles.loyaltyText}>{customer.category}</Text>
             </View>
+          )}
+        </View>
 
-            <View style={styles.infoRowBox}>
-              <View style={styles.infoRow}>
-                <Image
-                  source={require('../../assets/images/phone.png')}
-                  style={styles.infoLabel}
-                />
-                <Text style={styles.infoText}>{customer.phone}</Text>
-              </View>
+        <View style={styles.ratingBox}>
+          <Icon name="star" size={20} color="#F8D833" />
+          <Text style={styles.ratingValue}>N/A</Text>
+        </View>
+      </View>
 
-              <View style={styles.infoRow}>
-                <Image
-                  source={require('../../assets/images/date.png')}
-                  style={styles.infoLabel}
-                />
-                <Text style={styles.infoText}>Last: {customer.lastRide}</Text>
-              </View>
-            </View>
+      <View style={styles.infoRowBox}>
+        <View style={styles.infoRow}>
+          <Image
+            source={require('../../assets/images/phone.png')}
+            style={styles.infoLabel}
+          />
+          <Text style={styles.infoText}>{customer.contact}</Text>
+        </View>
 
-            <View style={styles.infoRowBox}>
-              <View style={styles.infoRow}>
-                <Image
-                  source={require('../../assets/images/caricon1.png')}
-                  style={styles.infoLabel}
-                />
-                <Text style={styles.infoText}>
-                  {customer.totalRides} Total Rides
-                </Text>
-              </View>
+        <View style={styles.infoRow}>
+          <Image
+            source={require('../../assets/images/date.png')}
+            style={styles.infoLabel}
+          />
+          <Text style={styles.infoText}>
+            Last: {formatSmartDate(customer?.lastRideAt)}
+          </Text>
+        </View>
+      </View>
 
-              <View style={styles.infoRow}>
-                <Image
-                  source={require('../../assets/images/Loyalty.png')}
-                  style={styles.infoLabel}
-                />
-                <Text style={styles.infoText}>
-                  {customer.loyaltyPercent} Loyalty
-                </Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-        ))}
+      <View style={styles.infoRowBox}>
+        <View style={styles.infoRow}>
+          <Image
+            source={require('../../assets/images/caricon1.png')}
+            style={styles.infoLabel}
+          />
+          <Text style={styles.infoText}>{customer.totalRides} Total Rides</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Image
+            source={require('../../assets/images/Loyalty.png')}
+            style={styles.infoLabel}
+          />
+          <Text style={styles.infoText}>{customer.loyaltyPercent}% Loyalty</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  ))
+)}
+
 
         {/* Operator Notes */}
 
@@ -169,12 +182,16 @@ const OwnershipList = ({ navigation }) => {
 
           <View style={styles.ClientsBox}>
             <View style={[styles.ClientsCard, styles.newbox1]}>
-              <Text style={styles.ClientsCardHeading}>12</Text>
+              <Text style={styles.ClientsCardHeading}>
+                {data?.totalClients}
+              </Text>
               <Text style={styles.ClientsCardPara}>Total Clients</Text>
             </View>
 
             <View style={[styles.ClientsCard, styles.newbox2]}>
-              <Text style={styles.ClientsCardHeading}>3</Text>
+              <Text style={styles.ClientsCardHeading}>
+                {data?.repeatClients}
+              </Text>
               <Text style={styles.ClientsCardPara}>Repeat Clients</Text>
             </View>
 
@@ -182,10 +199,10 @@ const OwnershipList = ({ navigation }) => {
               <Text
                 style={[styles.ClientsCardHeading, styles.ClientsCardHeading1]}
               >
-                Top 3 Loyal Clients:
+                Top {data?.topLoyalClientsCount} Loyal Clients:
               </Text>
               <Text style={[styles.ClientsCardPara, styles.ClientsCardPara1]}>
-                Sarah, John, Mike
+                {data?.topLoyalClients}
               </Text>
             </View>
 
@@ -233,7 +250,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#F1F2F4',
     justifyContent: 'center',
     alignItems: 'center',
   },

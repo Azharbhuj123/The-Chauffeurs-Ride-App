@@ -66,4 +66,12 @@ export const category_class = [
 ];
 
 
+export const monthly_filter = [
+  { label: "Weekly", value: "weekly" },
+  { label: "Monthly", value: "monthly" },
+  { label: "Yearly", value: "yearly" },
+];
+
+
+
 export const GOOGLE_MAP_API_KEY = 'AIzaSyD0s3-mEKBypeL1z_jFhoCa0NfqVK80U-8';

@@ -8,6 +8,9 @@ import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
+import { useQuery } from '@tanstack/react-query';
+import { fetchData } from '../../queryFunctions/queryFunctions';
+import AppLoader from '../../components/AppLoader';
 const { width, height } = Dimensions.get('window');
 
  
@@ -29,7 +32,26 @@ const StarRating = ({ rating }) => {
   return <View style={styles.starContainer}>{stars}</View>;
 };
 
-export default function ReviewList({ navigation }) {
+export default function ReviewList({ navigation,route }) {
+
+  const {review} = route.params||{}
+
+
+
+
+    const { data, isLoading, refetch } = useQuery({
+    queryKey: ['user-review',review?._id],
+    queryFn: () => fetchData(`/review/reviews/${review?._id}`),
+    keepPreviousData: true,
+  });
+
+  const review_data = data?.review
+
+  console.log(data,'data');
+  
+  if(isLoading) return <AppLoader/>
+
+
   return (
     <SafeAreaView style={styles.container}>
       <TopHeader title="Back to Review List" navigation={navigation} />
@@ -39,15 +61,15 @@ export default function ReviewList({ navigation }) {
       >
         {/* Review Section */}
         <View style={styles.reviewSection}>
-          <Text style={styles.reviewTitle}>Review from Bob K.</Text>
-          <StarRating rating={3} />
+          <Text style={styles.reviewTitle}>Review from {review_data?.user?.name}.</Text>
+          <StarRating rating={review_data?.rating} />
           <Text style={styles.reviewText}>
-            Prompt, friendly driver and a very clean car!"
+            {review_data?.comment}
           </Text>
         </View>
 
         {/* Owner Response Section */}
-        <View style={styles.ownerResponseSection}>
+        {/* <View style={styles.ownerResponseSection}>
           <Text style={styles.ownerResponseTitle}>Owner Response</Text>
           <View style={styles.responseBox}>
             <Text style={styles.repliedLabel}>Replied:</Text>
@@ -55,7 +77,7 @@ export default function ReviewList({ navigation }) {
               Prompt, friendly driver and a very clean car!"
             </Text>
           </View>
-        </View>
+        </View> */}
       </ScrollView>
     </SafeAreaView>
   );

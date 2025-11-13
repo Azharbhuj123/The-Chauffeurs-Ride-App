@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,8 +8,6 @@ import {
   Dimensions,
   ScrollView,
   TextInput,
-  TouchableOpacity,
-  KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
   Platform,
@@ -24,127 +22,317 @@ import {
 import Button from '../../components/Button';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 
+import { useForm, Controller } from 'react-hook-form';
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { category_class, error_msg } from '../../utils/Enums';
+import CustomDropdown from '../../components/CustomDropdown';
+import useActionMutation from '../../queryFunctions/useActionMutation';
+import { showToast } from '../../utils/toastHelper';
+import { useQuery } from '@tanstack/react-query';
+import { fetchData } from '../../queryFunctions/queryFunctions';
+
 const { width, height } = Dimensions.get('window');
 
 const fs = size => {
   return Math.sqrt(height * height + width * width) * (size / 1000);
 };
 
+const schema = yup.object().shape({
+  category_type: yup
+    .string()
+    .required('Category type is required')
+    .default('Economy'),
+  baseFare: yup
+    .number()
+    .typeError('Base fare must be a number')
+    .positive('Base fare must be > 0')
+    .required('Base fare is required'),
+  ratePerMile: yup
+    .number()
+    .typeError('Rate per mile must be a number')
+    .positive('Rate per mile must be > 0')
+    .required('Rate per mile is required'),
+  ratePerMinute: yup
+    .number()
+    .typeError('Rate per minute must be a number')
+    .positive('Rate per minute must be > 0')
+    .required('Rate per minute is required'),
+  surgeMultiplier: yup
+    .number()
+    .oneOf([1, 3], 'Surge multiplier must be either 1.0x or 3.0x')
+    .required('Surge multiplier is required'),
+});
+
 export default function DynamicPricingTool({ navigation }) {
-  const [baseFare, setBaseFare] = useState('3.3');
-  const [ratePerMile, setRatePerMile] = useState('3.3');
-  const [ratePerMinute, setRatePerMinute] = useState('0.25');
-  const [surgeMultiplier, setSurgeMultiplier] = useState(1.0);
   const tabBarHeight = useTabBarHeightHelper();
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    watch,
+    reset
+  } = useForm({
+    resolver: yupResolver(schema),
+    mode: 'onBlur',
+    defaultValues: {
+      category_type: 'Economy',
+      baseFare: '3.3',
+      ratePerMile: '3.3',
+      ratePerMinute: '0.25',
+      surgeMultiplier: 1, // numeric for slider
+    },
+  });
+  const watchedSurge = watch('surgeMultiplier');
+  const category_type = watch('category_type');
+
+
+    const { data, isLoading, refetch } = useQuery({
+    queryKey: ['driver-pricing',category_type],
+    queryFn: () => fetchData(`/pricing/${category_type}`),
+    keepPreviousData: true,
+  });
+
+
+  useEffect(()=>{
+    if(data?.success){
+
+    reset({
+      category_type: category_type,
+      baseFare: data?.base_fare,
+      ratePerMile: data?.rate_per_mile,
+      ratePerMinute: data?.rate_per_minute,
+      surgeMultiplier: data?.surge_multiplier
+    })
+    }
+
+  },[data,category_type])
+
+
+
+
+  const { triggerMutation, loading } = useActionMutation({
+    onSuccessCallback: async data => {
+      if (data?.success) {
+        showToast({
+          type: 'success',
+          title: 'Update Successful',
+          message: 'The pricing details have been updated successfully.',
+        });
+      }
+    },
+    onErrorCallback: errmsg => {
+      showToast({
+        type: 'error',
+        title: 'Action Failed',
+        message: errmsg || 'Please Try again!',
+      });
+    },
+  });
+
+  const onSubmit = data => {
+    const lower_type = data?.category_type?.toLowerCase();
+
+    // ✅ Correct way: use [ ] for dynamic keys
+    const payload = {
+      [`${lower_type}_base_fare`]: Number(data.baseFare),
+      [`${lower_type}_rate_per_mile`]: Number(data.ratePerMile),
+      [`${lower_type}_rate_per_minute`]: Number(data.ratePerMinute),
+      [`${lower_type}_surge_multiplier`]: Number(data.surgeMultiplier),
+    };
+
+    // Replace this with your save/apply logic
+    console.log('Saving dynamic pricing:', payload);
+
+    triggerMutation({
+      endPoint: '/pricing/',
+      body: payload,
+      method: 'post',
+    });
+
+    // Example: call an API, dispatch to redux, or update local state
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-      >
-        <TopHeader title="Operations Overview" navigation={navigation} />
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={[
-              styles.scrollContent,
-              {
-                paddingBottom: tabBarHeight,
-              },
-            ]}
-          >
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { fontSize: 18 }]}>
-                Dynamic Pricing Tool
-              </Text>
-            </View>
+      <TopHeader title="Operations Overview" navigation={navigation} />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={[
+            styles.scrollContent,
+            {
+              paddingBottom: tabBarHeight,
+            },
+          ]}
+        >
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { fontSize: 18 }]}>
+              Dynamic Pricing Tool
+            </Text>
+          </View>
 
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Core Rate Card</Text>
-            </View>
-
-            {/* Base Fare */}
-            <View style={styles.inputSection}>
-              <Text style={styles.inputLabel}>Base Fare</Text>
-              <View style={styles.inputWrapper}>
-                <TextInput
-                  style={styles.input}
-                  value={baseFare}
-                  onChangeText={setBaseFare}
-                  keyboardType="decimal-pad"
-                  placeholder="3.3"
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Core Rate Card</Text>
+          </View>
+          <Controller
+            control={control}
+            name="category_type"
+            render={({ field: { onChange, value } }) => (
+              <>
+                <CustomDropdown
+                  placeholder="Choose category for pricing"
+                  data={category_class}
+                  value={value}
+                  onChange={(selectedItem: {
+                    label: string;
+                    value: string;
+                  }) => {
+                    onChange(selectedItem.value); // pass only the string to RHF
+                  }}
                 />
-                <Text style={styles.inputSuffix}>$</Text>
-              </View>
-            </View>
+                {errors.category_type && (
+                  <Text style={styles.errorText}>
+                    {errors.category_type.message}
+                  </Text>
+                )}
+              </>
+            )}
+          />
 
-            {/* Rate Per Mile & Minute */}
-            <View style={styles.row}>
-              <View style={[styles.inputSection, styles.halfWidth]}>
-                <Text style={styles.inputLabel}>Rate Per Mile</Text>
+          {/* Base Fare */}
+          <View style={styles.inputSection}>
+            <Text style={styles.inputLabel}>Base Fare</Text>
+            <Controller
+              control={control}
+              name="baseFare"
+              render={({ field: { onChange, onBlur, value } }) => (
                 <View style={styles.inputWrapper}>
                   <TextInput
                     style={styles.input}
-                    value={ratePerMile}
-                    onChangeText={setRatePerMile}
+                    value={String(value)}
+                    onChangeText={text => onChange(text)}
+                    onBlur={onBlur}
                     keyboardType="decimal-pad"
                     placeholder="3.3"
                   />
                   <Text style={styles.inputSuffix}>$</Text>
                 </View>
-              </View>
+              )}
+            />
+            {errors.baseFare && (
+              <Text style={styles.errorText}>{errors.baseFare.message}</Text>
+            )}
+          </View>
 
-              <View style={[styles.inputSection, styles.halfWidth]}>
-                <Text style={styles.inputLabel}>Rate Per Minute</Text>
-                <View style={styles.inputWrapper}>
-                  <TextInput
-                    style={styles.input}
-                    value={ratePerMinute}
-                    onChangeText={setRatePerMinute}
-                    keyboardType="decimal-pad"
-                    placeholder="0.25"
-                  />
-                  <Text style={styles.inputSuffix}>$/min</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Surge Multiplier */}
-            <View style={styles.surgeSection}>
-              <Text style={styles.sectionTitle}>
-                Surge Multiplier (Demand/Time-Based)
-              </Text>
-              <View style={styles.surgeContainer}>
-                <Text style={styles.surgeValue}>
-                  {surgeMultiplier.toFixed(2)}x
+          {/* Rate Per Mile & Minute */}
+          <View style={styles.row}>
+            <View style={[styles.inputSection, styles.halfWidth]}>
+              <Text style={styles.inputLabel}>Rate Per Mile</Text>
+              <Controller
+                control={control}
+                name="ratePerMile"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <View style={styles.inputWrapper}>
+                    <TextInput
+                      style={styles.input}
+                      value={String(value)}
+                      onChangeText={text => onChange(text)}
+                      onBlur={onBlur}
+                      keyboardType="decimal-pad"
+                      placeholder="3.3"
+                    />
+                    <Text style={styles.inputSuffix}>$</Text>
+                  </View>
+                )}
+              />
+              {errors.ratePerMile && (
+                <Text style={styles.errorText}>
+                  {errors.ratePerMile.message}
                 </Text>
-                <Slider
-                  style={styles.slider}
-                  minimumValue={1.0}
-                  maximumValue={3.0}
-                  step={0.01}
-                  value={surgeMultiplier}
-                  onValueChange={setSurgeMultiplier}
-                  minimumTrackTintColor="#FFD700"
-                  maximumTrackTintColor="#FFE680"
-                  thumbTintColor="#FFD700"
-                />
-                <View style={styles.sliderLabels}>
-                  <Text style={styles.sliderLabel}>1.0x (Standard)</Text>
-                  <Text style={styles.sliderLabel}>3.0x (Max Peak)</Text>
-                </View>
+              )}
+            </View>
 
-                <View style={styles.saveButton}>
-                  <Button title="Save & Apply" />
-                </View>
+            <View style={[styles.inputSection, styles.halfWidth]}>
+              <Text style={styles.inputLabel}>Rate Per Minute</Text>
+              <Controller
+                control={control}
+                name="ratePerMinute"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <View style={styles.inputWrapper}>
+                    <TextInput
+                      style={styles.input}
+                      value={String(value)}
+                      onChangeText={text => onChange(text)}
+                      onBlur={onBlur}
+                      keyboardType="decimal-pad"
+                      placeholder="0.25"
+                    />
+                    <Text style={styles.inputSuffix}>$/min</Text>
+                  </View>
+                )}
+              />
+              {errors.ratePerMinute && (
+                <Text style={styles.errorText}>
+                  {errors.ratePerMinute.message}
+                </Text>
+              )}
+            </View>
+          </View>
+
+          {/* Surge Multiplier */}
+          <View style={styles.surgeSection}>
+            <Text style={styles.sectionTitle}>
+              Surge Multiplier (Demand/Time-Based)
+            </Text>
+            <View style={styles.surgeContainer}>
+              <Text style={styles.surgeValue}>
+                {Number(watchedSurge).toFixed(2)}x
+              </Text>
+
+              <Controller
+                control={control}
+                name="surgeMultiplier"
+                render={({ field: { onChange, value } }) => (
+                  <>
+                    <Slider
+                      style={styles.slider}
+                      minimumValue={1}
+                      maximumValue={3}
+                      step={2} // only 1 or 3
+                      value={Number(value)}
+                      onValueChange={val => onChange(Number(val))}
+                      minimumTrackTintColor="#FFD700"
+                      maximumTrackTintColor="#FFE680"
+                      thumbTintColor="#FFD700"
+                    />
+
+                    <View style={styles.sliderLabels}>
+                      <Text style={styles.sliderLabel}>1.0x (Standard)</Text>
+                      <Text style={styles.sliderLabel}>3.0x (Max Peak)</Text>
+                    </View>
+                  </>
+                )}
+              />
+              {errors.surgeMultiplier && (
+                <Text style={styles.errorText}>
+                  {errors.surgeMultiplier.message}
+                </Text>
+              )}
+
+              <View style={styles.saveButton}>
+                <Button
+                  isLoading={loading}
+                  title={isSubmitting ? 'Saving...' : 'Save & Apply'}
+                  onPress={handleSubmit(onSubmit)}
+                />
               </View>
             </View>
-          </ScrollView>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
+          </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 }
@@ -249,4 +437,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000',
   },
+  errorText: error_msg,
 });

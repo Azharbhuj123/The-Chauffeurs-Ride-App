@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -22,14 +22,68 @@ import TopHeader from '../../components/TopHeader';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Button from '../../components/Button';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
+import { fetchData } from '../../queryFunctions/queryFunctions';
+import { useQuery } from '@tanstack/react-query';
+import { formatSmartDate } from '../../utils/DateFormats';
+import SkeletonBox from '../../utils/SkeletonBox';
+import useActionMutation from '../../queryFunctions/useActionMutation';
+import { showToast } from '../../utils/toastHelper';
 
-const CustomerProfile = ({ navigation }) => {
-  const [notes, setNotes] = useState('');
+const CustomerProfile = ({ navigation, route }) => {
   const [showModal, setShowModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const tabBarHeight = useTabBarHeightHelper();
+  const [notes, setNotes] = useState('');
 
-  const handleSaveNotes = () => setShowModal(true);
+  const { customerId, customer } = route.params || {};
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['client-ownership-id', customerId],
+    queryFn: () => fetchData(`/driver/client-ownership/${customerId}`),
+    keepPreviousData: true,
+  });
+
+  const totalRides = data?.totalRides?.data;
+
+  console.log(data, 'data');
+
+  useEffect(() => {
+    if (data?.success && data?.operatorNotes) {
+      setNotes(data?.operatorNotes?.note);
+    }
+  }, [data]);
+
+  const { triggerMutation, loading } = useActionMutation({
+    onSuccessCallback: async data => {
+      if (data?.success) {
+        showToast({
+          type: 'success',
+          message: data?.message,
+        });
+        refetch();
+      }
+    },
+    onErrorCallback: errmsg => {
+      showToast({
+        type: 'error',
+        title: 'Notes Failed',
+        message: errmsg || 'Please Try again!',
+      });
+    },
+  });
+
+  const handleSaveNotes = () => {
+    const data_obj = {
+      note: notes,
+      userid: customerId,
+    };
+
+    triggerMutation({
+      endPoint: '/driver/operator-notes',
+      body: data_obj,
+      method: 'post',
+    });
+  };
   const handleConfirm = () => {
     setShowModal(false);
     setShowSuccessModal(true);
@@ -60,17 +114,29 @@ const CustomerProfile = ({ navigation }) => {
             <View style={styles.card}>
               <View style={styles.headerRow}>
                 <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>JD</Text>
+                  <Image
+                    source={{ uri: customer?.profile_image }}
+                    style={{ width: '100%', height: '100%', borderRadius: 50 }}
+                  />
                 </View>
                 <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.name}>John Williams</Text>
-                  <View style={styles.loyaltyTag}>
-                    <Text style={styles.loyaltyText}>Platinum</Text>
-                  </View>
+                  <Text style={styles.name}>{customer?.name}</Text>
+                  {customer.category && (
+                    <View
+                      style={[
+                        styles.loyaltyTag,
+                        customer.category && styles[customer.category],
+                      ]}
+                    >
+                      <Text style={styles.loyaltyText}>
+                        {customer.category}
+                      </Text>
+                    </View>
+                  )}
                 </View>
                 <View style={styles.ratingBox}>
                   <Icon name="star" size={20} color="#F8D833" />
-                  <Text style={styles.ratingValue}>4.9</Text>
+                  <Text style={styles.ratingValue}>N/A</Text>
                 </View>
               </View>
 
@@ -80,7 +146,7 @@ const CustomerProfile = ({ navigation }) => {
                     source={require('../../assets/images/phone.png')}
                     style={styles.infoLabel}
                   />
-                  <Text style={styles.infoText}>+1 987 654 3210</Text>
+                  <Text style={styles.infoText}>{customer.contact}</Text>
                 </View>
 
                 <View style={styles.infoRow}>
@@ -88,7 +154,9 @@ const CustomerProfile = ({ navigation }) => {
                     source={require('../../assets/images/date.png')}
                     style={styles.infoLabel}
                   />
-                  <Text style={styles.infoText}>Last: Oct 5, 2025</Text>
+                  <Text style={styles.infoText}>
+                    Last: {formatSmartDate(customer?.lastRideAt)}
+                  </Text>
                 </View>
               </View>
 
@@ -98,7 +166,9 @@ const CustomerProfile = ({ navigation }) => {
                     source={require('../../assets/images/caricon1.png')}
                     style={styles.infoLabel}
                   />
-                  <Text style={styles.infoText}>12 Total Rides</Text>
+                  <Text style={styles.infoText}>
+                    {customer.totalRides} Total Rides
+                  </Text>
                 </View>
 
                 <View style={styles.infoRow}>
@@ -106,7 +176,9 @@ const CustomerProfile = ({ navigation }) => {
                     source={require('../../assets/images/Loyalty.png')}
                     style={styles.infoLabel}
                   />
-                  <Text style={styles.infoText}>85% Loyalty</Text>
+                  <Text style={styles.infoText}>
+                    {customer.loyaltyPercent}% Loyalty
+                  </Text>
                 </View>
               </View>
             </View>
@@ -115,35 +187,42 @@ const CustomerProfile = ({ navigation }) => {
             <View style={styles.sectionBox}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Booking History</Text>
-                <TouchableWithoutFeedback>
+                {/* <TouchableWithoutFeedback>
                   <View style={styles.filterButton}>
                     <Text style={styles.filterText}>All Time ▼</Text>
                   </View>
-                </TouchableWithoutFeedback>
+                </TouchableWithoutFeedback> */}
               </View>
-              <Text style={styles.totalRides}>Total Rides: 12</Text>
-
-              {[
-                { date: 'Oct 5, 25', route: 'Home → Airport', price: '$85.00' },
-                {
-                  date: 'Sep 28, 25',
-                  route: 'Office → Driver',
-                  price: '$45.00',
-                },
-                {
-                  date: 'Sep 10, 25',
-                  route: 'Hotel → Meeting',
-                  price: '$120.00',
-                },
-              ].map((item, idx) => (
-                <View style={styles.bookingCard} key={idx}>
-                  <View>
-                    <Text style={styles.bookingDate}>{item.date}</Text>
-                    <Text style={styles.bookingRoute}>{item.route}</Text>
-                  </View>
-                  <Text style={styles.bookingPrice}>{item.price}</Text>
+              <Text style={styles.totalRides}>
+                Total Rides: {data?.totalRides?.totalItems}
+              </Text>
+              {isLoading ? (
+                <View>
+                  <SkeletonBox height={70} marginTop={20} />
+                  <SkeletonBox height={70} marginTop={20} />
+                  <SkeletonBox height={70} marginTop={20} />
                 </View>
-              ))}
+              ) : (
+                totalRides?.map((item, idx) => (
+                  <View style={styles.bookingCard} key={idx}>
+                    <View>
+                      <Text style={styles.bookingDate}>
+                        {formatSmartDate(item.ride_complete_at)}
+                      </Text>
+                      <Text style={styles.bookingRoute}>
+                        {item?.pickup_location?.famous_location} ➞{' '}
+                        {item?.drop_location?.famous_location}
+                      </Text>
+                    </View>
+                    <Text style={styles.bookingPrice}>
+                      $
+                      {Number(item?.payment_breakdown?.driver_earning)?.toFixed(
+                        2,
+                      )}
+                    </Text>
+                  </View>
+                ))
+              )}
             </View>
 
             {/* Operator Notes */}
@@ -167,7 +246,11 @@ const CustomerProfile = ({ navigation }) => {
                   />
                 </View>
 
-                <Button title="Save Notes" onPress={handleSaveNotes} />
+                <Button
+                  isLoading={loading}
+                  title="Save Notes"
+                  onPress={handleSaveNotes}
+                />
               </View>
             </View>
           </ScrollView>
@@ -206,7 +289,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#F1F2F4',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -396,6 +478,12 @@ const styles = StyleSheet.create({
     color: '#000',
     marginHorizontal: wp(6),
     marginTop: hp(2),
+  },
+  Bronze: {
+    backgroundColor: '#7A4400',
+  },
+  Gold: {
+    backgroundColor: '#FFD600',
   },
 });
 

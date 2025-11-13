@@ -46,7 +46,7 @@ export default function HomeScreen({ navigation }) {
   const { token, userData } = useUserStore();
   const { location } = useStore();
   const { setRideRequests, rideRequests } = useRideStore();
- 
+
   const { data: homeData, isLoading } = useQuery({
     queryKey: ['driver-home'],
     queryFn: () => fetchData('/driver/fleet-history'),
@@ -62,7 +62,6 @@ export default function HomeScreen({ navigation }) {
     queryFn: () => fetchData('/ride/driver-latest-ride'),
     keepPreviousData: true,
   });
-
 
   useFocusEffect(
     useCallback(() => {
@@ -184,7 +183,11 @@ export default function HomeScreen({ navigation }) {
 
           {homeData?.fleet?.map((item, index) => (
             <View
-              key={item.index}
+              key={
+                item._id ??
+                item.id ??
+                `${item.vehicle_name ?? 'vehicle'}-${index}`
+              }
               style={[
                 styles.fleetCard,
                 index === homeData?.fleet?.length - 1 && styles.fleetCardLast,
@@ -220,7 +223,7 @@ export default function HomeScreen({ navigation }) {
             </Text>
 
             {/* Ride Request Cards */}
-            {rideRequests.map((ride,index) => (
+            {rideRequests.map((ride, index) => (
               <View key={index} style={styles.rideCard}>
                 {/* Pickup Location */}
                 <View style={styles.locationRow1}>

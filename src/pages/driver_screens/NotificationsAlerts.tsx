@@ -1,13 +1,13 @@
 // @ts-nocheck
 
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  Dimensions, 
+import React, { useCallback, useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
   ScrollView,
-  Switch
+  Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import TopHeader from '../../components/TopHeader';
@@ -16,11 +16,16 @@ import {
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
+import { useQuery } from '@tanstack/react-query';
+import { fetchData } from '../../queryFunctions/queryFunctions';
+import AppLoader from '../../components/AppLoader';
+import { useFocusEffect } from '@react-navigation/native';
+import useActionMutation from '../../queryFunctions/useActionMutation';
 
 const { width, height } = Dimensions.get('window');
 
-const fs = (size) => {
-  return Math.sqrt((height * height) + (width * width)) * (size / 1000);
+const fs = size => {
+  return Math.sqrt(height * height + width * width) * (size / 1000);
 };
 
 export default function NotificationsAlerts({ navigation }) {
@@ -31,76 +36,150 @@ export default function NotificationsAlerts({ navigation }) {
   const [systemAnnouncements, setSystemAnnouncements] = useState(true);
   const tabBarHeight = useTabBarHeightHelper();
 
-  const alertHistory = [
-    {
-      id: 1,
-      type: 'payment',
-      icon: '💰',
-      bgColor: '#F8D833',
-      title: 'Payment Alert',
-      description: 'Weekly payout initiated successfully.',
-      date: '2024-10-18 14:30',
-    },
-    {
-      id: 2,
-      type: 'system',
-      icon: '⚙️',
-      bgColor: '#F8D833',
-      title: 'System Alert',
-      description: 'New app update (v2.1) deployed.',
-      date: '2024-10-12 10:00',
-    },
-    {
-      id: 3,
-      type: 'cancellation',
-      icon: '✕',
-      bgColor: '#F8D833',
-      title: 'Cancellation Alert',
-      description: 'Ride ID #9876 cancelled by passenger.',
-      date: '2024-10-11 16:45',
-    },
-  ];
+  const { data, isLoading } = useQuery({
+    queryKey: ['alert-history'],
+    queryFn: () => fetchData('/driver/alert-history'),
+    keepPreviousData: true,
+  });
 
+  const {
+    data: notify,
+    isLoading: notifyLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['notify-history'],
+    queryFn: () => fetchData('/driver/my-notify-permissions'),
+    keepPreviousData: true,
+  });
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, []),
+  );
+
+  console.log(notify, 'notify');
+
+  useEffect(() => {
+    if (notify?.data && notify?.data?.notificationsPermissions) {
+      const notifyData = notify?.data?.notificationsPermissions;
+      setNewRideRequests(notifyData?.new_ride);
+      setRideCancellations(notifyData?.ride_cancel);
+      setPaymentUpdates(notifyData?.pay_update);
+      setSystemAnnouncements(notifyData?.system_announcment);
+    }
+  }, [notify]);
+
+  const alertHistorys = Array.isArray(data?.alert_history)
+    ? data.alert_history
+    : [];
+
+  const alertIcons = {
+    system_alert: '⚙️',
+    payment_alert: '💰',
+    cancel_alert: '✕',
+  };
+
+  const alertColors = {
+    system_alert: '#F8D833',
+    payment_alert: '#4CAF50',
+    cancel_alert: '#FF6B6B',
+  };
+
+  const alertHistory = alertHistorys?.map((item, index) => {
+    const typeKey = item.type?.toLowerCase() || 'system_alert';
+    return {
+      id: index + 1,
+      type: item.type,
+      icon: alertIcons[typeKey] || '🔔',
+      bgColor: alertColors[typeKey] || '#F8D833',
+      title: item.title || 'System Alert',
+      description: item.message || 'No description available.',
+      date: new Date(item.createdAt).toLocaleString(),
+    };
+  });
+
+  // -------------------
+  // Mutation hook
+  // -------------------
+  const { triggerMutation, loading: mutationLoading } = useActionMutation({
+    onSuccessCallback: async data => {
+      // refresh local permission state from server (if needed)
+      refetch();
+      // Optional toast:
+      // showToast({ type: 'success', title: 'Success', message: 'Preferences updated' });
+      console.log('notify prefs updated', data);
+    },
+    onErrorCallback: errmsg => {
+      // Re-fetch to restore previous (server) state or handle rollback
+      refetch();
+      // Optional toast:
+      // showToast({ type: 'error', title: 'Update Failed', message: errmsg || 'Please try again' });
+      console.log('failed to update notify prefs', errmsg);
+    },
+  });
+
+  // Helper that builds the full payload using the most recent local values,
+  // but swaps the target key with the new value (optimistic UI).
+  const buildPayload = (changedKey, changedValue) => ({
+    new_ride:
+      changedKey === 'new_ride' ? changedValue : Boolean(newRideRequests),
+    ride_cancel:
+      changedKey === 'ride_cancel' ? changedValue : Boolean(rideCancellations),
+    pay_update:
+      changedKey === 'pay_update' ? changedValue : Boolean(paymentUpdates),
+    system_announcment:
+      changedKey === 'system_announcment'
+        ? changedValue
+        : Boolean(systemAnnouncements),
+  });
+
+  const handleToggle = (key, value) => {
+    // optimistic UI update
+    if (key === 'new_ride') setNewRideRequests(value);
+    if (key === 'ride_cancel') setRideCancellations(value);
+    if (key === 'pay_update') setPaymentUpdates(value);
+    if (key === 'system_announcment') setSystemAnnouncements(value);
+
+    // trigger API call with full payload (PATCH)
+    triggerMutation({
+      endPoint: '/driver/my-notify-permissions', // adjust endpoint if different
+      body: buildPayload(key, value),
+      method: 'patch', // your hook expects method names like 'post'/'patch'/etc.
+    });
+  };
+
+  if (notifyLoading || isLoading) return <AppLoader />;
   return (
     <SafeAreaView style={styles.container}>
       <TopHeader title="Notifications & Alerts" navigation={navigation} />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
-              styles.scrollContent,
-              {
-                paddingBottom: tabBarHeight,
-              },
-            ]}
+          styles.scrollContent,
+          {
+            paddingBottom: tabBarHeight,
+          },
+        ]}
       >
         {/* Notification Channels */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Notification Channels</Text>
-          
-          <View style={styles.toggleItem}>
-            <Text style={styles.toggleLabel}>Delivery Method:</Text>
-            <Switch
-              value={deliveryMethod}
-              onValueChange={setDeliveryMethod}
-              trackColor={{ false: '#E0E0E0', true: '#F8D833' }}
-              thumbColor={'#f4f3f4'}
-              ios_backgroundColor="#E0E0E0"
-            />
-          </View>
         </View>
 
         {/* Alert Toggles */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Alert Toggles</Text>
-          
+
           <View style={styles.toggleItem}>
             <Text style={styles.toggleLabel}>New Ride Requests</Text>
             <Switch
               value={newRideRequests}
-              onValueChange={setNewRideRequests}
+              onValueChange={val => handleToggle('new_ride', val)}
               trackColor={{ false: '#E0E0E0', true: '#F8D833' }}
               thumbColor={'#f4f3f4'}
-              ios_backgroundColor="#E0E0E0"
+              ios_background_color="#E0E0E0"
+              disabled={mutationLoading}
             />
           </View>
 
@@ -108,10 +187,11 @@ export default function NotificationsAlerts({ navigation }) {
             <Text style={styles.toggleLabel}>Ride Cancellations</Text>
             <Switch
               value={rideCancellations}
-              onValueChange={setRideCancellations}
+              onValueChange={val => handleToggle('ride_cancel', val)}
               trackColor={{ false: '#E0E0E0', true: '#F8D833' }}
               thumbColor={'#f4f3f4'}
-              ios_backgroundColor="#E0E0E0"
+              ios_background_color="#E0E0E0"
+              disabled={mutationLoading}
             />
           </View>
 
@@ -119,10 +199,11 @@ export default function NotificationsAlerts({ navigation }) {
             <Text style={styles.toggleLabel}>Payment Updates</Text>
             <Switch
               value={paymentUpdates}
-              onValueChange={setPaymentUpdates}
+              onValueChange={val => handleToggle('pay_update', val)}
               trackColor={{ false: '#E0E0E0', true: '#F8D833' }}
               thumbColor={'#f4f3f4'}
-              ios_backgroundColor="#E0E0E0"
+              ios_background_color="#E0E0E0"
+              disabled={mutationLoading}
             />
           </View>
 
@@ -130,21 +211,27 @@ export default function NotificationsAlerts({ navigation }) {
             <Text style={styles.toggleLabel}>System Announcements</Text>
             <Switch
               value={systemAnnouncements}
-              onValueChange={setSystemAnnouncements}
+              onValueChange={val => handleToggle('system_announcment', val)}
               trackColor={{ false: '#E0E0E0', true: '#F8D833' }}
               thumbColor={'#f4f3f4'}
-              ios_backgroundColor="#E0E0E0"
+              ios_background_color="#E0E0E0"
+              disabled={mutationLoading}
             />
           </View>
         </View>
 
         {/* Alert History */}
-        <View style={[styles.section,styles.lastSec]}>
+        <View style={[styles.section, styles.lastSec]}>
           <Text style={styles.sectionTitle}>Alert History</Text>
-          
-          {alertHistory.map((alert) => (
+
+          {alertHistory.map(alert => (
             <View key={alert.id} style={styles.alertCard}>
-              <View style={[styles.iconContainer, { backgroundColor: alert.bgColor }]}>
+              <View
+                style={[
+                  styles.iconContainer,
+                  { backgroundColor: alert.bgColor },
+                ]}
+              >
                 <Text style={styles.iconText}>{alert.icon}</Text>
               </View>
               <View style={styles.alertContent}>
@@ -173,9 +260,8 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: hp(3),
   },
-  lastSec:{
+  lastSec: {
     marginBottom: hp(8),
-
   },
   sectionTitle: {
     fontSize: fs(16),
@@ -220,7 +306,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 2,
-
   },
   iconContainer: {
     width: wp(10),

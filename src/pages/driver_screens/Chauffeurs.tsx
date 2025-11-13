@@ -25,21 +25,28 @@ import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
 import AppLoader from '../../components/AppLoader';
 import CustomDropdown from '../../components/CustomDropdown';
+import { showToast } from '../../utils/toastHelper';
+import useActionMutation from '../../queryFunctions/useActionMutation';
 
 const ChauffeurBookingScreen = ({ navigation }) => {
   const tabBarHeight = useTabBarHeightHelper();
   const [chauffeurEnabled, setChauffeurEnabled] = useState(true);
   const [selectedChauffeur, setSelectedChauffeur] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-const { data: vehicleDataApi } = useQuery({
+  const [assign_Vehicle, setAssign_Vehicle] = useState(null);
+
+  const fetchChauffeurs = async ({ pageParam = 1 }) => {
+    const res = await fetchData(
+      `/driver/my-chauffeurs?page=${pageParam}&limit=5`,
+    );
+    return res;
+  };
+
+  const { data: vehicleDataApi } = useQuery({
     queryKey: ['my-vehicles'],
     queryFn: () => fetchData('/driver/available-vehicles'),
     keepPreviousData: true,
   });
-  const fetchChauffeurs = async ({ pageParam = 1 }) => {
-    const res = await fetchData(`/driver/my-chauffeurs?page=${pageParam}&limit=5`);
-    return res;
-  };
 
   const {
     data,
@@ -47,10 +54,11 @@ const { data: vehicleDataApi } = useQuery({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
   } = useInfiniteQuery({
     queryKey: ['my-Chauffeurs'],
     queryFn: fetchChauffeurs,
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: lastPage => {
       if (lastPage.currentPage < lastPage.totalPages) {
         return lastPage.currentPage + 1;
       }
@@ -58,23 +66,59 @@ const { data: vehicleDataApi } = useQuery({
     },
   });
 
-    const vehicle_for = Array.isArray(vehicleDataApi?.vehicles)
-    ? vehicleDataApi.vehicles.map((vehicle) => ({
+  const vehicle_for = Array.isArray(vehicleDataApi?.vehicles)
+    ? vehicleDataApi.vehicles.map(vehicle => ({
         label: `${vehicle?.vehicle_make} (${vehicle?.vehicle_model})`,
         value: vehicle?._id,
       }))
     : [];
   const allChauffeurs = data?.pages?.flatMap(page => page.data) || [];
 
+  const { triggerMutation, loading } = useActionMutation({
+    onSuccessCallback: async data => {
+      if (data?.success) {
+        refetch();
+        setModalVisible(false);
+      }
+    },
+    onErrorCallback: errmsg => {
+      showToast({
+        type: 'error',
+        title: 'Action Failed',
+        message: errmsg || 'Please Try again!',
+      });
+    },
+  });
 
-  if(isLoading) return <AppLoader/>
+  const handleAssign = () => {
+    if (!selectedChauffeur || !assign_Vehicle) {
+      showToast({
+        type: 'error',
+        title: 'Action Failed',
+        message: 'Please fill out all fields',
+      });
+      return;
+    }
+    const data_obj = {
+      chauffeur_id: selectedChauffeur,
+      vehicle_id: assign_Vehicle,
+    };
+
+    triggerMutation({
+      endPoint: '/driver/assign-chauffeur',
+      body: data_obj,
+      method: 'post',
+    });
+  };
+
+  if (isLoading) return <AppLoader />;
   return (
     <SafeAreaView style={styles.container}>
       <TopHeader title="Chauffeurs" navigation={navigation} />
 
       <FlatList
         data={allChauffeurs}
-        keyExtractor={(item) => item._id}
+        keyExtractor={item => item._id}
         onEndReached={() => {
           if (hasNextPage) fetchNextPage();
         }}
@@ -88,7 +132,9 @@ const { data: vehicleDataApi } = useQuery({
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Chauffeur Availability</Text>
               <View style={styles.dateRow}>
-                <Text style={styles.dateText}>Today: Oct 25 (Monthly View)</Text>
+                <Text style={styles.dateText}>
+                  Today: Oct 25 (Monthly View)
+                </Text>
                 <TouchableOpacity style={styles.monthlyBadge}>
                   <Text style={styles.monthlyText}>Monthly ▼</Text>
                 </TouchableOpacity>
@@ -125,7 +171,9 @@ const { data: vehicleDataApi } = useQuery({
                 }}
               >
                 <Text style={styles.allChauffeursTitle}>All Chauffeurs</Text>
-                <TouchableOpacity onPress={() => navigation.navigate('AddChauffeurs')}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('AddChauffeurs')}
+                >
                   <Text style={styles.allChauffeursBtn}>Add Chauffeurs</Text>
                 </TouchableOpacity>
               </View>
@@ -138,21 +186,24 @@ const { data: vehicleDataApi } = useQuery({
               <View style={styles.chauffeurLeft}>
                 <Text style={styles.chauffeurName}>{item.name}</Text>
                 <Text style={styles.chauffeurDetails}>
-                  ⭐ {item.rating || 'N/A'} {item.assign_Vehicle?.vehicle_model || 'Unassigned'}
+                  ⭐ {item.rating || 'N/A'}{' '}
+                  {item.assign_Vehicle?.vehicle_model || 'Unassigned'}
                 </Text>
                 <View style={styles.availableBadge}>
                   <Text style={styles.availableText}>Available</Text>
                 </View>
               </View>
-              <TouchableOpacity
-                style={styles.menuDots}
-                onPress={() => {
-                  setSelectedChauffeur(item);
-                  setModalVisible(true);
-                }}
-              >
-                <Text style={styles.dotsText}>⋮</Text>
-              </TouchableOpacity>
+              {!item.assign_Vehicle?.vehicle_model && (
+                <TouchableOpacity
+                  style={styles.menuDots}
+                  onPress={() => {
+                    setSelectedChauffeur(item);
+                    setModalVisible(true);
+                  }}
+                >
+                  <Text style={styles.dotsText}>⋮</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         )}
@@ -170,13 +221,34 @@ const { data: vehicleDataApi } = useQuery({
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <Text style={styles.modalTitle}>Assign Vehicle</Text>
-            <CustomDropdown data={vehicle_for}/>
-            <Pressable
-              style={styles.modalCloseBtn}
-              onPress={() => setModalVisible(false)}
+            <CustomDropdown
+              data={vehicle_for}
+              onChange={item => setAssign_Vehicle(item.value)}
+            />
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                width: '70%',
+              }}
             >
-              <Text style={styles.modalCloseText}>Close</Text>
-            </Pressable>
+              <Pressable
+                style={styles.modalCloseBtn}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.modalCloseText}>Close</Text>
+              </Pressable>
+
+              <Pressable
+                disabled={assign_Vehicle === null || loading}
+                style={styles.modalCloseBtn2}
+                onPress={handleAssign}
+              >
+                <Text style={styles.modalCloseText}>
+                  {loading ? 'Assigning...' : 'Assign'}
+                </Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </Modal>
@@ -299,7 +371,7 @@ const styles = StyleSheet.create({
   chauffeurCard: {
     backgroundColor: '#fff',
     borderRadius: wp(2.5),
-     margin: wp(4),
+    margin: wp(4),
     padding: wp(4),
     marginBottom: hp(2.5),
     borderWidth: 1,
@@ -360,45 +432,50 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-
-
-
   modalOverlay: {
-  flex: 1,
-  backgroundColor: 'rgba(0,0,0,0.5)',
-  justifyContent: 'center',
-  alignItems: 'center',
-},
-modalContainer: {
-  width: '90%',
-  backgroundColor: '#fff',
-  borderRadius: 10,
-  padding: 20,
-  alignItems: 'center',
-},
-modalTitle: {
-  fontSize: 30,
-  fontWeight: '700',
-  marginBottom: 15,
-  fontFamily: 'Poppins-Regular',
-},
-modalSubTitle: {
-  fontSize: 16,
-  marginBottom: 20,
-},
-modalCloseBtn: {
-  backgroundColor: '#FFD600',
-  paddingVertical: 10,
-  paddingHorizontal: 25,
-  borderRadius: 8,
-},
-modalCloseText: {
-  fontWeight: '600',
-  color: '#000',
-  fontFamily: 'Poppins-Regular',
-
-},
-
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: hp('30%'),
+  },
+  modalTitle: {
+    fontSize: 25,
+    fontWeight: '700',
+    marginBottom: 15,
+    fontFamily: 'Poppins-Regular',
+  },
+  modalSubTitle: {
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  modalCloseBtn: {
+    backgroundColor: 'transparent',
+    paddingVertical: 10,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#999',
+  },
+  modalCloseBtn2: {
+    backgroundColor: COLORS.warning,
+    paddingVertical: 10,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+  },
+  modalCloseText: {
+    fontWeight: '600',
+    color: '#000',
+    fontFamily: 'Poppins-Regular',
+  },
 });
 
 export default ChauffeurBookingScreen;

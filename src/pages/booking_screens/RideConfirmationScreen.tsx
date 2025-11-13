@@ -504,7 +504,6 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#FDD835', // Light yellow
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,

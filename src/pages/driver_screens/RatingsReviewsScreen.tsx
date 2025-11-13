@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,9 @@ import {
   Image,
   TouchableOpacity,
   Platform,
+   FlatList,
+  RefreshControl,
+  ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import TopHeader from '../../components/TopHeader';
@@ -17,46 +20,43 @@ import {
   heightPercentageToDP as hp,
 } from 'react-native-responsive-screen';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
+import { useQuery } from '@tanstack/react-query';
+import { fetchData } from '../../queryFunctions/queryFunctions';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import AppLoader from '../../components/AppLoader';
 
-const reviews = [
-  {
-    id: 1,
-    name: 'Alice J.',
-    status: 'Pending',
-    rating: 4,
-    comment: 'Prompt, friendly driver and a very clean car!',
-    date: '2 days ago',
-  },
-  {
-    id: 2,
-    name: 'Bob K.',
-    status: 'Replied',
-    rating: 4,
-    comment: 'Prompt, friendly driver and a very clean car!',
-    date: '5 days ago',
-  },
-  {
-    id: 3,
-    name: 'Alice J.',
-    status: 'Pending',
-    rating: 4,
-    comment: 'Prompt, friendly driver and a very clean car!',
-    date: '1 week ago',
-  },
-  {
-    id: 4,
-    name: 'Alice J.',
-    status: 'Pending',
-    rating: 4,
-    comment: 'Prompt, friendly driver and a very clean car!',
-    date: '2 weeks ago',
-  },
-   
-];
+ 
 
 const RatingsReviewsScreen = ({ navigation }) => {
   const [active, setActive] = useState(1);
   const tabBarHeight = useTabBarHeightHelper();
+
+  // === React Query v5: object form ===
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+    refetch,
+    isRefetching,
+  } = useInfiniteQuery({
+    queryKey: ['driver-review'],
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await fetchData(`/review/reviews?page=${pageParam}`);
+      return res;
+    },
+    getNextPageParam: lastPage => {
+      if (!lastPage) return undefined;
+      return lastPage.currentPage < lastPage.totalPages
+        ? lastPage.currentPage + 1
+        : undefined;
+    },
+    keepPreviousData: true,
+  });
+
+  // combine pages into a single array of reviews
+  const reviews = data?.pages?.flatMap(p => p.data) ?? [];
 
   const renderStars = rating => {
     const stars = [];
@@ -76,12 +76,6 @@ const RatingsReviewsScreen = ({ navigation }) => {
     return stars;
   };
 
-  const getStatusStyle = status =>
-    status === 'Pending' ? styles.statusPending : styles.statusReplied;
-
-  const getStatusTextStyle = status =>
-    status === 'Pending' ? styles.statusPendingText : styles.statusRepliedText;
-
   const active_img = order => {
     const rateImage =
       active === order
@@ -91,80 +85,122 @@ const RatingsReviewsScreen = ({ navigation }) => {
     return rateImage;
   };
 
+  const onEndReached = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  };
+
+  const onRefresh = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
+  const renderItem = ({ item: review }) => {
+    return (
+      <TouchableOpacity
+        onPress={() => navigation.navigate('ReviewList', { review })}
+        key={review._id}
+        style={styles.reviewCard}
+      >
+        <View style={styles.reviewContent}>
+          <View style={styles.reviewHeader}>
+            <Text style={styles.reviewerName}>{review?.user?.name ?? '—'}</Text>
+          </View>
+
+          <View style={styles.starsContainer}>{renderStars(review.rating)}</View>
+
+          <Text style={styles.reviewComment}>
+            {review.comment ? review.comment.slice(0, 50) + '...' : 'No comment'}
+          </Text>
+          <Text style={styles.reviewDate}>
+            {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : ''}
+          </Text>
+        </View>
+        <Text style={styles.chevron}>›</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const ListFooter = () => {
+    if (!isFetchingNextPage) return null;
+    return (
+      <View style={{ paddingVertical: 12 }}>
+        <ActivityIndicator size="small" />
+      </View>
+    );
+  };
+
+  const EmptyComponent = () => {
+    if (isLoading) return null;
+    return (
+      <View style={{ padding: 24, alignItems: 'center' }}>
+        <Text style={{ color: '#6B7280' }}>No reviews found.</Text>
+      </View>
+    );
+  };
+
+  if(isLoading) return <AppLoader />
   return (
     <SafeAreaView style={styles.container}>
       <TopHeader title="Operations Overview" navigation={navigation} />
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
+      <Text style={styles.title}>Ratings & Reviews</Text>
+
+      <View style={styles.statsGrid}>
+        <TouchableOpacity
+          onPress={() => setActive(1)}
+          style={[styles.statCard, active === 1 ? styles.activeCard : null]}
+        >
+          <Image style={styles.rateImg} source={active_img(1)} />
+          <Text style={styles.statTopText}>Average Rating</Text>
+          <Text style={styles.statMainText}>
+            {Number(data?.pages?.[0]?.averageRating ?? data?.averageRating ?? 0).toFixed(2)}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setActive(2)}
+          style={[styles.statCard, active === 2 ? styles.activeCard : null]}
+        >
+          <Image style={styles.rateImg} source={active_img(2)} />
+          <Text style={styles.statTopText}>Total Reviews</Text>
+          <Text style={styles.statMainText}>
+            {Number(data?.pages?.[0]?.totalRatings ?? data?.totalRatings ?? reviews.length)}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setActive(3)}
+          style={[styles.statCard, active === 3 ? styles.activeCard : null]}
+        >
+          <Image style={styles.rateImg} source={active_img(3)} />
+          <Text style={styles.statTopText}>Review Trend</Text>
+          <Text style={styles.statMainText}>
+            {data?.pages?.[0]?.ratingTrend ?? data?.ratingTrend ?? 0} in 30
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <FlatList
+        data={reviews}
+        renderItem={renderItem}
+        keyExtractor={item => item._id ?? item.id?.toString() ?? Math.random().toString()}
         contentContainerStyle={{
           paddingBottom: tabBarHeight + (Platform.OS === 'ios' ? 55 : 20),
+          paddingHorizontal: 0,
         }}
-      >
-        {/* Header */}
-        <Text style={styles.title}>Ratings & Reviews</Text>
+        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+        ListFooterComponent={ListFooter}
+        ListEmptyComponent={<EmptyComponent />}
+        onEndReachedThreshold={0.6}
+        onEndReached={onEndReached}
+        refreshControl={
+          <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} />
+        }
+        showsVerticalScrollIndicator={false}
+      />
 
-        {/* Stats Grid */}
-        <View style={styles.statsGrid}>
-          <TouchableOpacity
-            onPress={() => setActive(1)}
-            style={[styles.statCard, active === 1 ? styles.activeCard : '']}
-          >
-            <Image style={styles.rateImg} source={active_img(1)} />
-            <Text style={styles.statTopText}>Average Rating</Text>
-            <Text style={styles.statMainText}>4.25</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => setActive(2)}
-            style={[styles.statCard, active === 2 ? styles.activeCard : '']}
-          >
-            <Image style={styles.rateImg} source={active_img(2)} />
-
-            <Text style={styles.statTopText}>Total Reviews</Text>
-            <Text style={styles.statMainText}>4</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => setActive(3)}
-            style={[styles.statCard, active === 3 ? styles.activeCard : '']}
-          >
-            <Image style={styles.rateImg} source={active_img(3)} />
-
-            <Text style={styles.statTopText}>Review Trend</Text>
-            <Text style={styles.statMainText}>+0.2 in 30</Text>
-          </TouchableOpacity>
-        </View>
-        {/* Reviews List */}
-        <View style={styles.reviewsList}>
-          {reviews.map(review => (
-            <TouchableOpacity
-              onPress={() => navigation.navigate('ReviewList')}
-              key={review.id}
-              style={styles.reviewCard}
-            >
-              <View style={styles.reviewContent}>
-                <View style={styles.reviewHeader}>
-                  <Text style={styles.reviewerName}>{review.name}</Text>
-                  <View style={getStatusStyle(review.status)}>
-                    <Text style={getStatusTextStyle(review.status)}>
-                      {review.status}
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.starsContainer}>
-                  {renderStars(review.rating)}
-                </View>
-
-                <Text style={styles.reviewComment}>{review.comment}</Text>
-                {/* <Text style={styles.reviewDate}>{review.date}</Text> */}
-              </View>
-              <Text style={styles.chevron}>›</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
+      
     </SafeAreaView>
   );
 };

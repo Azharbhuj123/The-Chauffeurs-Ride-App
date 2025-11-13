@@ -56,6 +56,8 @@ export const pickFile = async (): Promise<DocumentPicker.DocumentPickerResponse 
     const result = await DocumentPicker.pick({
       type: [types.allFiles],  // all file types
       allowMultiSelection: false,
+            copyTo: 'cachesDirectory', // <- COPY file to app cache, makes file accessible
+
     });
 
     // result can be an array if allowMultiSelection is true
