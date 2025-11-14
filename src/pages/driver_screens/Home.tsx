@@ -32,6 +32,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
 import { useRideStore } from '../../stores/rideStore';
 import AppLoader from '../../components/AppLoader';
+import CustomDropdown from '../../components/CustomDropdown';
 
 const { width, height } = Dimensions.get('window');
 
@@ -41,10 +42,14 @@ const fs = size => {
 
 export default function HomeScreen({ navigation }) {
   const [showRejectPopup, setShowRejectPopup] = useState(false);
+  const [rideId, setRideId] = useState(null);
+  const [driverId, setDriverId] = useState(null);
   const [selectedRide, setSelectedRide] = useState(null);
   const tabBarHeight = useTabBarHeightHelper();
   const { token, userData } = useUserStore();
   const { location } = useStore();
+  const is_chauffeur = userData?.owned_By ? true : false;
+
   const { setRideRequests, rideRequests } = useRideStore();
 
   const { data: homeData, isLoading } = useQuery({
@@ -52,6 +57,27 @@ export default function HomeScreen({ navigation }) {
     queryFn: () => fetchData('/driver/fleet-history'),
     keepPreviousData: true,
   });
+
+  const { data: ridePartner } = useQuery({
+    queryKey: ['get-ride-partner'],
+    queryFn: () => fetchData(`/ride/get-ride-partner?ride_id=${rideId}`),
+    keepPreviousData: true,
+    enabled: !!showRejectPopup,
+  });
+
+  console.log(ridePartner?.data, 'ridePartner');
+  const partner_data = Array.isArray(ridePartner?.data)
+    ? ridePartner.data
+        .filter(item => item?.vehicle_driver?._id) // only valid drivers
+        .map(item => {
+          const driver_data = item.vehicle_driver;
+
+          return {
+            label: driver_data?.name ?? 'Unknown Driver',
+            value: driver_data?._id ?? '',
+          };
+        })
+    : [];
 
   const {
     data,
@@ -107,7 +133,17 @@ export default function HomeScreen({ navigation }) {
   );
 
   const { triggerMutation, loading } = useActionMutation({
-    onSuccessCallback: async data => {},
+    onSuccessCallback: async data => {
+      if (data?.success && data?.action === 'reject_transfer') {
+    setShowRejectPopup(false);
+
+        setRideRequests(rideId);
+        setRideId(null);
+        setDriverId(null);
+        selectedRide(null);
+
+      }
+    },
     onErrorCallback: errmsg => {
       showToast({
         type: 'error',
@@ -133,11 +169,23 @@ export default function HomeScreen({ navigation }) {
   const handleReject = ride => {
     setSelectedRide(ride);
     setShowRejectPopup(true);
+    setRideId(ride?.id);
   };
 
+  
+
   const handleAssignToPartner = () => {
-    console.log('Assign to partner:', selectedRide);
-    setShowRejectPopup(false);
+    const data_obj = {
+      ride_id: rideId,
+      to_driver: driverId,
+      action: 'reject_transfer',
+    };
+
+    triggerMutation({
+      endPoint: '/ride/request-ride-action',
+      body: data_obj,
+      method: 'post',
+    });
     // Add your logic here
   };
 
@@ -160,62 +208,71 @@ export default function HomeScreen({ navigation }) {
       >
         <UserHeader />
 
-        {/* Action Buttons */}
-        <View style={styles.actionButtonsContainer}>
-          <TouchableOpacity
-            style={styles.addVehicleButton}
-            onPress={handleAddVehicle}
-          >
-            <Text style={styles.addVehicleText}>+ Add Vehicle</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.manageChauffeurButton}
-            onPress={handleManageChauffeur}
-          >
-            <Text style={styles.manageChauffeurText}>+ Manage Chauffeur</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Fleet Status Section */}
-        <View style={styles.fleetSection}>
-          <Text style={styles.sectionTitle}>Fleet Status</Text>
-
-          {homeData?.fleet?.map((item, index) => (
-            <View
-              key={
-                item._id ??
-                item.id ??
-                `${item.vehicle_name ?? 'vehicle'}-${index}`
-              }
-              style={[
-                styles.fleetCard,
-                index === homeData?.fleet?.length - 1 && styles.fleetCardLast,
-              ]}
-            >
-              <View style={styles.fleetCardLeft}>
-                <View style={styles.vehicleIconContainer}>
-                  <Icon name="car" size={24} color="#fff" />
-                </View>
-                <View>
-                  <Text style={styles.vehicleName}>{item.vehicle_name}</Text>
-                  <Text style={{ color: 'rgba(17, 17, 17, 0.70)' }}>
-                    {item?.plate_number}
-                  </Text>
-                </View>
-              </View>
-
-              <View
-                style={[
-                  styles.statusBadge,
-                  { backgroundColor: item.status_color },
-                ]}
+        {!is_chauffeur && (
+          <View>
+            {/* Action Buttons */}
+            <View style={styles.actionButtonsContainer}>
+              <TouchableOpacity
+                style={styles.addVehicleButton}
+                onPress={handleAddVehicle}
               >
-                <Text style={styles.statusText}>{item.status}</Text>
-              </View>
+                <Text style={styles.addVehicleText}>+ Add Vehicle</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.manageChauffeurButton}
+                onPress={handleManageChauffeur}
+              >
+                <Text style={styles.manageChauffeurText}>
+                  + Manage Chauffeur
+                </Text>
+              </TouchableOpacity>
             </View>
-          ))}
-        </View>
+
+            {/* Fleet Status Section */}
+            <View style={styles.fleetSection}>
+              <Text style={styles.sectionTitle}>Fleet Status</Text>
+
+              {homeData?.fleet?.map((item, index) => (
+                <View
+                  key={
+                    item._id ??
+                    item.id ??
+                    `${item.vehicle_name ?? 'vehicle'}-${index}`
+                  }
+                  style={[
+                    styles.fleetCard,
+                    index === homeData?.fleet?.length - 1 &&
+                      styles.fleetCardLast,
+                  ]}
+                >
+                  <View style={styles.fleetCardLeft}>
+                    <View style={styles.vehicleIconContainer}>
+                      <Icon name="car" size={24} color="#fff" />
+                    </View>
+                    <View>
+                      <Text style={styles.vehicleName}>
+                        {item.vehicle_name}
+                      </Text>
+                      <Text style={{ color: 'rgba(17, 17, 17, 0.70)' }}>
+                        {item?.plate_number}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View
+                    style={[
+                      styles.statusBadge,
+                      { backgroundColor: item.status_color },
+                    ]}
+                  >
+                    <Text style={styles.statusText}>{item.status}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
         {rideRequests?.length > 0 && (
           <View style={styles.incomingRideContainer}>
             <Text style={styles.sectionTitle}>
@@ -318,26 +375,25 @@ export default function HomeScreen({ navigation }) {
                 <Text style={styles.inputLabel}>
                   Select Partner City/Country
                 </Text>
-                <TouchableOpacity style={styles.selectInput}>
-                  <Text style={styles.selectPlaceholder}>Select Partner</Text>
-                  <Icon name="chevron-down" size={20} color="#999" />
-                </TouchableOpacity>
-
+                <CustomDropdown
+                  data={partner_data}
+                  placeholder="Select your partner"
+                  onChange={item => setDriverId(item?.value)}
+                />
                 {/* Commission Text */}
                 <Text style={styles.commissionText}>
                   You'll earn 10% commission on successfully dispatched.
                 </Text>
 
                 {/* Assign Button */}
-                <TouchableOpacity
-                  style={styles.assignButton}
-                  onPress={handleAssignToPartner}
-                >
+                <View style={styles.assignButton}>
                   <Button
+                  isLoading={loading}
+                    disabled={driverId === null}
                     title="Assign Ride to Partner"
-                    onPress={() => setShowRejectPopup(false)}
+                    onPress={handleAssignToPartner}
                   />
-                </TouchableOpacity>
+                </View>
               </ScrollView>
             </View>
           </View>

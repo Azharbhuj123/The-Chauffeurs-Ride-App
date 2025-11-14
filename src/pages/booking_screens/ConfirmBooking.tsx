@@ -39,6 +39,7 @@ import { useUserStore } from '../../stores/useUserStore';
 import { showFlash } from '../../utils/flashMessageHelper';
 import { useRideStore } from '../../stores/rideStore';
 import SkeletonContent from 'react-native-skeleton-content';
+import SkeletonBox from '../../utils/SkeletonBox';
 
 const ConfirmBooking = ({ navigation, route }) => {
   const [paymentMethod, setPaymentMethod] = useState('Card');
@@ -456,7 +457,6 @@ const ConfirmBooking = ({ navigation, route }) => {
       setTotalFare(rideData?.totalFare);
     }
   };
-  console.log(rideData, 'rideData');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -601,6 +601,10 @@ const ConfirmBooking = ({ navigation, route }) => {
         contentContainerStyle={styles.scrollContent}
       >
         {/* Selected Chauffeur */}
+        {
+          isLoading ? (
+            <SkeletonBox  height={200}/>
+          ):(
         <View style={[styles.section, styles.newSection]}>
           <View style={styles.driverCard}>
             <Text style={styles.sectionLabel}>Your Selected Chauffeur</Text>
@@ -663,7 +667,10 @@ const ConfirmBooking = ({ navigation, route }) => {
             </View>
           </View>
         </View>
+          )
+        }
 
+ 
         {/* Trip Details */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Trip Details</Text>

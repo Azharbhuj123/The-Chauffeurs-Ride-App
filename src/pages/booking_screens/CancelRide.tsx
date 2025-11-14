@@ -27,7 +27,7 @@ import { CANCEL_REASONS } from '../../utils/Enums';
 import useActionMutation from '../../queryFunctions/useActionMutation';
 import { showToast } from '../../utils/toastHelper';
 import { useRideStore } from '../../stores/rideStore';
-
+ 
 // Make sure to receive the navigation prop
 export default function CancelRide({
   headerShow = true,
@@ -53,6 +53,7 @@ export default function CancelRide({
       if (data?.success) {
         setModalVisible(true);
         setRideRequests(data?.data?._id);
+
       }
     },
     onErrorCallback: errmsg => {

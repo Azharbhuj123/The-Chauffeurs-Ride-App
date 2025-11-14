@@ -35,20 +35,57 @@ import { joinUserRoom, socket } from '../../utils/socket';
 import { useRideStore } from '../../stores/rideStore';
 import MapScreen from '../../components/MapScreen';
 import { useDriverLocationStore } from '../../stores/driverLocationStore';
+ import Geolocation from '@react-native-community/geolocation';
 
 // Get screen dimensions
 const { width, height } = Dimensions.get('window');
 
+const startDriverLocationTracking = (rideId, driverId) => {
+  if (!rideId || !driverId) return;
+
+  Geolocation.watchPosition(
+    position => {
+      console.log('Driver location:', position.coords);
+
+      // Emit driver location with correct IDs
+      socket.emit('driver-location', {
+        rideId,
+        driverId,
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+      });
+    },
+    error => console.log('Driver location watch error:', error),
+    {
+      enableHighAccuracy: true,
+      distanceFilter: 5,
+      interval: 5000,
+      fastestInterval: 1000,
+      forceRequestLocation: true,
+      useSignificantChanges: false,
+    }
+  );
+};
+
+
+
+
 const RideConfirmationScreen = ({ navigation, route }) => {
+
   const [title, setTitle] = useState('Your Ride is Accepted');
   const [rideStatus, setRideStatus] = useState('Accepted');
+  const [driverLocation, setDriverLocation] = useState({
+    latitude: 0,
+    longitude: 0,
+  });
   const tabBarHeight = useTabBarHeightHelper();
   const { rideId, from } = route.params || {};
   console.log(rideId, 'rideId');
   const { startTracking, stopTracking } = useDriverLocationStore();
 
   const { role, userData } = useUserStore();
-  const { clearRideRequests, sethasUnreadMessages, hasUnreadMessages } =
+ 
+  const { clearRideRequests, sethasUnreadMessages, hasUnreadMessages ,setRideId} =
     useRideStore();
 
   const { data, isLoading, refetch } = useQuery({
@@ -59,11 +96,23 @@ const RideConfirmationScreen = ({ navigation, route }) => {
   });
 
   useEffect(() => {
-    const driver_id = data?.data?.driver?._id;
-    console.log('RideId:', rideId, 'DriverId:', driver_id);
+  if (rideId && userData?._id) {
+    startDriverLocationTracking(rideId, userData._id.toString());
+  }
+}, [rideId, userData]);
 
-    if (rideId && driver_id && role === 'Driver') {
-      startTracking(rideId, driver_id);
+
+ 
+
+  useEffect(() => {
+    const driver_id = data?.data?.driver?._id;
+    const driver_loc = {
+      latitude: data?.data?.driver?.location?.coordinates[1],
+      longitude: data?.data?.driver?.location?.coordinates[0],
+    };
+
+    if (driver_id) {
+      setDriverLocation(driver_loc);
     }
   }, [rideId, data?.data?.driver?._id, role]);
 
@@ -177,6 +226,8 @@ const RideConfirmationScreen = ({ navigation, route }) => {
   });
 
   const handleAction = action => {
+    
+
     const body = {
       ride_id: rideId,
       action,
@@ -189,14 +240,32 @@ const RideConfirmationScreen = ({ navigation, route }) => {
     });
   };
 
-  const driver_loc = {
-    lat: data?.data?.driver?.location?.coordinates[1],
-    long: data?.data?.driver?.location?.coordinates[0],
-  };
   const user_loc = {
     lat: data?.data?.user?.location?.coordinates[1],
     long: data?.data?.user?.location?.coordinates[0],
   };
+
+  useFocusEffect(
+    useCallback(() => {
+ 
+      if (!rideId || !userData?._id) return;
+
+      socket.emit('join-ride', { rideId, userId: userData._id });
+
+      const handleDriverLocation = data => {
+        console.log(data, 'driver location');
+
+        if (data?.lat && data?.lng) {
+          setDriverLocation({ latitude: data.lat, longitude: data.lng });
+        }
+      };
+
+      socket.on('driver-location', handleDriverLocation);
+      return () => socket.off('driver-location', handleDriverLocation);
+    }, [rideId, userData?._id]),
+  );
+
+ 
 
   if (isLoading) {
     return <AppLoader />;
@@ -232,7 +301,7 @@ const RideConfirmationScreen = ({ navigation, route }) => {
             ''
           )}
           <MapScreen
-            driverLoc={driver_loc}
+            driverLocation={driverLocation}
             userLoc={user_loc}
             rideId={rideId}
           />

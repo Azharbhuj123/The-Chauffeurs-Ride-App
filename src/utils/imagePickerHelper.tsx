@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
-import DocumentPicker, { types } from 'react-native-document-picker';
+import DocumentPicker, { types } from '@react-native-documents/picker';
+
 
 export const pickImageFromCamera = async () => {
   return new Promise((resolve, reject) => {

@@ -39,6 +39,7 @@ import { fetchData } from '../../queryFunctions/queryFunctions';
 import UpgradeModal from '../../components/Upgrade';
 import { useRideStore } from '../../stores/rideStore';
 import { showToast } from '../../utils/toastHelper';
+import SkeletonBox from '../../utils/SkeletonBox';
 
 // --- Responsive Utility Functions (Mocking Libraries like 'react-native-responsive-screen') ---
 const { width, height } = Dimensions.get('window');
@@ -602,6 +603,8 @@ export default function BookingMain({ navigation }) {
   const [fromLocation, setFromLocation] = useState(
     rideData?.pick_location || null,
   );
+  
+  
   const [toLocation, setToLocation] = useState(rideData?.drop_location || null);
   const [showPicker, setShowPicker] = useState(false);
   const [pickerMode, setPickerMode] = useState('date'); // 'date' | 'time'
@@ -655,7 +658,12 @@ export default function BookingMain({ navigation }) {
   });
 
   // ride fare
-  const { data: ridefare, isLoading: ridefareLoad } = useQuery({
+  const {
+    data: ridefare,
+    isLoading: ridefareLoad,
+    error: rideFareErr,
+    isError,
+  } = useQuery({
     queryKey: [
       'get-drivers-fare',
       selectedClass,
@@ -690,7 +698,18 @@ export default function BookingMain({ navigation }) {
       !!selectedCar,
   });
 
-  console.log(dateTime, 'dateTime');
+   
+
+
+  useEffect(() => {
+      if(rideData?.pick_location){
+        setFromLocation(rideData?.pick_location);
+      }
+
+      if(rideData?.drop_location){
+        setToLocation(rideData?.drop_location);
+      }
+  },[rideData]);
 
   useFocusEffect(
     useCallback(() => {
@@ -748,7 +767,7 @@ export default function BookingMain({ navigation }) {
 
   const handleBooking = () => {
     let voucher_ids = [];
-    if(isUpgradeClass){
+    if (isUpgradeClass) {
       voucher_ids.push(voucherData?.voucher?._id);
     }
 
@@ -756,7 +775,7 @@ export default function BookingMain({ navigation }) {
       pick_location: fromLocation,
       drop_location: toLocation,
       selectedClass,
-      for_api_class:fromClass == '' ? selectedClass : fromClass,
+      for_api_class: fromClass == '' ? selectedClass : fromClass,
       ...ridefare?.data,
       selectedCar,
       is_upgrade_class: isUpgradeClass,
@@ -764,7 +783,6 @@ export default function BookingMain({ navigation }) {
       isScheduledRide,
       dateTime,
       voucher_ids,
-
     });
 
     navigation.navigate('ConfirmBooking');
@@ -783,10 +801,23 @@ export default function BookingMain({ navigation }) {
       pick_location: fromLocation,
       drop_location: toLocation,
     });
-    navigation.navigate('SelectDriver',{
-      voucher_id: voucherData?.sec_voucher?._id
+    navigation.navigate('SelectDriver', {
+      voucher_id: voucherData?.sec_voucher?._id,
     });
   };
+
+  useEffect(() => {
+    if (isError) {
+      const backendMessage =
+        rideFareErr?.response?.data?.message || 'Something went wrong';
+
+      showToast({
+        title: 'Error',
+        message: backendMessage,
+        type: 'error',
+      });
+    }
+  }, [isError]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -1004,27 +1035,40 @@ export default function BookingMain({ navigation }) {
           </View>
 
           {/* --- Grey Bottom Section --- */}
-          <View style={styles.bottomContent}>
-            <View style={styles.fareContainer}>
-              <View>
-                <Text style={styles.fareTitle}>Estimated Fare:</Text>
-                <Text style={styles.fareAmount}>
-                  ${ridefare?.data?.totalFare || 0}
+          <View style={[styles.bottomContent]}>
+            {ridefareLoad ? (
+              <SkeletonBox
+                height={90}
+      
+                marginTop={hp(3)}
+                marginBottom={hp(2000)}
+                padding={30}
+                width={wp(90)}
+              />
+            ) : (
+              <View style={styles.fareContainer}>
+                <View>
+                  <Text style={styles.fareTitle}>Estimated Fare:</Text>
+                  <Text style={styles.fareAmount}>
+                    ${ridefare?.data?.totalFare || 0}
+                  </Text>
+                </View>
+                <Text style={styles.fareDetails}>
+                  {ridefare?.data?.distance || `0.0 km`} |{' '}
+                  {ridefare?.data?.duration_min_value || `0.0 min`}
                 </Text>
               </View>
-              <Text style={styles.fareDetails}>
-                {ridefare?.data?.distance || `0.0 km`} |{' '}
-                {ridefare?.data?.duration_min_value || `0.0 min`}
-              </Text>
-            </View>
+            )}
 
-            <Button
-              disabled={
-                !ridefare?.data?.totalFare || ridefare?.data?.totalFare == 0
-              }
-              onPress={handleBooking}
-              title="Confirm Booking"
-            />
+            <View style={{ paddingHorizontal: wp(6), marginTop: ridefareLoad ? hp(1):hp(0) }}>
+              <Button
+                disabled={
+                  !ridefare?.data?.totalFare || ridefare?.data?.totalFare == 0
+                }
+                onPress={handleBooking}
+                title="Confirm Booking"
+              />
+            </View>
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>
@@ -1050,7 +1094,7 @@ const styles = StyleSheet.create({
   },
 
   bottomContent: {
-    paddingHorizontal: PADDING_HORIZONTAL,
+    // paddingHorizontal: PADDING_HORIZONTAL,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     height: height * 0.3,

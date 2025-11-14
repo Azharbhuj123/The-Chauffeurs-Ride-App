@@ -6,7 +6,7 @@
  */
 
 // App.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   AppState,
   Platform,
@@ -44,17 +44,20 @@ export default function App() {
   const { userData, role } = useUserStore();
   const queryClient = new QueryClient();
   const { rideId } = useRideStore(); // get latest rideId
+const rideIdRef = useRef(rideId);
 
-  const [permissionStatus, setPermissionStatus] = useState('');
-  const [appState, setAppState] = useState(AppState.currentState);
+// Update ref whenever rideId changes
+const [permissionStatus, setPermissionStatus] = useState('');
+const [appState, setAppState] = useState(AppState.currentState);
 
-  // Toast configuration
-  const toastConfig = {
-    success: props => (
-      <BaseToast
-        {...props}
-        style={{
-          borderLeftColor: '#000',
+// Toast configuration
+const toastConfig = {
+  success: props => (
+    <BaseToast
+    {...props}
+    style={{
+      borderLeftColor: '#000',
+      
           backgroundColor: '#fff',
           marginTop: Platform.OS === 'ios' ? hp(3) : 2,
         }}
@@ -96,6 +99,10 @@ export default function App() {
     ),
   };
 
+
+  useEffect(() => {
+        rideIdRef.current = rideId;
+      }, [rideId]);
   // Socket & user room initialization
   useEffect(() => {
     if (userData?._id) {
@@ -156,21 +163,21 @@ export default function App() {
       position => {
         console.log('User location:', position.coords);
         setLocation(position.coords);
-
+        
         if (userData?._id) {
           socket.emit('user-location', {
-            rideId: rideId || '',
             userId: userData._id.toString(),
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           });
+        
         }
       },
       error => console.error('Location watch error:', error),
       {
         enableHighAccuracy: true, // Use GPS for precise location
         distanceFilter: 5, // Trigger update only if user moves 5 meters
-        interval: 2000, // Android: attempt update every 2 sec
+        interval: 5000, // Android: attempt update every 2 sec
         fastestInterval: 1000, // Android: min interval 1 sec
         forceRequestLocation: true, // Force location fetch
         useSignificantChanges: false, // iOS: ignore only significant changes

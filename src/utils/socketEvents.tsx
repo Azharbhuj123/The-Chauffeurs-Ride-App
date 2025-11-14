@@ -6,7 +6,7 @@ import { navigate } from './NavigationService';
 import { useRideStore } from '../stores/rideStore';
 
 export const initSocketListeners = (role: string) => {
-  const { setRideRequests } = useRideStore.getState();
+  const { setRideRequests ,setRideId} = useRideStore.getState();
 
   socket.on('ride_request', data => {
     if (data?.ride_offer && role === 'Driver') {
@@ -43,6 +43,7 @@ export const initSocketListeners = (role: string) => {
       setRideRequests(prev => prev?.filter(ride => ride?.id !== data?.ride_id));
     }
     if (data?.ride_accept && role === 'Driver') {
+      setRideId(data?.ride_id)
       navigate('RideConfirmationScreen', {
         rideId: data?.ride_id,
         from: 'driver',

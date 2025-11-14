@@ -31,6 +31,9 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+  
+  <key>Permitted background task scheduler identifiers</key>
+  <string>com.transistorsoft.customtask</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Background mein bhi location access required hai taa ke ride tracking aur safety features sahi tareeke se kaam kar saken.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
@@ -43,6 +46,8 @@
 	<key>NSLocationUsageDescription</key>
 	<string>Location access zaroori hai taa ke app aapke near available drivers aur accurate pickup location show kar sake.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>App ko aapki location tab chahiye jab aap app use kar rahe hon, taa ke ride tracking aur nearby features kaam kar saken.</string>
+	<key>NSMotionUsageDescription</key>
 	<string>App ko aapki location tab chahiye jab aap app use kar rahe hon, taa ke ride tracking aur nearby features kaam kar saken.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
@@ -74,6 +79,9 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
+		<string>fetch</string>
+		<string>audio</string>
+		<string>processing</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

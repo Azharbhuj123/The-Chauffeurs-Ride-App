@@ -9,18 +9,23 @@ const SkeletonBox = ({
   margin = 16,
   padding = 20,
   marginTop = 0,
+  width = null,
 }) => {
+
+
   return (
     <SkeletonPlaceholder borderRadius={borderRadius}>
       <View
-        style={{
-          height,
-          borderRadius,
-          margin,
-          padding,
-          marginTop,
-        }}
-      />
+  style={{
+    height,
+    borderRadius,
+    margin,
+    padding,
+    marginTop,
+    ...(width !== null && { width }), // <- Only add width if NOT null
+  }}
+/>
+
     </SkeletonPlaceholder>
   );
 };
