@@ -77,7 +77,7 @@ export const EditProfileScreen = ({ navigation }) => {
         return;
       }
 
-      setUserData(data?.user,data?.token);
+      setUserData(data?.user, data?.token);
       showToast({
         type: 'success',
         title: 'Profile Updated',
@@ -95,13 +95,12 @@ export const EditProfileScreen = ({ navigation }) => {
 
   const hanldeUpdate = async () => {
     const form_data = new FormData();
-    if(profileImageurl){
-
-    form_data.append('file', {
-      uri: profileImageurl.uri,
-      type: profileImageurl.type,
-      name: profileImageurl.name || 'image.jpg',
-    });
+    if (profileImageurl && profileImageurl.uri) {
+      form_data.append('file', {
+        uri: profileImageurl.uri,
+        type: profileImageurl.type || 'image/jpeg',
+        name: profileImageurl.name || `image_${Date.now()}.jpg`,
+      });
     }
 
     form_data.append('name', name);
