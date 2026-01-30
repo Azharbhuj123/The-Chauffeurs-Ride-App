@@ -11,22 +11,25 @@ const SkeletonBox = ({
   marginTop = 0,
   width = null,
 }) => {
-
-
   return (
-    <SkeletonPlaceholder borderRadius={borderRadius}>
-      <View
-  style={{
-    height,
-    borderRadius,
-    margin,
-    padding,
-    marginTop,
-    ...(width !== null && { width }), // <- Only add width if NOT null
-  }}
-/>
-
-    </SkeletonPlaceholder>
+    <View style={{ backgroundColor: "#fff" }}>  
+      <SkeletonPlaceholder
+        borderRadius={borderRadius}
+        backgroundColor="#E1E9EE"
+        highlightColor="#F2F8FC"
+      >
+        <View
+          style={{
+            height,
+            borderRadius,
+            margin,
+            padding,
+            marginTop,
+            ...(width !== null && { width }),
+          }}
+        />
+      </SkeletonPlaceholder>
+    </View>
   );
 };
 

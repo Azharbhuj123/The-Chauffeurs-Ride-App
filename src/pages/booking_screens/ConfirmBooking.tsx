@@ -339,14 +339,11 @@ const ConfirmBooking = ({ navigation, route }) => {
   });
 
   const handleConfirmBooking = () => {
-
-     
     let final_voucher_ids = [...rideData?.voucher_ids];
 
-    if(paymentMethod === 'Free' && voucherData?.voucher?._id){
+    if (paymentMethod === 'Free' && voucherData?.voucher?._id) {
       final_voucher_ids.push(voucherData?.voucher?._id);
     }
-
 
     let body = {
       vehicle: rideData?.selectedCar,
@@ -601,76 +598,75 @@ const ConfirmBooking = ({ navigation, route }) => {
         contentContainerStyle={styles.scrollContent}
       >
         {/* Selected Chauffeur */}
-        {
-          isLoading ? (
-            <SkeletonBox  height={200}/>
-          ):(
-        <View style={[styles.section, styles.newSection]}>
-          <View style={styles.driverCard}>
-            <Text style={styles.sectionLabel}>Your Selected Chauffeur</Text>
-            <View style={styles.driverHeader}>
-              <View style={styles.driverInfo}>
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>
-                    <Image
-                      source={{ uri: data?.driver?.profile_image }}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        borderRadius: 50,
-                      }}
-                    />
-                  </Text>
-                </View>
-                <View>
-                  <Text style={styles.driverName}>{data?.driver?.name}</Text>
-                  <View style={styles.ratingContainer}>
-                    <Icon name="star" size={14} color="#F8D833" />
-                    <Text style={styles.rating}>{data?.driver?.rating}</Text>
-                    {data?.total_success_rides > 20000 ? (
-                      <Text style={styles.trips}>20000+ Trips</Text>
-                    ) : data?.total_success_rides > 0 ? (
-                      <Text style={styles.trips}>
-                        {data?.total_success_rides} Trips
-                      </Text>
-                    ) : (
-                      <Text style={styles.trips}></Text>
-                    )}
+        {true ? (
+          <View style={{ backgroundColor: '#fff' }}>
+            <SkeletonBox height={200} />
+          </View>
+        ) : (
+          <View style={[styles.section, styles.newSection]}>
+            <View style={styles.driverCard}>
+              <Text style={styles.sectionLabel}>Your Selected Chauffeur</Text>
+              <View style={styles.driverHeader}>
+                <View style={styles.driverInfo}>
+                  <View style={styles.avatar}>
+                    <Text style={styles.avatarText}>
+                      <Image
+                        source={{ uri: data?.driver?.profile_image }}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          borderRadius: 50,
+                        }}
+                      />
+                    </Text>
+                  </View>
+                  <View>
+                    <Text style={styles.driverName}>{data?.driver?.name}</Text>
+                    <View style={styles.ratingContainer}>
+                      <Icon name="star" size={14} color="#F8D833" />
+                      <Text style={styles.rating}>{data?.driver?.rating}</Text>
+                      {data?.total_success_rides > 20000 ? (
+                        <Text style={styles.trips}>20000+ Trips</Text>
+                      ) : data?.total_success_rides > 0 ? (
+                        <Text style={styles.trips}>
+                          {data?.total_success_rides} Trips
+                        </Text>
+                      ) : (
+                        <Text style={styles.trips}></Text>
+                      )}
+                    </View>
                   </View>
                 </View>
               </View>
-            </View>
-            <View style={styles.carDetails}>
-              <View>
-                <Text style={styles.carText}>
-                  {driver_own_vehicle?.vehicle_make}{' '}
-                  {driver_own_vehicle?.vehicle_model}
-                </Text>
-                <Text
-                  style={[
-                    styles.carText,
-                    { fontSize: 11, color: '#999', paddingTop: 5 },
-                  ]}
-                >
-                  {driver_own_vehicle?.category_type}{' '}
-                  {driver_own_vehicle?.vehicle_type}
+              <View style={styles.carDetails}>
+                <View>
+                  <Text style={styles.carText}>
+                    {driver_own_vehicle?.vehicle_make}{' '}
+                    {driver_own_vehicle?.vehicle_model}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.carText,
+                      { fontSize: 11, color: '#999', paddingTop: 5 },
+                    ]}
+                  >
+                    {driver_own_vehicle?.category_type}{' '}
+                    {driver_own_vehicle?.vehicle_type}
+                  </Text>
+                </View>
+                <Text style={styles.licenseText}>
+                  License: {driver_own_vehicle?.vehicle_plate_number}
                 </Text>
               </View>
-              <Text style={styles.licenseText}>
-                License: {driver_own_vehicle?.vehicle_plate_number}
-              </Text>
-            </View>
-            <View style={styles.amenities}>
-              <Icon name="wifi" size={18} color="#9CA3AF" />
-              <Icon name="music" size={18} color="#9CA3AF" />
-              <Icon name="briefcase" size={18} color="#9CA3AF" />
+              <View style={styles.amenities}>
+                <Icon name="wifi" size={18} color="#9CA3AF" />
+                <Icon name="music" size={18} color="#9CA3AF" />
+                <Icon name="briefcase" size={18} color="#9CA3AF" />
+              </View>
             </View>
           </View>
-        </View>
-          )
-        }
+        )}
 
- 
         {/* Trip Details */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Trip Details</Text>
@@ -879,6 +875,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    backgroundColor: '#fff',
   },
   scrollContent: {
     paddingHorizontal: 16,

@@ -249,13 +249,13 @@ const LocationInput = ({
         <View
           style={[
             styles.inputRow,
-            isSwapped ? { borderColor: '#E0E0E0' } : { borderColor: '#189237' },
+            isSwapped ? { borderColor: '#E0E0E0' } : { borderColor: COLORS.success },
           ]}
         >
           <MaterialIcons
             name="my-location"
             style={[
-              { color: isSwapped ? '#666' : '#189237' },
+              { color: isSwapped ? '#666' : COLORS.success },
               styles.iconStyle,
             ]}
             size={20}
@@ -286,13 +286,13 @@ const LocationInput = ({
             { marginTop: 12 },
             !isSwapped
               ? { borderColor: '#E0E0E0' }
-              : { borderColor: '#189237' },
+              : { borderColor: COLORS.success },
           ]}
         >
           <MaterialIcons
             name="location-on"
             style={[
-              { color: !isSwapped ? '#666' : '#189237' },
+              { color: !isSwapped ? '#666' : COLORS.success },
               styles.iconStyle,
             ]}
             size={20}
@@ -1468,7 +1468,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#189237',
+    backgroundColor: COLORS.success,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 14,
@@ -1476,7 +1476,7 @@ const styles = StyleSheet.create({
   currentLocationText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#189237',
+    color: COLORS.success,
   },
   suggestionsList: {
     paddingTop: 4,

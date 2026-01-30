@@ -117,7 +117,7 @@ Safely log out from your account.              </Text>
               <View style={styles.modalBackdrop}>
                 <View style={styles.modalContainer}>
                   <Image source={require('../../assets/images/logout.png')} />
-                  <Text style={styles.modalTitle}>Confirmsss Logout</Text>
+                  <Text style={styles.modalTitle}>Confirm Logout</Text>
                   <Text style={styles.modalSubtitle}>
                     Are you sure you want to log out of your PrimeRide account? You
                     will need to sign in again to book a ride.{' '}
