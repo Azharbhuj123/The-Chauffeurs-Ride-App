@@ -26,6 +26,7 @@ import {
 } from '../../utils/imagePickerHelper';
 import { Checkbox } from 'react-native-paper';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
+import { COLORS } from '../../utils/Enums';
 
 export default function Approval({ navigation, headerTitle }) {
   return (
@@ -101,7 +102,7 @@ centeredContent: {
     borderRadius: hp(0.3),
   },
   progressBarActive: {
-    backgroundColor: '#FDD835',
+    backgroundColor: COLORS.warning,
   },
   content: {
     flex: 1,
@@ -150,7 +151,7 @@ centeredContent: {
     color: '#000',
   },
   uploadButton: {
-    backgroundColor: '#FDD835',
+    backgroundColor: COLORS.warning,
     paddingHorizontal: wp(6),
     paddingVertical: hp(0.75),
     borderRadius: wp(5),
@@ -264,7 +265,7 @@ centeredContent: {
   },
 
   buttonText: {
-    backgroundColor: '#FDD835',
+    backgroundColor: COLORS.warning,
     paddingHorizontal: wp(5), // responsive horizontal padding
     paddingVertical: hp(2), // responsive vertical padding
     borderRadius: wp(10), // smooth rounded edges on all screens

@@ -44,18 +44,34 @@ export const fetchData = async (endPoint) => {
 };
 
 // POST PUT DELETE
+// POST PUT DELETE
 export const actionData = async (endPoint, method, body) => {
-  let headers = {};
   const isFormData = body instanceof FormData;
-  if (!isFormData && body) {
-    headers["Content-Type"] = "application/json";
-  }
   const hasBody = method !== "get" && method !== "delete" && body;
-  const response = await api.request({
+
+  const config = {
     url: endPoint,
     method,
-    ...(hasBody && { data: body }),
-    headers,
-  });
+  };
+
+  if (hasBody) {
+    config.data = body;
+  }
+
+  // ✅ Set proper headers based on content type
+  if (isFormData) {
+    config.headers = {
+      "Content-Type": "multipart/form-data",
+    };
+  } else if (body) {
+    config.headers = {
+      "Content-Type": "application/json",
+    };
+  }
+
+  console.log("API CALL →", endPoint, isFormData ? "FormData" : "JSON");
+
+  const response = await api.request(config);
   return response.data;
 };
+

@@ -61,6 +61,20 @@ const LocationInput = ({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchText, setSearchText] = useState('');
   const searchInputRef = useRef(null);
+
+  const extractCity = (addressComponents = []) => {
+  const city =
+    addressComponents.find(c => c.types.includes('locality')) ||
+    addressComponents.find(c =>
+      c.types.includes('administrative_area_level_2'),
+    ) ||
+    addressComponents.find(c =>
+      c.types.includes('administrative_area_level_1'),
+    );
+
+  return city?.long_name || '';
+};
+
   const reverseGeocode = async (lat, lng) => {
     try {
       const res = await fetch(
@@ -79,6 +93,8 @@ const LocationInput = ({
       return {
         latitude: lat,
         longitude: lng,
+          city: extractCity(first.address_components),
+
         address: first.formatted_address,
         shortAddress: shortAddress,
         name: first.formatted_address,
@@ -458,7 +474,7 @@ const VehicleClassSelector = ({
   upgradeShownOnce,
   setUpgradeShownOnce,
 }) => {
-  const classes = ['Luxury', 'Business', 'Economy'];
+  const classes = ['Luxury', 'Business'];
 
   const handleSelect = cls => {
     onSelect(cls);
@@ -608,7 +624,7 @@ export default function BookingMain({ navigation }) {
   const [toLocation, setToLocation] = useState(rideData?.drop_location || null);
   const [showPicker, setShowPicker] = useState(false);
   const [pickerMode, setPickerMode] = useState('date'); // 'date' | 'time'
-  const [selectedClass, setSelectedClass] = useState('Economy');
+  const [selectedClass, setSelectedClass] = useState('Business');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isUpgradeClass, setIsUpgradeClass] = useState(false);
   const [fromClass, setFromClass] = useState('');
@@ -1077,7 +1093,7 @@ export default function BookingMain({ navigation }) {
 }
 
 // --- Stylesheet ---
-const PRIMARY_YELLOW = '#FDD835';
+const PRIMARY_YELLOW = COLORS.warning;
 const LIGHT_GREY = '#F3F3F3';
 const PADDING_HORIZONTAL = wp(5);
 

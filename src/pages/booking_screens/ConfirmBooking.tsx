@@ -364,6 +364,7 @@ const ConfirmBooking = ({ navigation, route }) => {
       coordinates: [pickupLocation?.longitude, pickupLocation?.latitude],
       address: pickupLocation?.address,
       famous_location: pickupLocation?.shortAddress,
+      city: pickupLocation?.city,
     };
 
     const drop_location = {
@@ -371,6 +372,7 @@ const ConfirmBooking = ({ navigation, route }) => {
       coordinates: [dropoffLocation?.longitude, dropoffLocation?.latitude],
       address: dropoffLocation?.address,
       famous_location: dropoffLocation?.shortAddress,
+      city: dropoffLocation?.city,
     };
     if (
       rideData?.isScheduledRide &&

@@ -29,6 +29,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import AppLoader from '../../components/AppLoader';
+import { COLORS } from '../../utils/Enums';
 
 const { width, height } = Dimensions.get('window');
 
@@ -103,7 +104,7 @@ export const AddNewAddressScreen = ({ navigation }) => {
             addresses.map((address, index) => (
               <View key={address._id || index} style={styles.addressCard}>
                 <View style={styles.addressLeft}>
-                  <View style={[styles.addressIconContainer, { backgroundColor: '#FDD835' }]}>
+                  <View style={[styles.addressIconContainer, { backgroundColor: COLORS.warning }]}>
                     <Feather name="map-pin" size={wp(5)} color="#000" />
                   </View>
                   <View style={styles.addressInfo}>

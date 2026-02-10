@@ -218,7 +218,7 @@ const onboardingStyles = StyleSheet.create({
     bottom: 0,
     width: width, // Full width
     height: CARD_HEIGHT + 35 , // Added 35 to extend into the safe area/notched bottom 
-    backgroundColor: '#1E1E1E', // Dark background
+    backgroundColor: '#0D1831', // Dark background
     borderTopLeftRadius: 40, // Large radius
     borderTopRightRadius: 40,
     paddingHorizontal: TEXT_PADDING * 1.5,

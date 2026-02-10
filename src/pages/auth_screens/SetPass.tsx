@@ -20,7 +20,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Icon from 'react-native-vector-icons/Ionicons';
 import SocialBtns from '../../components/SocialBtns';
 import Button from '../../components/Button';
-import { error_msg } from '../../utils/Enums';
+import { COLORS, error_msg } from '../../utils/Enums';
 import { set_pass_schema } from '../../utils/Schema';
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -86,7 +86,8 @@ export default function SetPass({ route, navigation }) {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
-      <StatusBar barStyle="dark-content" backgroundColor="#FDD835" />
+        <StatusBar barStyle="light-content" backgroundColor={'#0D1831'} />
+
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -204,7 +205,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
 
-        backgroundColor: '#FDD835',
+        backgroundColor: COLORS.warning,
     },
     errorText:error_msg,
     scrollContent: {
@@ -212,7 +213,7 @@ const styles = StyleSheet.create({
     },
     header: {
         height: hp(25),
-        backgroundColor: '#FDD835',
+        backgroundColor: COLORS.warning,
         paddingTop: Platform.OS === 'ios' ? hp(6) : hp(4),
         paddingHorizontal: wp(4),
     },
@@ -297,7 +298,7 @@ const styles = StyleSheet.create({
         paddingVertical: 0,
     },
     signUpButton: {
-        backgroundColor: '#FDD835',
+        backgroundColor: COLORS.warning,
         borderRadius: wp(6),
         paddingVertical: hp(2),
         alignItems: 'center',

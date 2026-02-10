@@ -34,6 +34,7 @@ import {
 import Button from '../../components/Button';
 import { showToast } from '../../utils/toastHelper';
 import useActionMutation from '../../queryFunctions/useActionMutation';
+import { COLORS } from '../../utils/Enums';
 
 const { width, height } = Dimensions.get('window');
 
@@ -265,7 +266,7 @@ export default function UploadDoc({ route, navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      <StatusBar barStyle="dark-content" backgroundColor="#FDD835" />
+      <StatusBar barStyle="light-content" backgroundColor={'#0A1329'}/>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -314,14 +315,14 @@ export default function UploadDoc({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FDD835',
+    backgroundColor: '#0D1831',
   },
   scrollContent: {
     flexGrow: 1,
   },
   header: {
     height: hp(25),
-    backgroundColor: '#FDD835',
+    backgroundColor: '#0D1831',
     paddingTop: Platform.OS === 'ios' ? hp(6) : hp(4),
     paddingHorizontal: wp(4),
   },
@@ -371,7 +372,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   uploadButton: {
-    backgroundColor: '#FDD835',
+    backgroundColor: COLORS.warning,
     borderRadius: wp(4),
     paddingVertical: hp(1),
     paddingHorizontal: wp(9),

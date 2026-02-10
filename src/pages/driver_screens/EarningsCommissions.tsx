@@ -42,14 +42,14 @@ const tabs = [
     label: 'Ride Revenue',
     value: 'ride',
   },
-  {
-    label: 'Referral (1%)',
-    value: 'referral',
-  },
-  {
-    label: 'Dispatch (15%)',
-    value: 'dispatch',
-  },
+  // {
+  //   label: 'Referral (1%)',
+  //   value: 'referral',
+  // },
+  // {
+  //   label: 'Dispatch (15%)',
+  //   value: 'dispatch',
+  // },
 ];
 
 const EarningsCommissions = ({ navigation }) => {
@@ -379,7 +379,7 @@ const EarningsCommissions = ({ navigation }) => {
             </View>
           ))}
 
-        {/* REFERRAL CARD */}
+        {/* REFERRAL CARD
         {selectedTab.label === 'Referral (1%)' &&
           (rideDataLoading ? (
             <SkeletonBox height={350} />
@@ -450,7 +450,7 @@ const EarningsCommissions = ({ navigation }) => {
             </View>
           ))}
 
-        {/* DISPATCH CARD */}
+        DISPATCH CARD
         {selectedTab.label === 'Dispatch (15%)' &&
           (rideDataLoading ? (
             <SkeletonBox height={350} />
@@ -509,7 +509,7 @@ const EarningsCommissions = ({ navigation }) => {
                 </View>
               )}
             </View>
-          ))}
+          ))} */}
 
         {/* Reports Section */}
         <View style={styles.reportsCard}>
@@ -592,15 +592,14 @@ const styles = StyleSheet.create({
 
   tabsContainer: {
     flexDirection: 'row',
-    backgroundColor: '#F1F1F1',
+    // backgroundColor: '#F1F1F1',
     marginHorizontal: 16,
     padding: 6,
     borderRadius: 25,
-    marginVertical: 20,
+    // marginVertical: 20,
   },
-  tab: { paddingVertical: 10, borderRadius: 20, alignItems: 'center' },
-  activeTab: { backgroundColor: '#FFD600' },
-  tabText: { fontSize: 13, color: '#777' },
+  tab: { paddingVertical: 10, borderRadius: 20,fontSize:20 },
+  tabText: { fontSize: 16, color: '#777' },
   activeTabText: { color: '#000', fontWeight: '700' },
 
   cardsContainer: {

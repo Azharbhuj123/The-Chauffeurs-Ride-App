@@ -32,7 +32,7 @@ import { useStore } from '../../stores/useStore';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { login_schema } from '../../utils/Schema';
-import { error_msg } from '../../utils/Enums';
+import { COLORS, error_msg } from '../../utils/Enums';
 import useActionMutation from '../../queryFunctions/useActionMutation';
 import { showToast } from '../../utils/toastHelper';
 import { useUserStore } from '../../stores/useUserStore';
@@ -113,7 +113,7 @@ function Login({ navigation }) {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
       >
-        <StatusBar barStyle="dark-content" backgroundColor="#FDD835" />
+        <StatusBar barStyle="light-content" backgroundColor="#0D1831" />
 
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -132,7 +132,7 @@ function Login({ navigation }) {
           <View style={styles.formContainer}>
             <Text style={styles.title}>Sign In</Text>
             <Text style={styles.subtitle}>
-              Continue your journey with the Chauffeurs
+              Continue your journey with rides
             </Text>
 
             {/* Contact Field */}
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
 
-    backgroundColor: '#FDD835',
+    backgroundColor: '#0D1831',
   },
   error: error_msg,
   scrollContent: {
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
   },
   header: {
     height: hp(25),
-    backgroundColor: '#FDD835',
+    backgroundColor: '#0D1831',
     paddingTop: Platform.OS === 'ios' ? hp(6) : hp(4),
     paddingHorizontal: wp(4),
   },
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
   signUpButton: {
-    backgroundColor: '#FDD835',
+    backgroundColor: COLORS.warning,
     borderRadius: wp(6),
     paddingVertical: hp(2),
     alignItems: 'center',

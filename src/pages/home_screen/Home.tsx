@@ -232,7 +232,7 @@ export default function Home({ navigation }) {
             style={styles.ctaCard}
           >
             <View>
-              <Text style={styles.ctaTitle}>Book a Chauffeur</Text>
+              <Text style={styles.ctaTitle}>Book a Ride</Text>
               <Text style={styles.ctaSubtitle}>
                 Instant or Scheduled Luxury
               </Text>
@@ -310,8 +310,8 @@ export default function Home({ navigation }) {
                     <TouchableOpacity onPress={() => handleBookAgain(des)}>
                       <Text
                         style={{
-                          fontSize: 14,
-                          color: '#FFD700',
+                          fontSize: 12,
+                          color: COLORS.warning,
                           fontFamily: 'Poppins-Regular',
                         }}
                       >
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
   },
 
   ctaCard: {
-    backgroundColor: '#FFD700',
+    backgroundColor: COLORS.warning,
     borderRadius: wp('4%'),
     borderWidth: 1,
     borderColor: '1px solid rgba(17, 17, 17, 0.10)',
@@ -417,7 +417,7 @@ const styles = StyleSheet.create({
   },
   loyaltyBadge: {
     fontSize: wp('2.8%'),
-    color: '#FFD700',
+    color: COLORS.warning,
     marginBottom: hp('1%'),
     fontWeight: '600',
     fontFamily: 'Poppins-Regular',
@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
     marginHorizontal: wp('1%'),
   },
   paginationDotActive: {
-    backgroundColor: '#FFD700',
+    backgroundColor: COLORS.warning,
     width: wp('6%'),
   },
   destinationCard: {

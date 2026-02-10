@@ -26,6 +26,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import AppLoader from '../../components/AppLoader';
 import { showToast } from '../../utils/toastHelper';
 import useActionMutation from '../../queryFunctions/useActionMutation';
+import { COLORS } from '../../utils/Enums';
 
 const { width } = Dimensions.get('window');
 
@@ -121,7 +122,7 @@ export const LoyaltyRewardsScreen = ({ navigation }) => {
       <Ionicons
         name={item.icon}
         size={wp(8)}
-        color={item.isUnlocked ? '#FDD835' : '#ccc'}
+        color={item.isUnlocked ? COLORS.warning : '#ccc'}
       />
       <Text style={styles.tierName}>{item.name}</Text>
       <Text style={styles.tierPoints}>{item.points}</Text>
@@ -340,7 +341,7 @@ const styles = StyleSheet.create({
 
   // Balance Card
   balanceCard: {
-    backgroundColor: '#FDD835',
+    backgroundColor: COLORS.warning,
     borderRadius: 12,
     padding: wp('5%'),
     marginHorizontal: wp('5%'),
@@ -370,7 +371,7 @@ const styles = StyleSheet.create({
     borderColor: '#eee',
     alignItems: 'center',
   },
-  unlockedTierCard: { borderColor: '#FDD835' },
+  unlockedTierCard: { borderColor: COLORS.warning },
   tierName: {
     fontSize: wp('4%'),
     fontWeight: '600',
@@ -422,11 +423,11 @@ const styles = StyleSheet.create({
     fontSize: wp('3.5%'),
     color: '#888',
     marginTop: hp('0.3%'),
-    color: '#FDD835',
+    color: COLORS.warning,
     fontFamily: 'Poppins-Regular',
   },
   redeemButton: {
-    backgroundColor: '#FDD835',
+    backgroundColor: COLORS.warning,
     paddingVertical: hp('1%'),
     paddingHorizontal: wp('4%'),
     borderRadius: 20,

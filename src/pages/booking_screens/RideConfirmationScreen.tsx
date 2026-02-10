@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
     top: 20,
     left: 20,
     right: 20,
-    backgroundColor: '#FDD835', // A nice yellow color
+    backgroundColor: COLORS.warning, // A nice yellow color
     borderRadius: 16,
     paddingVertical: 20,
     paddingHorizontal: 20,
@@ -612,7 +612,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontFamily: 'SF Pro',
 
-    color: '#FDD835',
+    color: COLORS.warning,
   },
   actionButtons: {
     flexDirection: 'row',

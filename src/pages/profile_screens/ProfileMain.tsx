@@ -24,6 +24,7 @@ import Button from '../../components/Button';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 import { useRideStore } from '../../stores/rideStore';
 import { useUserStore } from '../../stores/useUserStore';
+import { COLORS } from '../../utils/Enums';
 
 // ProfileMainScreen Component
 export const ProfileMainScreen = ({ navigation }) => {
@@ -184,7 +185,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     marginBottom: hp(2),
     borderWidth: 2,
-    borderColor: '#F8D833',
+    borderColor: COLORS.warning,
     borderRadius: wp(12.5),
   },
   profileImage: {
@@ -196,7 +197,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: 0,
-    backgroundColor: '#F8D833',
+    backgroundColor: COLORS.warning,
     width: wp(8),
     height: wp(8),
     borderRadius: wp(4),
@@ -300,7 +301,7 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   saveButton: {
-    backgroundColor: '#F8D833',
+    backgroundColor: COLORS.warning,
     marginHorizontal: wp(5),
     paddingVertical: hp(2),
     borderRadius: wp(2),
@@ -429,7 +430,7 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   modalButton: {
-    backgroundColor: '#F8D833',
+    backgroundColor: COLORS.warning,
     borderRadius: 16,
     paddingVertical: 14,
     paddingHorizontal: 20,

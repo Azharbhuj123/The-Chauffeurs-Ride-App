@@ -35,6 +35,7 @@ import {
 import { useUserStore } from '../../stores/useUserStore';
 import useActionMutation from '../../queryFunctions/useActionMutation';
 import { showToast } from '../../utils/toastHelper';
+import { COLORS } from '../../utils/Enums';
 
 const { width, height } = Dimensions.get('window');
 
@@ -69,7 +70,7 @@ export const EditProfileScreen = ({ navigation }) => {
     ]);
   };
 
-  const { triggerMutation, loading } = useActionMutation({
+  const { triggerMutation, loading ,error} = useActionMutation({
     onSuccessCallback: async data => {
       if (data?.delete) {
         resetAll();
@@ -87,28 +88,41 @@ export const EditProfileScreen = ({ navigation }) => {
     onErrorCallback: errmsg => {
       showToast({
         type: 'error',
-        title: 'Login Failed',
+        title: 'Update Failed',
         message: errmsg || 'Please Try again!',
       });
     },
   });
 
+  console.log(error,"error");
+  
+
   const hanldeUpdate = async () => {
     const form_data = new FormData();
     if (profileImageurl && profileImageurl.uri) {
       form_data.append('file', {
-        uri: profileImageurl.uri,
-        type: profileImageurl.type || 'image/jpeg',
-        name: profileImageurl.name || `image_${Date.now()}.jpg`,
-      });
+  uri:
+    Platform.OS === 'android'
+      ? profileImageurl.uri
+      : profileImageurl.uri.replace('file://', ''),
+  type: profileImageurl.type || 'image/jpeg',
+  name: profileImageurl.name || `image_${Date.now()}.jpg`,
+});
+
     }
 
     form_data.append('name', name);
 
+    for (let pair of form_data._parts) {
+  console.log(pair[0], pair[1]);
+  console.log(pair[0], pair[1]);
+}
+
+
     triggerMutation({
       endPoint: '/auth/update-profile',
       body: form_data,
-      method: 'put',
+      method: 'post',
     });
   };
 
@@ -119,6 +133,35 @@ export const EditProfileScreen = ({ navigation }) => {
     });
   };
 
+
+  const hanldeUpdate2 = () =>{
+const form_data = new FormData();
+    if (profileImageurl && profileImageurl.uri) {
+      form_data.append('file', {
+  uri:
+    Platform.OS === 'android'
+      ? profileImageurl.uri
+      : profileImageurl.uri.replace('file://', ''),
+  type: profileImageurl.type || 'image/jpeg',
+  name: profileImageurl.name || `image_${Date.now()}.jpg`,
+});
+
+    }
+
+    form_data.append('name', name);
+
+    for (let pair of form_data._parts) {
+  console.log(pair[0], pair[1]);
+  console.log(pair[0], pair[1]);
+}
+
+
+    triggerMutation({
+      endPoint: '/auth/update-profile',
+      body: form_data,
+      method: 'post',
+    });
+  }
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
@@ -215,7 +258,7 @@ export const EditProfileScreen = ({ navigation }) => {
               <Button
                 isLoading={loading}
                 title="Save Changes"
-                onPress={hanldeUpdate}
+                onPress={()=>hanldeUpdate2()}
               />
               <Button
                 title="Delete Account"
@@ -296,7 +339,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     marginBottom: hp(2),
     borderWidth: 2,
-    borderColor: '#F8D833',
+    borderColor: COLORS.warning,
     borderRadius: wp(12.5),
   },
   profileImage: {
@@ -308,7 +351,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: 0,
-    backgroundColor: '#F8D833',
+    backgroundColor: COLORS.warning,
     width: wp(8),
     height: wp(8),
     borderRadius: wp(4),
@@ -381,7 +424,7 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   saveButton: {
-    backgroundColor: '#F8D833',
+    backgroundColor: COLORS.warning,
     marginHorizontal: wp(5),
     paddingVertical: hp(2),
     borderRadius: wp(2),
@@ -507,7 +550,7 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   modalButton: {
-    backgroundColor: '#F8D833',
+    backgroundColor: COLORS.warning,
     borderRadius: 16,
     paddingVertical: 14,
     paddingHorizontal: 20,

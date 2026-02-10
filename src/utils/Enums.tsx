@@ -1,7 +1,7 @@
 export const COLORS = {
   success: '#189237',
   error: '#FF3A2F',
-  warning: '#FDD835',
+  warning: '#EEAF32',
   info: '#3498db',
 };
 
@@ -74,4 +74,4 @@ export const monthly_filter = [
 
 
 
-export const GOOGLE_MAP_API_KEY = 'AIzaSyD0s3-mEKBypeL1z_jFhoCa0NfqVK80U-8';
+export const GOOGLE_MAP_API_KEY = 'AIzaSyAO096xo1HoduYAuLsAwrHkNUNRedReQkQ';

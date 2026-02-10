@@ -1,4 +1,3 @@
-// src/navigation/MainNavigation.tsx
 // @ts-nocheck
 import React from "react";
 import { View, Text, StyleSheet, Dimensions } from "react-native";

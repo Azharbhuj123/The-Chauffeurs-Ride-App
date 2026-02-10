@@ -23,6 +23,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
 import AppLoader from '../../components/AppLoader';
 import { formatReadableDate } from '../../utils/DateFormats';
+import { COLORS } from '../../utils/Enums';
 
 export const TripReceiptScreen = ({ navigation, route }) => {
   const tabBarHeight = useTabBarHeightHelper();
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
   },
   // Card Styles
   paymentCard: {
-    backgroundColor: '#FDD835',
+    backgroundColor: COLORS.warning,
     borderTopRightRadius: 12,
     borderTopLeftRadius: 12,
     padding: wp(5),

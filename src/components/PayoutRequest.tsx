@@ -12,7 +12,7 @@ import {
 import React, { useState } from 'react';
 import Button from './Button';
 import { heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { error_msg } from '../utils/Enums';
+import { COLORS, error_msg } from '../utils/Enums';
 
 export default function PayoutRequest({
   handleConfirmPayout,
@@ -139,11 +139,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000',
     marginBottom: 20,
+    textAlign:"center"
   },
   amountBox: {
     width: '100%',
     borderWidth: 1,
-    borderColor: '#F8D833',
+    borderColor: COLORS.warning,
     backgroundColor: '#FFF',
     borderRadius: 15,
     paddingVertical: 20,

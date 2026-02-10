@@ -1,13 +1,19 @@
 // @ts-nocheck
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
-import React from 'react'
-import Icon from "react-native-vector-icons/Ionicons";
-import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Image } from 'react-native';
+import React, { useState } from 'react';
+import Icon from 'react-native-vector-icons/Ionicons';
+import Logout from 'react-native-vector-icons/MaterialIcons';
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from 'react-native-responsive-screen';
 import { useUserStore } from '../stores/useUserStore';
 import { COLORS } from '../utils/Enums';
+import Button from './Button';
 
-export default function UserHeader() {
-  const { token, userData } = useUserStore();
+export default function UserHeader({navigation}) {
+  const { token, userData, role,resetAll } = useUserStore();
+    const [isModalVisible, setModalVisible] = useState(false);
 
   const hour = new Date().getHours();
 
@@ -20,7 +26,12 @@ export default function UserHeader() {
   } else {
     greeting = 'Good evening';
   }
+const handleLogout = () => {
+    setModalVisible(false);
+    resetAll();
 
+    navigation.navigate('Login');
+  };
   return (
     <View style={styles.header}>
       <View>
@@ -31,10 +42,49 @@ export default function UserHeader() {
           <View style={styles.onlineDot} />
         </View>
       </View>
+      {role === 'Driver' ? (
+        <TouchableOpacity  onPress={() => setModalVisible(true)} style={styles.profileButton}>
+          <Logout name="logout" size={wp('6%')} color="#FFD700" />
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity style={styles.profileButton}>
+          <Icon name="notifications-outline" size={wp('6%')} color="#FFD700" />
+        </TouchableOpacity>
+      )}
 
-      <TouchableOpacity style={styles.profileButton}>
-        <Icon name="notifications-outline" size={wp('6%')} color="#FFD700" />
-      </TouchableOpacity>
+      <Modal
+                    animationType="fade"
+                    transparent={true}
+                    visible={isModalVisible}
+                    onRequestClose={() => {
+                      setModalVisible(false);
+                    }}
+                  >
+                    <View style={styles.modalBackdrop}>
+                      <View style={styles.modalContainer}>
+                        <Image source={require('../assets/images/logout.png')} />
+                        <Text style={styles.modalTitle}>Confirm Logout</Text>
+                        <Text style={styles.modalSubtitle}>
+                          Are you sure you want to log out of your PrimeRide account? You
+                          will need to sign in again to book a ride.{' '}
+                        </Text>
+            
+                        <View style={styles.btnContainer}>
+                          <Button
+                            title="Logout"
+                            textColor="#fff"
+                            color="#FF3A2F"
+                            onPress={handleLogout}
+                          />
+                          <Button
+                            title="Cancel"
+                            onPress={() => setModalVisible(false)}
+                            color="#F1F1F1"
+                          />
+                        </View>
+                      </View>
+                    </View>
+                  </Modal>
     </View>
   );
 }
@@ -75,5 +125,65 @@ const styles = StyleSheet.create({
     backgroundColor: '#131104',
     alignItems: 'center',
     justifyContent: 'center',
+    textAlign:"center"
+  },
+  
+  modalBackdrop: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+  },
+  modalContainer: {
+    width: wp('85%'),
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 25,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#1F2937',
+    textAlign: 'center',
+    fontFamily: 'Poppins-Regular',
+
+    marginTop: 15,
+    marginBottom: 10,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    textAlign: 'center',
+    fontFamily: 'Poppins-Regular',
+
+    marginBottom: 25,
+  },
+  modalButton: {
+    backgroundColor: '#F8D833',
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    width: '100%',
+    alignItems: 'center',
+    fontFamily: 'Poppins-Regular',
+  },
+  modalButtonText: {
+    color: '#1F2937',
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Poppins-Regular',
+  },
+  btnContainer: {
+    width: '100%',
   },
 });

@@ -18,6 +18,7 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import TopHeader from '../../components/TopHeader'; // Assuming TopHeader is in a components folder
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { COLORS } from '../../utils/Enums';
 
 export const SettingsScreen = ({ navigation }) => {
     const [pushNotifications, setPushNotifications] = useState(true);
@@ -38,7 +39,7 @@ export const SettingsScreen = ({ navigation }) => {
                         <Switch
                             value={pushNotifications}
                             onValueChange={setPushNotifications}
-                            trackColor={{ false: '#767577', true: '#FDD835' }}
+                            trackColor={{ false: '#767577', true: COLORS.warning }}
                             thumbColor={'#f4f3f4'}
                         />
                     </View>
@@ -48,7 +49,7 @@ export const SettingsScreen = ({ navigation }) => {
                         <Switch
                             value={darkMode}
                             onValueChange={setDarkMode}
-                            trackColor={{ false: '#767577', true: '#FDD835' }}
+                            trackColor={{ false: '#767577', true: COLORS.warning }}
                             thumbColor={'#f4f3f4'}
                         />
                     </TouchableOpacity> */}
@@ -72,7 +73,7 @@ export const SettingsScreen = ({ navigation }) => {
                         <Switch
                             value={biometricLogin}
                             onValueChange={setBiometricLogin}
-                            trackColor={{ false: '#767577', true: '#FDD835' }}
+                            trackColor={{ false: '#767577', true: COLORS.warning }}
                             thumbColor={'#f4f3f4'}
                         />
                     </TouchableOpacity>
@@ -176,6 +177,6 @@ const styles = StyleSheet.create({
         width: wp('3%'),
         height: wp('3%'),
         borderRadius: wp('1.5%'),
-        backgroundColor: '#FDD835',
+        backgroundColor: COLORS.warning,
     },
 });

@@ -18,6 +18,7 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import TopHeader from '../../components/TopHeader';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { COLORS } from '../../utils/Enums';
 
 // Card logos - Make sure you have these images in your assets folder
 const cardLogos = {
@@ -68,7 +69,7 @@ export const PaymentOptionsScreen = ({ navigation }) => {
               onPress={() => setSelectedCardId(card.id)}>
               <View style={[
                 styles.radioOuter,
-                isSelected && { borderColor: '#FDD835' },
+                isSelected && { borderColor: COLORS.warning },
               ]}>
                 {isSelected && <View style={styles.radioInner} />}
               </View>
@@ -130,9 +131,9 @@ const styles = StyleSheet.create({
     width: wp(3),
     height: wp(3),
     borderRadius: wp(1.5),
-    borderColor: '#FDD835',
+    borderColor: COLORS.warning,
 
-    backgroundColor: '#FDD835', // Google Blue, similar to the image
+    backgroundColor: COLORS.warning, // Google Blue, similar to the image
   },
   cardLogo: {
     width: wp(10),

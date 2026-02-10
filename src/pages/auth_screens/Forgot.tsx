@@ -28,7 +28,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useStore } from '../../stores/useStore';
 import { forgot_schema } from '../../utils/Schema';
-import { error_msg } from '../../utils/Enums';
+import { COLORS, error_msg } from '../../utils/Enums';
 import useActionMutation from '../../queryFunctions/useActionMutation';
 import { showToast } from '../../utils/toastHelper';
 
@@ -92,7 +92,7 @@ export default function Forgot({ navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      <StatusBar barStyle="dark-content" backgroundColor="#FDD835" />
+      <StatusBar barStyle="light-content" backgroundColor={'#0D1831'} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -104,7 +104,7 @@ export default function Forgot({ navigation }) {
             onPress={() => navigation.navigate('Login')}
             style={styles.backButton}
           >
-            <Icon name="chevron-back" size={22} color="#000" />
+            <Icon name="chevron-back" size={22} color="#fff" />
             <Text style={styles.backText}>Back</Text>
           </TouchableOpacity>
 
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
 
-    backgroundColor: '#FDD835',
+    backgroundColor: '#0D1831',
   },
   errorText: error_msg,
   scrollContent: {
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   },
   header: {
     height: hp(25),
-    backgroundColor: '#FDD835',
+    backgroundColor: '#0D1831',
     paddingTop: Platform.OS === 'ios' ? hp(6) : hp(4),
     paddingHorizontal: wp(4),
   },
@@ -179,7 +179,8 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: fs(16),
-    color: '#000',
+       color:"#fff",
+
     marginLeft: wp(1),
   },
   logoContainer: {
@@ -253,7 +254,7 @@ const styles = StyleSheet.create({
   },
   signUpButton: {
     width: '100%',
-    backgroundColor: '#FDD835',
+    backgroundColor: COLORS.warning,
     borderRadius: wp(6),
     paddingVertical: hp(2),
     alignItems: 'center',

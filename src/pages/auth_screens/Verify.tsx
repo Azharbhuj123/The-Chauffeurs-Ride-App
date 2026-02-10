@@ -152,7 +152,7 @@ export default function Verify({ route, navigation }) {
   if (isVerified && !isForgot) {
     return (
       <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#FDD835" />
+        <StatusBar barStyle="light-content" backgroundColor={'#0D1831'} />
 
         <View style={styles.header}>
           <View style={[{ justifyContent: 'center' }, styles.logoContainer]}>
@@ -189,7 +189,8 @@ export default function Verify({ route, navigation }) {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FDD835" />
+             <StatusBar barStyle="light-content" backgroundColor={'#0D1831'} />
+
 
       <View style={styles.header}>
         <TouchableOpacity
@@ -255,12 +256,14 @@ export default function Verify({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FDD835',
+       backgroundColor: '#0D1831',
+
   },
   errorText: { ...error_msg, paddingLeft: wp(2) },
   header: {
     height: hp(25),
-    backgroundColor: '#FDD835',
+       backgroundColor: '#0D1831',
+
     paddingTop: Platform.OS === 'ios' ? hp(6) : hp(4),
     paddingHorizontal: wp(4),
   },
@@ -347,7 +350,7 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
   verifyButton: {
-    backgroundColor: '#FDD835',
+    backgroundColor: '#EEAF32',
     borderRadius: wp(6),
     paddingVertical: hp(2),
     alignItems: 'center',

@@ -58,6 +58,7 @@ import DynamicPricingTool from '../pages/driver_screens/DynamicPricingTool';
 import NotificationsAlerts from '../pages/driver_screens/NotificationsAlerts';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUserStore } from '../stores/useUserStore';
+import { COLORS } from '../utils/Enums';
 
 const Stack = createNativeStackNavigator();
 
@@ -320,7 +321,7 @@ export default function BottomTabs() {
             component={BookingStack}
             options={{ unmountOnBlur: true }}
           />
-          <Tab.Screen name="Loyalty" component={LoyaltyRewardsScreen} />
+          {/* <Tab.Screen name="Loyalty" component={LoyaltyRewardsScreen} /> */}
           <Tab.Screen name="Profile" component={ProfileStack} />
         </Tab.Navigator>
       ) :role === 'Driver' ?   (
@@ -338,9 +339,9 @@ export default function BottomTabs() {
             options={{ unmountOnBlur: true }}
           />
            
-          <Tab.Screen name="Loyalty" component={OwnershipStack} />
+          {/* <Tab.Screen name="Loyalty" component={OwnershipStack} /> */}
 
-          <Tab.Screen name="Profile" component={OperationsStack} />
+          {/* <Tab.Screen name="Profile" component={OperationsStack} /> */}
         </Tab.Navigator>
       ):""}
     </>
@@ -366,7 +367,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1a1a1a',
     borderRadius: hp('6%'),
     paddingVertical: hp('1%'),
-    // paddingHorizontal: wp('5%'),
+    paddingHorizontal: wp('1%'),
     alignItems: 'center',
     justifyContent: 'space-around',
     shadowColor: '#000',
@@ -380,7 +381,8 @@ const styles = StyleSheet.create({
     minWidth: wp('90%'),
   },
   tabButton: {
-    width: wp('15%'),
+    // width: wp('15%'),
+    width: wp('28%'),
     height: wp('15%'),
     borderRadius: wp('10%'),
     alignItems: 'center',
@@ -389,6 +391,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
   },
   tabButtonActive: {
-    backgroundColor: '#FFD700',
+    backgroundColor: COLORS.warning,
   },
 });

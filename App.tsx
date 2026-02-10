@@ -15,7 +15,6 @@ import {
   useColorScheme,
 } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import MainNavigation from './src/navigation/MainNavigation';
 import {
   QueryClient,
   QueryClientProvider,
@@ -37,6 +36,7 @@ import { initSocketListeners } from './src/utils/socketEvents';
 import { useNavigation } from '@react-navigation/native';
 import { navigationRef } from './src/utils/NavigationService';
 import { useRideStore } from './src/stores/rideStore';
+import MainNavigation from './src/navigation/mainNavigation';
 
 export default function App() {
   const isDarkMode = useColorScheme() === 'dark';

@@ -26,7 +26,7 @@ export default function TopHeader({
           }
           activeOpacity={0.7}
         >
-          <Ionicons name="chevron-back" size={wp(6)} color="#000" />
+          {/* <Ionicons name="chevron-back" size={wp(6)} color="#000" /> */}
         </TouchableOpacity>
       )}
       <Text style={styles.headerTitle}>{title}</Text>

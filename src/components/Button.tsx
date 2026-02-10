@@ -13,6 +13,7 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
+import { COLORS } from '../utils/Enums';
 const { width, height } = Dimensions.get('window');
 
 const fs = size => {
@@ -31,7 +32,7 @@ type ButtonProps = {
 export default function Button({
   title,
   onPress,
-  color = '#FDD835',
+  color = '#EEAF32',
   textColor = '#000',
   isLoading = false,
   disabled =false
@@ -40,7 +41,7 @@ export default function Button({
     <View>
       <TouchableOpacity
         style={[
-          { backgroundColor: color ? color : '#FDD835' },
+          { backgroundColor: color ? color : COLORS.warning },
           styles.signUpButton,
         ]}
         onPress={onPress}

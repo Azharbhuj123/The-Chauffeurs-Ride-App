@@ -17,6 +17,7 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import TopHeader from '../../components/TopHeader'; // Assuming TopHeader is in a components folder
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { COLORS } from '../../utils/Enums';
 
 export const HelpSupportScreen = ({ navigation }) => {
   const helpTopics = [
@@ -133,7 +134,7 @@ const styles = StyleSheet.create({
     width: wp('10%'),
     height: wp('10%'),
     borderRadius: wp('5%'),
-    backgroundColor: '#FDD835',
+    backgroundColor: COLORS.warning,
     justifyContent: 'center',
     alignItems: 'center',
   },

@@ -33,7 +33,7 @@ import { useUserStore } from '../../stores/useUserStore';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { signupSchema } from '../../utils/Schema';
-import { error_msg } from '../../utils/Enums';
+import { COLORS, error_msg } from '../../utils/Enums';
 import useActionMutation from '../../queryFunctions/useActionMutation';
 import { showToast } from '../../utils/toastHelper';
 
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
 
-    backgroundColor: '#FDD835',
+    backgroundColor: '#0D1831',
   },
   errorText: error_msg,
   scrollContent: {
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
   },
   header: {
     height: hp(25),
-    backgroundColor: '#FDD835',
+    backgroundColor: '#0D1831',
     paddingTop: Platform.OS === 'ios' ? hp(6) : hp(4),
     paddingHorizontal: wp(4),
   },
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
     borderRadius: wp(5.5),
   },
   toggleButtonActive: {
-    backgroundColor: '#000',
+    backgroundColor: '#0A1329',
   },
   toggleText: {
     fontSize: fs(14),
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
   signUpButton: {
-    backgroundColor: '#FDD835',
+    backgroundColor: COLORS.warning,
     borderRadius: wp(6),
     paddingVertical: hp(2),
     alignItems: 'center',

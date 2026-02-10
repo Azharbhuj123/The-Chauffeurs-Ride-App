@@ -33,6 +33,7 @@ import { fetchData } from '../../queryFunctions/queryFunctions';
 import { useRideStore } from '../../stores/rideStore';
 import AppLoader from '../../components/AppLoader';
 import CustomDropdown from '../../components/CustomDropdown';
+import { COLORS } from '../../utils/Enums';
 
 const { width, height } = Dimensions.get('window');
 
@@ -168,7 +169,9 @@ export default function HomeScreen({ navigation }) {
 
   const handleReject = ride => {
     setSelectedRide(ride);
-    setShowRejectPopup(true);
+        setRideRequests(ride?.id);
+
+    // setShowRejectPopup(true);
     setRideId(ride?.id);
   };
 
@@ -206,7 +209,7 @@ export default function HomeScreen({ navigation }) {
           { paddingBottom: tabBarHeight + 40 },
         ]}
       >
-        <UserHeader />
+        <UserHeader navigation={navigation} />
 
         {!is_chauffeur && (
           <View>
@@ -219,14 +222,14 @@ export default function HomeScreen({ navigation }) {
                 <Text style={styles.addVehicleText}>+ Add Vehicle</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={styles.manageChauffeurButton}
                 onPress={handleManageChauffeur}
               >
                 <Text style={styles.manageChauffeurText}>
                   + Manage Chauffeur
                 </Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
 
             {/* Fleet Status Section */}
@@ -436,7 +439,7 @@ const styles = StyleSheet.create({
     marginBottom: hp(2),
   },
   addVehicleButton: {
-    backgroundColor: '#FDD835',
+    backgroundColor: COLORS.warning,
     borderRadius: wp(3),
     paddingVertical: hp(2),
     alignItems: 'center',
@@ -636,7 +639,7 @@ const styles = StyleSheet.create({
   },
   acceptButton: {
     flex: 1,
-    backgroundColor: '#FDD835',
+    backgroundColor: COLORS.warning,
     borderRadius: wp(2),
     paddingVertical: hp(1.5),
     flexDirection: 'row',
