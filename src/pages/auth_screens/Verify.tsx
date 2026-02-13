@@ -81,13 +81,13 @@ export default function Verify({ route, navigation }) {
         });
         return;
       }
-      if (!data?.adminVerify && data?.verify) {
+      if (data?.role === "Driver"  && data?.verify) {
         navigation.navigate('UploadDoc', {
           contact: data?.userData?.contact,
         });
         return;
       }
-      if (data?.adminVerify && data?.verify) {
+      if (data?.role === "User" && data?.verify) {
         setUserData(data?.userData, data?.token);
         reset();
         setIsVerified(true);
@@ -197,7 +197,7 @@ export default function Verify({ route, navigation }) {
           onPress={() => navigation.navigate('Login')}
           style={styles.backButton}
         >
-          <Icon name="chevron-back" size={22} color="#000" />
+          <Icon name="chevron-back" size={22} color="#fff" />
           <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
 

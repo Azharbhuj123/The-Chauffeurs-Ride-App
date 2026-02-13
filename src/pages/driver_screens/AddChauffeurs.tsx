@@ -963,7 +963,8 @@ const styles = StyleSheet.create({
     borderRadius: wp(3),
     padding: wp(4),
     marginVertical: hp(1.5),
-    boxShadow: '0 0 30px 0 rgba(0, 0, 0, 0.10)',
+            elevation: 10,
+
   },
   headerRow1: {
     flexDirection: 'row',

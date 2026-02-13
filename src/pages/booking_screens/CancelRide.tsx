@@ -23,7 +23,7 @@ import TopHeader from '../../components/TopHeader';
 import { useNavigation } from '@react-navigation/native';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 import { useUserStore } from '../../stores/useUserStore';
-import { CANCEL_REASONS } from '../../utils/Enums';
+import { CANCEL_REASONS, COLORS } from '../../utils/Enums';
 import useActionMutation from '../../queryFunctions/useActionMutation';
 import { showToast } from '../../utils/toastHelper';
 import { useRideStore } from '../../stores/rideStore';
@@ -149,7 +149,7 @@ export default function CancelRide({
                   style={[
                     styles.radioButton,
                     selectedReason.index === index && {
-                      borderColor: '#F8D833',
+                      borderColor: COLORS.warning,
                     }, // Highlight border when selected
                   ]}
                 >
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     width: wp('3%'),
     height: wp('3%'),
     borderRadius: wp('1.5%'),
-    backgroundColor: '#F8D833',
+    backgroundColor: COLORS.warning,
   },
   radioLabel: {
     fontSize: wp('3.8%'),
@@ -346,7 +346,7 @@ const styles = StyleSheet.create({
     fontFamily: 'SF Pro',
   },
   modalButton: {
-    backgroundColor: '#F8D833',
+    backgroundColor: COLORS.warning,
     borderRadius: 16,
     paddingVertical: 14,
     paddingHorizontal: 20,

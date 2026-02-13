@@ -132,7 +132,8 @@ const styles = StyleSheet.create({
     borderColor: '#A8E6A8',
     paddingHorizontal: wp(4.5),
     paddingVertical: hp(3),
-    boxShadow: '0 0 20px 0 rgba(0, 0, 0, 0.10)',
+                    elevation: 10,
+
   },
   repliedLabel: {
     fontSize: fs(14),

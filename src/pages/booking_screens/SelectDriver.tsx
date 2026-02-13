@@ -21,6 +21,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
 import { useRideStore } from '../../stores/rideStore';
 import AppLoader from '../../components/AppLoader';
+import { COLORS } from '../../utils/Enums';
 
 const { width } = Dimensions.get('window');
 
@@ -115,7 +116,7 @@ const SelectDriver = ({ navigation, route }) => {
                 <View>
                   <Text style={styles.driverName}>{driver.name}</Text>
                   <View style={styles.ratingContainer}>
-                    <Icon name="star" size={14} color="#FCD34D" />
+                    <Icon name="star" size={14} color={COLORS.warning} />
                     <Text style={styles.rating}>{driver.rating}</Text>
                     <Text style={styles.trips}>{driver.trips}</Text>
                   </View>
@@ -204,6 +205,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
+    
   },
   driverHeader: {
     flexDirection: 'row',
@@ -275,7 +277,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   selectButton: {
-    backgroundColor: '#FCD34D',
+    backgroundColor:  COLORS.warning,
     paddingHorizontal: 32,
     paddingVertical: 10,
     borderRadius: 24,

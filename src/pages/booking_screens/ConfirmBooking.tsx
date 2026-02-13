@@ -600,7 +600,7 @@ const ConfirmBooking = ({ navigation, route }) => {
         contentContainerStyle={styles.scrollContent}
       >
         {/* Selected Chauffeur */}
-        {true ? (
+        {isLoading ? (
           <View style={{ backgroundColor: '#fff' }}>
             <SkeletonBox height={200} />
           </View>
@@ -846,7 +846,7 @@ const ConfirmBooking = ({ navigation, route }) => {
             onPress={() => navigation?.goBack()}
             style={styles.cancelButton}
           >
-            <Text style={styles.cancelButtonText}>Cancel / Change Driver</Text>
+            <Text style={styles.cancelButtonText}>Cancel Ride</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -885,14 +885,17 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 20,
-    boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
+        elevation: 8,
+    backgroundColor: '#fff',
+
+
     padding: 16,
     borderRadius: 20,
     fontFamily: 'SF Pro',
   },
   newSection: {
     borderWidth: 1,
-    borderColor: '#F8D833',
+    borderColor: COLORS.warning,
   },
   sectionLabel: {
     fontSize: 12,
@@ -952,7 +955,7 @@ const styles = StyleSheet.create({
   rating: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#F8D833',
+    color: COLORS.warning,
   },
   trips: {
     fontSize: 12,
@@ -1052,7 +1055,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   pickerCloseButton: {
-    backgroundColor: '#F8D833',
+    backgroundColor: COLORS.warning,
     paddingHorizontal: 30,
     paddingVertical: 12,
     borderRadius: 20,
@@ -1093,7 +1096,7 @@ const styles = StyleSheet.create({
     fontFamily: 'SF Pro',
   },
   fareCard: {
-    backgroundColor: '#F8D833',
+    backgroundColor: COLORS.warning,
     borderRadius: 20,
     padding: wp(6),
   },
@@ -1133,7 +1136,7 @@ const styles = StyleSheet.create({
     fontFamily: 'SF Pro',
   },
   confirmButton: {
-    backgroundColor: '#F8D833',
+    backgroundColor: COLORS.warning,
     paddingVertical: 16,
     borderRadius: 24,
     marginBottom: 12,
@@ -1149,7 +1152,7 @@ const styles = StyleSheet.create({
   cancelButton: {
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    paddingVertical: 16,
+    paddingVertical: 10,
     borderRadius: 24,
     fontFamily: 'SF Pro',
   },
@@ -1235,7 +1238,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 14,
   },
-  currentLocationText: { fontSize: 16, fontWeight: '600', color: '#189237' },
+  currentLocationText: { fontSize: 16, fontWeight: '600', color: COLORS.success },
   suggestionsList: { paddingTop: 4 },
   suggestionItem: {
     flexDirection: 'row',

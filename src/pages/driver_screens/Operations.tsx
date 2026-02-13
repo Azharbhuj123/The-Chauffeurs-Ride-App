@@ -18,6 +18,7 @@ import {
 } from 'react-native-responsive-screen';
 import { useUserStore } from '../../stores/useUserStore';
 import Button from '../../components/Button';
+import { COLORS } from '../../utils/Enums';
 
 const Operations = ({ navigation }) => {
     const [isModalVisible, setModalVisible] = useState(false);
@@ -246,7 +247,7 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   modalButton: {
-    backgroundColor: '#F8D833',
+    backgroundColor: COLORS.warning,
     borderRadius: 16,
     paddingVertical: 14,
     paddingHorizontal: 20,

@@ -43,7 +43,7 @@ export const SettingsScreen = ({ navigation }) => {
                             thumbColor={'#f4f3f4'}
                         />
                     </View>
-                    <View style={styles.divider} />
+                    {/* <View style={styles.divider} /> */}
                     {/* <TouchableOpacity style={styles.row} activeOpacity={0.6}>
                         <Text style={styles.rowText}>Dark Mode</Text>
                         <Switch
@@ -53,15 +53,15 @@ export const SettingsScreen = ({ navigation }) => {
                             thumbColor={'#f4f3f4'}
                         />
                     </TouchableOpacity> */}
-                    <View style={styles.divider} />
+                    {/* <View style={styles.divider} />
                     <TouchableOpacity style={styles.row} activeOpacity={0.6}>
                         <Text style={styles.rowText}>Default Map View</Text>
                         <Ionicons name="chevron-forward-outline" style={styles.chevron} />
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                 </View>
 
                 {/* Security */}
-                <View style={styles.card}>
+                {/* <View style={styles.card}>
                     <Text style={styles.sectionTitle}>Security</Text>
                     <TouchableOpacity style={styles.row} activeOpacity={0.6}>
                         <Text style={styles.rowText}>Change Password</Text>
@@ -77,10 +77,10 @@ export const SettingsScreen = ({ navigation }) => {
                             thumbColor={'#f4f3f4'}
                         />
                     </TouchableOpacity>
-                </View>
+                </View> */}
 
                 {/* Data & Storage */}
-                <View style={styles.card3}>
+                {/* <View style={styles.card3}>
                     <Text style={styles.sectionTitle}>Data & Storage</Text>
                     <TouchableOpacity style={styles.row} activeOpacity={0.6}>
                         <Text style={styles.rowText}>Linked Accounts</Text>
@@ -91,7 +91,7 @@ export const SettingsScreen = ({ navigation }) => {
                         <Text style={styles.rowText}>Clear App Cache</Text>
                         <Text style={styles.rowValue}>128 MB</Text>
                     </TouchableOpacity>
-                </View>
+                </View> */}
             </ScrollView>
         </SafeAreaView>
     );

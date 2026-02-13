@@ -93,7 +93,7 @@ export const AddNewAddressScreen = ({ navigation }) => {
         scrollEventThrottle={16}
       >
         {/* ✅ Add New Address Button */}
-        <TouchableOpacity style={styles.addAddressButton} activeOpacity={0.7}>
+        <TouchableOpacity onPress={()=>navigation.navigate("AddAddress")} style={styles.addAddressButton} activeOpacity={0.7}>
           <Ionicons name="add-circle-outline" size={wp(5)} color="#666" />
           <Text style={styles.addAddressText}>Add New Address</Text>
         </TouchableOpacity>
@@ -113,9 +113,9 @@ export const AddNewAddressScreen = ({ navigation }) => {
                   </View>
                 </View>
 
-                <TouchableOpacity activeOpacity={0.7}>
+                {/* <TouchableOpacity activeOpacity={0.7}>
                   <Feather name="edit-2" size={wp(4.5)} color="#999" />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </View>
             ))
           ) : (

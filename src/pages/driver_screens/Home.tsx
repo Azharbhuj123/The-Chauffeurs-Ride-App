@@ -136,13 +136,12 @@ export default function HomeScreen({ navigation }) {
   const { triggerMutation, loading } = useActionMutation({
     onSuccessCallback: async data => {
       if (data?.success && data?.action === 'reject_transfer') {
-    setShowRejectPopup(false);
+        setShowRejectPopup(false);
 
         setRideRequests(rideId);
         setRideId(null);
         setDriverId(null);
         selectedRide(null);
-
       }
     },
     onErrorCallback: errmsg => {
@@ -169,13 +168,11 @@ export default function HomeScreen({ navigation }) {
 
   const handleReject = ride => {
     setSelectedRide(ride);
-        setRideRequests(ride?.id);
+    setRideRequests(ride?.id);
 
     // setShowRejectPopup(true);
     setRideId(ride?.id);
   };
-
-  
 
   const handleAssignToPartner = () => {
     const data_obj = {
@@ -233,47 +230,49 @@ export default function HomeScreen({ navigation }) {
             </View>
 
             {/* Fleet Status Section */}
-            <View style={styles.fleetSection}>
-              <Text style={styles.sectionTitle}>Fleet Status</Text>
+            {homeData?.fleet?.length > 0 && (
+              <View style={styles.fleetSection}>
+                <Text style={styles.sectionTitle}>Fleet Status</Text>
 
-              {homeData?.fleet?.map((item, index) => (
-                <View
-                  key={
-                    item._id ??
-                    item.id ??
-                    `${item.vehicle_name ?? 'vehicle'}-${index}`
-                  }
-                  style={[
-                    styles.fleetCard,
-                    index === homeData?.fleet?.length - 1 &&
-                      styles.fleetCardLast,
-                  ]}
-                >
-                  <View style={styles.fleetCardLeft}>
-                    <View style={styles.vehicleIconContainer}>
-                      <Icon name="car" size={24} color="#fff" />
-                    </View>
-                    <View>
-                      <Text style={styles.vehicleName}>
-                        {item.vehicle_name}
-                      </Text>
-                      <Text style={{ color: 'rgba(17, 17, 17, 0.70)' }}>
-                        {item?.plate_number}
-                      </Text>
-                    </View>
-                  </View>
-
+                {homeData?.fleet?.map((item, index) => (
                   <View
+                    key={
+                      item._id ??
+                      item.id ??
+                      `${item.vehicle_name ?? 'vehicle'}-${index}`
+                    }
                     style={[
-                      styles.statusBadge,
-                      { backgroundColor: item.status_color },
+                      styles.fleetCard,
+                      index === homeData?.fleet?.length - 1 &&
+                        styles.fleetCardLast,
                     ]}
                   >
-                    <Text style={styles.statusText}>{item.status}</Text>
+                    <View style={styles.fleetCardLeft}>
+                      <View style={styles.vehicleIconContainer}>
+                        <Icon name="car" size={24} color="#fff" />
+                      </View>
+                      <View>
+                        <Text style={styles.vehicleName}>
+                          {item.vehicle_name}
+                        </Text>
+                        <Text style={{ color: 'rgba(17, 17, 17, 0.70)' }}>
+                          {item?.plate_number}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View
+                      style={[
+                        styles.statusBadge,
+                        { backgroundColor: item.status_color },
+                      ]}
+                    >
+                      <Text style={styles.statusText}>{item.status}</Text>
+                    </View>
                   </View>
-                </View>
-              ))}
-            </View>
+                ))}
+              </View>
+            )}
           </View>
         )}
         {rideRequests?.length > 0 && (
@@ -391,7 +390,7 @@ export default function HomeScreen({ navigation }) {
                 {/* Assign Button */}
                 <View style={styles.assignButton}>
                   <Button
-                  isLoading={loading}
+                    isLoading={loading}
                     disabled={driverId === null}
                     title="Assign Ride to Partner"
                     onPress={handleAssignToPartner}
@@ -403,18 +402,18 @@ export default function HomeScreen({ navigation }) {
         </Modal>
 
         {/* City Driver & Positioning Section */}
-        <View style={styles.mapSection}>
+        {/* <View style={styles.mapSection}>
           <Text style={styles.sectionTitle}>City Driver & Positioning</Text>
           <Image
             style={{ width: '100%' }}
             source={require('../../assets/images/map2.png')}
           />
-          {/* Manual Repositioning */}
+          Manual Repositioning
           <View style={styles.repositioningSection}>
             <Text style={styles.repositioningTitle}>Manual Repositioning</Text>
             <Text style={styles.repositioningSubtitle}>Enable Drop & Drop</Text>
           </View>
-        </View>
+        </View> */}
 
         {/* Bottom Spacing */}
       </ScrollView>
@@ -481,7 +480,7 @@ const styles = StyleSheet.create({
     padding: wp(4),
     marginBottom: hp(1.5),
 
-    boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
+    elevation: 8,
   },
   sectionTitle: {
     fontSize: fs(18),
@@ -541,7 +540,7 @@ const styles = StyleSheet.create({
     paddingBottom: hp(3),
     marginBottom: hp(1.5),
 
-    boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
+    elevation: 8,
   },
   mapPlaceholder: {
     justifyContent: 'center',
@@ -573,7 +572,7 @@ const styles = StyleSheet.create({
     marginBottom: hp(2),
     //  borderWidth:1,
     // borderColor:'1px solid rgba(17, 17, 17, 0.10)',
-    boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
+    elevation: 8,
   },
 
   sectionTitle: {

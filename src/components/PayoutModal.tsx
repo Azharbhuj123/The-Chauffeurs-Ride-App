@@ -5,6 +5,7 @@ import { View, Text, Modal, TouchableOpacity, Image, StyleSheet } from 'react-na
 import React from 'react'
 import Button from './Button'
 import { heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { COLORS } from '../utils/Enums';
 
 export default function PayoutModal({showSuccessModal, setShowSuccessModal , amount}) {
   return (
@@ -98,7 +99,7 @@ const styles = StyleSheet.create({
   amountBox: {
     width: '100%',
     borderWidth: 1,
-    borderColor: '#F8D833',
+    borderColor: COLORS.warning,
     backgroundColor: '#FFF',
     borderRadius: 15,
     paddingVertical: 20,

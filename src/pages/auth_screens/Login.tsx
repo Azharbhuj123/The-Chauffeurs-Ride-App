@@ -71,12 +71,19 @@ function Login({ navigation }) {
         return;
       }
       if (data?.not_verify_by_admin) {
-        navigation.navigate('Approval');
+        navigation.navigate('Approval', {
+          reason: data?.reason,
+          contact: data?.contact,
+          status: data?.status,
+        });
         return;
       }
       setUserData(data?.userData, data?.token);
       reset();
-      navigation.navigate('MainTabs');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'MainTabs' }],
+      });
     },
     onErrorCallback: errmsg => {
       showToast({
@@ -102,18 +109,13 @@ function Login({ navigation }) {
     }, []),
   );
 
-
-
-
-  
-
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
       >
-        <StatusBar barStyle="light-content" backgroundColor="#0D1831" />
+        {/* <StatusBar barStyle="light-content" backgroundColor="#0D1831" /> */}
 
         <ScrollView
           showsVerticalScrollIndicator={false}

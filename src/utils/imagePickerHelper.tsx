@@ -1,7 +1,5 @@
 // @ts-nocheck
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
-import DocumentPicker, { types } from '@react-native-documents/picker';
-
 
 export const pickImageFromCamera = async () => {
   return new Promise((resolve, reject) => {
@@ -52,25 +50,25 @@ export const pickImageFromGallery = async () => {
     });
   });
 };
-export const pickFile = async (): Promise<DocumentPicker.DocumentPickerResponse | null> => {
-  try {
-    const result = await DocumentPicker.pick({
-      type: [types.allFiles],  // all file types
-      allowMultiSelection: false,
-            copyTo: 'cachesDirectory', // <- COPY file to app cache, makes file accessible
 
+
+
+import { pick } from '@react-native-documents/picker';
+
+export const pickFile = async () => {
+  try {
+    const result = await pick({
+      type: ['*/*'],
+      allowMultiSelection: false,
+      copyTo: 'cachesDirectory',
     });
 
-    // result can be an array if allowMultiSelection is true
-    if (Array.isArray(result) && result.length > 0) {
-      return result[0];
-    }
-
-    return result ?? null;
-  } catch (err) {
-    if (DocumentPicker.isCancel(err)) {
-      return null; // user cancelled
+    return Array.isArray(result) ? result[0] : result;
+  } catch (err: any) {
+    if (err?.code === 'DOCUMENT_PICKER_CANCELED') {
+      return null;
     }
     throw err;
   }
 };
+

@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   modalButton: {
-    backgroundColor: '#F8D833',
+    backgroundColor: COLORS.warning,
     borderRadius: 16,
     paddingVertical: 14,
     paddingHorizontal: 20,

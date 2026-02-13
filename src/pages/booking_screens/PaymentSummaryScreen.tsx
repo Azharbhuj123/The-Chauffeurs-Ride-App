@@ -313,7 +313,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: hp('1.2%'),
-    boxShadow: '0 0 20px 0 rgba(0, 0, 0, 0.10)',
+           elevation: 8,
+
     borderRadius: 10,
   },
   changeIcon: {

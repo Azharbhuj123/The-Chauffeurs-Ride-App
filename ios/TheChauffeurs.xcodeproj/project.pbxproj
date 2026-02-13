@@ -33,21 +33,21 @@
 		9A122C582E8E9F8A008FD712 /* Zocial.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9A122C452E8E9F8A008FD712 /* Zocial.ttf */; };
 		9A122C592E8E9F8A008FD712 /* Feather.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9A122C362E8E9F8A008FD712 /* Feather.ttf */; };
 		A70E9FCD79854A25970AF991 /* Poppins-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 01B3DC061A1146A1BE7F076E /* Poppins-Regular.ttf */; };
-		C29B2701654514E0A8D13033 /* libPods-TheChauffeurs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17604A7EFB64DF37E35ABB79 /* libPods-TheChauffeurs.a */; };
+		C29B2701654514E0A8D13033 /* libPods-Drivo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17604A7EFB64DF37E35ABB79 /* libPods-Drivo.a */; };
 		DE393B4ACAD45F9DD0BACA90 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		01B3DC061A1146A1BE7F076E /* Poppins-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Poppins-Regular.ttf"; path = "../assets/fonts/Poppins-Regular.ttf"; sourceTree = "<group>"; };
-		13B07F961A680F5B00A75B9A /* TheChauffeurs.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TheChauffeurs.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = TheChauffeurs/Images.xcassets; sourceTree = "<group>"; };
-		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = TheChauffeurs/Info.plist; sourceTree = "<group>"; };
-		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = TheChauffeurs/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		17604A7EFB64DF37E35ABB79 /* libPods-TheChauffeurs.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TheChauffeurs.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07F961A680F5B00A75B9A /* Drivo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Drivo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Drivo/Images.xcassets; sourceTree = "<group>"; };
+		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Drivo/Info.plist; sourceTree = "<group>"; };
+		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = Drivo/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		17604A7EFB64DF37E35ABB79 /* libPods-Drivo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Drivo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1F4E586DADAB434AACAD6F3F /* SFPRODISPLAYREGULAR.OTF */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = SFPRODISPLAYREGULAR.OTF; path = ../assets/fonts/SFPRODISPLAYREGULAR.OTF; sourceTree = "<group>"; };
 		504F86E906C2458CA5B8925C /* Inter 28pt.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter 28pt.ttf"; path = "../assets/fonts/Inter 28pt.ttf"; sourceTree = "<group>"; };
-		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = TheChauffeurs/AppDelegate.swift; sourceTree = "<group>"; };
-		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = TheChauffeurs/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Drivo/AppDelegate.swift; sourceTree = "<group>"; };
+		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Drivo/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		897029904D444E9A8BCAEED1 /* SF-Pro.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "SF-Pro.ttf"; path = "../assets/fonts/SF-Pro.ttf"; sourceTree = "<group>"; };
 		9A122C332E8E9F8A008FD712 /* AntDesign.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = AntDesign.ttf; sourceTree = "<group>"; };
 		9A122C342E8E9F8A008FD712 /* Entypo.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Entypo.ttf; sourceTree = "<group>"; };
@@ -68,8 +68,8 @@
 		9A122C432E8E9F8A008FD712 /* Octicons.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Octicons.ttf; sourceTree = "<group>"; };
 		9A122C442E8E9F8A008FD712 /* SimpleLineIcons.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = SimpleLineIcons.ttf; sourceTree = "<group>"; };
 		9A122C452E8E9F8A008FD712 /* Zocial.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Zocial.ttf; sourceTree = "<group>"; };
-		B8874E9F0E488F37D5DF809E /* Pods-TheChauffeurs.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TheChauffeurs.debug.xcconfig"; path = "Target Support Files/Pods-TheChauffeurs/Pods-TheChauffeurs.debug.xcconfig"; sourceTree = "<group>"; };
-		DD189166F3E95676412DD29E /* Pods-TheChauffeurs.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TheChauffeurs.release.xcconfig"; path = "Target Support Files/Pods-TheChauffeurs/Pods-TheChauffeurs.release.xcconfig"; sourceTree = "<group>"; };
+		B8874E9F0E488F37D5DF809E /* Pods-Drivo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Drivo.debug.xcconfig"; path = "Target Support Files/Pods-Drivo/Pods-Drivo.debug.xcconfig"; sourceTree = "<group>"; };
+		DD189166F3E95676412DD29E /* Pods-Drivo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Drivo.release.xcconfig"; path = "Target Support Files/Pods-Drivo/Pods-Drivo.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -78,14 +78,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C29B2701654514E0A8D13033 /* libPods-TheChauffeurs.a in Frameworks */,
+				C29B2701654514E0A8D13033 /* libPods-Drivo.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		13B07FAE1A68108700A75B9A /* TheChauffeurs */ = {
+		13B07FAE1A68108700A75B9A /* Drivo */ = {
 			isa = PBXGroup;
 			children = (
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
@@ -94,14 +94,14 @@
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
 			);
-			name = TheChauffeurs;
+			name = Drivo;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				17604A7EFB64DF37E35ABB79 /* libPods-TheChauffeurs.a */,
+				17604A7EFB64DF37E35ABB79 /* libPods-Drivo.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -127,7 +127,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				13B07FAE1A68108700A75B9A /* TheChauffeurs */,
+				13B07FAE1A68108700A75B9A /* Drivo */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
@@ -143,7 +143,7 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* TheChauffeurs.app */,
+				13B07F961A680F5B00A75B9A /* Drivo.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -177,8 +177,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				B8874E9F0E488F37D5DF809E /* Pods-TheChauffeurs.debug.xcconfig */,
-				DD189166F3E95676412DD29E /* Pods-TheChauffeurs.release.xcconfig */,
+				B8874E9F0E488F37D5DF809E /* Pods-Drivo.debug.xcconfig */,
+				DD189166F3E95676412DD29E /* Pods-Drivo.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -186,9 +186,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		13B07F861A680F5B00A75B9A /* TheChauffeurs */ = {
+		13B07F861A680F5B00A75B9A /* Drivo */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "TheChauffeurs" */;
+			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Drivo" */;
 			buildPhases = (
 				E95B954793D0341FC2D8A009 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
@@ -202,9 +202,9 @@
 			);
 			dependencies = (
 			);
-			name = TheChauffeurs;
-			productName = TheChauffeurs;
-			productReference = 13B07F961A680F5B00A75B9A /* TheChauffeurs.app */;
+			name = Drivo;
+			productName = Drivo;
+			productReference = 13B07F961A680F5B00A75B9A /* Drivo.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -220,7 +220,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "TheChauffeurs" */;
+			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "Drivo" */;
 			compatibilityVersion = "Xcode 12.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -233,7 +233,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				13B07F861A680F5B00A75B9A /* TheChauffeurs */,
+				13B07F861A680F5B00A75B9A /* Drivo */,
 			);
 		};
 /* End PBXProject section */
@@ -297,15 +297,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TheChauffeurs/Pods-TheChauffeurs-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Drivo/Pods-Drivo-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TheChauffeurs/Pods-TheChauffeurs-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Drivo/Pods-Drivo-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TheChauffeurs/Pods-TheChauffeurs-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Drivo/Pods-Drivo-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		C0C5A247E18BDFBD8326F022 /* [CP] Embed Pods Frameworks */ = {
@@ -314,15 +314,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TheChauffeurs/Pods-TheChauffeurs-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Drivo/Pods-Drivo-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TheChauffeurs/Pods-TheChauffeurs-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Drivo/Pods-Drivo-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TheChauffeurs/Pods-TheChauffeurs-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Drivo/Pods-Drivo-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		E95B954793D0341FC2D8A009 /* [CP] Check Pods Manifest.lock */ = {
@@ -340,7 +340,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-TheChauffeurs-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-Drivo-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -363,13 +363,13 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B8874E9F0E488F37D5DF809E /* Pods-TheChauffeurs.debug.xcconfig */;
+			baseConfigurationReference = B8874E9F0E488F37D5DF809E /* Pods-Drivo.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_BITCODE = NO;
-				INFOPLIST_FILE = TheChauffeurs/Info.plist;
+				INFOPLIST_FILE = Drivo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -382,7 +382,7 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = TheChauffeurs;
+				PRODUCT_NAME = Drivo;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -391,12 +391,12 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = DD189166F3E95676412DD29E /* Pods-TheChauffeurs.release.xcconfig */;
+			baseConfigurationReference = DD189166F3E95676412DD29E /* Pods-Drivo.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				INFOPLIST_FILE = TheChauffeurs/Info.plist;
+				INFOPLIST_FILE = Drivo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -409,7 +409,7 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = TheChauffeurs;
+				PRODUCT_NAME = Drivo;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -588,7 +588,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "TheChauffeurs" */ = {
+		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Drivo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				13B07F941A680F5B00A75B9A /* Debug */,
@@ -597,7 +597,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "TheChauffeurs" */ = {
+		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "Drivo" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,

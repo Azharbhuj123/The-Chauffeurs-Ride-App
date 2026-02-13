@@ -691,7 +691,7 @@ const options = [
           )}
         />
 
-        <View style={[styles.sectionHeader, { marginTop: hp(3) }]}>
+          <View style={[styles.sectionHeader, { marginTop: hp(3) }]}>
           <Text style={styles.sectionTitle}>Vehicle Photos</Text>
         </View>
 

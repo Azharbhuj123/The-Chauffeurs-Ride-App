@@ -398,7 +398,8 @@ const styles = StyleSheet.create({
   },
   surgeContainer: {
     backgroundColor: '#fff',
-    boxShadow: '0 0 20px 0 rgba(0, 0, 0, 0.10)',
+            elevation: 10,
+
     padding: wp(6),
     marginTop: hp(3),
     borderRadius: wp(3),

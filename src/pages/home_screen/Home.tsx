@@ -272,7 +272,7 @@ export default function Home({ navigation }) {
           </TouchableOpacity>
 
           {/* Loyalty & Offers - Slider */}
-          <View style={styles.section}>
+          {/* <View style={styles.section}>
             <Text style={styles.sectionTitle}>Loyalty & Offers</Text>
             <FlatList
               ref={flatListRef}
@@ -288,7 +288,7 @@ export default function Home({ navigation }) {
               decelerationRate="fast"
               contentContainerStyle={styles.sliderContainer}
             />
-          </View>
+          </View> */}
 
           {/* Quick Destinations */}
           {Array.isArray(data?.quick_destination) &&
@@ -370,11 +370,12 @@ const styles = StyleSheet.create({
   },
   rideStatusCard: {
     backgroundColor: '#fff',
-    boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
+                    elevation: 8,
+
     borderWidth: 1,
     borderColor: '1px solid rgba(17, 17, 17, 0.10)',
     borderRadius: wp('4%'),
-    padding: wp('4%'),
+    padding: wp('5%'),
     marginBottom: hp('2%'),
   },
   sectionTitle: {
@@ -470,7 +471,8 @@ const styles = StyleSheet.create({
   },
   destinationCard: {
     backgroundColor: '#fff',
-    boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
+                    elevation: 8,
+
     borderWidth: 1,
     borderColor: '1px solid rgba(17, 17, 17, 0.10)',
     borderRadius: wp('4%'),

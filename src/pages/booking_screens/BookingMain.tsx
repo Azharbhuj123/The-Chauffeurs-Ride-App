@@ -63,17 +63,17 @@ const LocationInput = ({
   const searchInputRef = useRef(null);
 
   const extractCity = (addressComponents = []) => {
-  const city =
-    addressComponents.find(c => c.types.includes('locality')) ||
-    addressComponents.find(c =>
-      c.types.includes('administrative_area_level_2'),
-    ) ||
-    addressComponents.find(c =>
-      c.types.includes('administrative_area_level_1'),
-    );
+    const city =
+      addressComponents.find(c => c.types.includes('locality')) ||
+      addressComponents.find(c =>
+        c.types.includes('administrative_area_level_2'),
+      ) ||
+      addressComponents.find(c =>
+        c.types.includes('administrative_area_level_1'),
+      );
 
-  return city?.long_name || '';
-};
+    return city?.long_name || '';
+  };
 
   const reverseGeocode = async (lat, lng) => {
     try {
@@ -93,7 +93,7 @@ const LocationInput = ({
       return {
         latitude: lat,
         longitude: lng,
-          city: extractCity(first.address_components),
+        city: extractCity(first.address_components),
 
         address: first.formatted_address,
         shortAddress: shortAddress,
@@ -159,13 +159,14 @@ const LocationInput = ({
         userLocation?.longitude &&
         !fromLocation?.address
       ) {
+        
         reverseGeocode(userLocation.latitude, userLocation.longitude).then(
           data => {
             if (data) onFromChange(data);
           },
         );
       }
-    }, [userLocation, fromLocation]),
+    }, [userLocation?.latitude, userLocation?.longitude, userLocation, fromLocation]),
   );
 
   useEffect(() => {
@@ -265,7 +266,9 @@ const LocationInput = ({
         <View
           style={[
             styles.inputRow,
-            isSwapped ? { borderColor: '#E0E0E0' } : { borderColor: COLORS.success },
+            isSwapped
+              ? { borderColor: '#E0E0E0' }
+              : { borderColor: COLORS.success },
           ]}
         >
           <MaterialIcons
@@ -619,8 +622,7 @@ export default function BookingMain({ navigation }) {
   const [fromLocation, setFromLocation] = useState(
     rideData?.pick_location || null,
   );
-  
-  
+
   const [toLocation, setToLocation] = useState(rideData?.drop_location || null);
   const [showPicker, setShowPicker] = useState(false);
   const [pickerMode, setPickerMode] = useState('date'); // 'date' | 'time'
@@ -639,9 +641,6 @@ export default function BookingMain({ navigation }) {
   });
   const resetDone = useRef(false);
 
-  console.log(fromLocation, '<<<<fromLocation');
-  console.log(toLocation, '<<<<toLocation');
-
   const { data, isLoading, refetch } = useQuery({
     queryKey: [
       'get-drivers',
@@ -656,21 +655,6 @@ export default function BookingMain({ navigation }) {
     keepPreviousData: true,
     enabled:
       !!selectedClass && !!fromLocation?.latitude && !!fromLocation?.longitude,
-  });
-
-  // check any voucher
-  const {
-    data: voucherData,
-    isLoading: voucherLoad,
-    refetch: voucherApiRefetch,
-  } = useQuery({
-    queryKey: ['check-voucher'],
-    queryFn: () => {
-      return fetchData(
-        `/voucher/check-status?type=upgrade_vehicle&secondType=book_driver`,
-      );
-    },
-    keepPreviousData: true,
   });
 
   // ride fare
@@ -688,7 +672,7 @@ export default function BookingMain({ navigation }) {
       toLocation?.latitude,
       toLocation?.longitude,
       selectedCar,
-      voucherData?.voucher?.type,
+      // voucherData?.voucher?.type,
       isUpgradeClass,
     ],
     queryFn: () => {
@@ -714,29 +698,20 @@ export default function BookingMain({ navigation }) {
       !!selectedCar,
   });
 
-   
-
-
   useEffect(() => {
-      if(rideData?.pick_location){
-        setFromLocation(rideData?.pick_location);
-      }
+    if (rideData?.pick_location) {
+      setFromLocation(rideData?.pick_location);
+    }
 
-      if(rideData?.drop_location){
-        setToLocation(rideData?.drop_location);
-      }
-  },[rideData]);
+    if (rideData?.drop_location) {
+      setToLocation(rideData?.drop_location);
+    }
+  }, [rideData]);
 
   useFocusEffect(
     useCallback(() => {
       setSelectedCar(data?.allDrivers[0]?.vehicle?._id);
     }, [data?.allDrivers]),
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      voucherApiRefetch();
-    }, []),
   );
 
   const handleToggle = isSchedule => setIsScheduledRide(isSchedule);
@@ -783,9 +758,9 @@ export default function BookingMain({ navigation }) {
 
   const handleBooking = () => {
     let voucher_ids = [];
-    if (isUpgradeClass) {
-      voucher_ids.push(voucherData?.voucher?._id);
-    }
+    // if (isUpgradeClass) {
+    //   voucher_ids.push(voucherData?.voucher?._id);
+    // }
 
     setRideData({
       pick_location: fromLocation,
@@ -817,9 +792,9 @@ export default function BookingMain({ navigation }) {
       pick_location: fromLocation,
       drop_location: toLocation,
     });
-    navigation.navigate('SelectDriver', {
-      voucher_id: voucherData?.sec_voucher?._id,
-    });
+    // navigation.navigate('SelectDriver', {
+    //   voucher_id: voucherData?.sec_voucher?._id,
+    // });
   };
 
   useEffect(() => {
@@ -981,7 +956,7 @@ export default function BookingMain({ navigation }) {
             <VehicleClassSelector
               selectedClass={selectedClass}
               onSelect={setSelectedClass}
-              hasVoucher={voucherData?.voucher?.type}
+              // hasVoucher={voucherData?.voucher?.type}
               setShowUpgradeModal={setShowUpgradeModal}
               setFromClass={setFromClass}
               setToClass={setToClass}
@@ -1002,8 +977,7 @@ export default function BookingMain({ navigation }) {
               </View>
             ) : (
               <View style={{ flex: 1 }}>
-                {data?.allDrivers?.length === 0 &&
-                data?.no_available_drivers ? (
+                {!data || !data.allDrivers || data.allDrivers.length === 0 ? (
                   <View
                     style={{
                       height: height * 0.2,
@@ -1011,19 +985,21 @@ export default function BookingMain({ navigation }) {
                       justifyContent: 'center',
                     }}
                   >
-                    <Text style={styles.no_aviable}>{data?.message}</Text>
+                    <Text style={styles.no_aviable}>
+                      {data?.message ||
+                        'Sorry! No drivers are available nearby right now. Please try again later.'}
+                    </Text>
                   </View>
                 ) : (
                   <CarGridSlider
-                    cars={data?.allDrivers} // pass the full array
+                    cars={data.allDrivers} // pass the full array safely
                     selectedCar={selectedCar}
                     onSelect={setSelectedCar}
                   />
                 )}
               </View>
             )}
-            {voucherData?.is_sec_voucher && (
-              // {/* --- Driver Info --- */}
+            {/* {voucherData?.is_sec_voucher && (
               <View style={styles.driverSection}>
                 <View style={styles.driverInfoRow}>
                   <Text style={styles.starIcon}>★</Text>
@@ -1047,45 +1023,51 @@ export default function BookingMain({ navigation }) {
                   </TouchableOpacity>
                 </View>
               </View>
-            )}
+            )} */}
           </View>
 
           {/* --- Grey Bottom Section --- */}
-          <View style={[styles.bottomContent]}>
-            {ridefareLoad ? (
-              <SkeletonBox
-                height={90}
-      
-                marginTop={hp(3)}
-                marginBottom={hp(2000)}
-                padding={30}
-                width={wp(90)}
-              />
-            ) : (
-              <View style={styles.fareContainer}>
-                <View>
-                  <Text style={styles.fareTitle}>Estimated Fare:</Text>
-                  <Text style={styles.fareAmount}>
-                    ${ridefare?.data?.totalFare || 0}
+          {ridefare?.data?.totalFare && ridefare?.data?.totalFare !== 0 && (
+            <View style={[styles.bottomContent]}>
+              {ridefareLoad ? (
+                <SkeletonBox
+                  height={90}
+                  marginTop={hp(3)}
+                  marginBottom={hp(2000)}
+                  padding={30}
+                  width={wp(90)}
+                />
+              ) : (
+                <View style={styles.fareContainer}>
+                  <View>
+                    <Text style={styles.fareTitle}>Estimated Fare:</Text>
+                    <Text style={styles.fareAmount}>
+                      ${ridefare?.data?.totalFare || 0}
+                    </Text>
+                  </View>
+                  <Text style={styles.fareDetails}>
+                    {ridefare?.data?.distance || `0.0 km`} |{' '}
+                    {ridefare?.data?.duration_min_value || `0.0 min`}
                   </Text>
                 </View>
-                <Text style={styles.fareDetails}>
-                  {ridefare?.data?.distance || `0.0 km`} |{' '}
-                  {ridefare?.data?.duration_min_value || `0.0 min`}
-                </Text>
-              </View>
-            )}
+              )}
 
-            <View style={{ paddingHorizontal: wp(6), marginTop: ridefareLoad ? hp(1):hp(0) }}>
-              <Button
-                disabled={
-                  !ridefare?.data?.totalFare || ridefare?.data?.totalFare == 0
-                }
-                onPress={handleBooking}
-                title="Confirm Booking"
-              />
+              <View
+                style={{
+                  paddingHorizontal: wp(6),
+                  marginTop: ridefareLoad ? hp(1) : hp(0),
+                }}
+              >
+                <Button
+                  disabled={
+                    !ridefare?.data?.totalFare || ridefare?.data?.totalFare == 0
+                  }
+                  onPress={handleBooking}
+                  title="Confirm Booking"
+                />
+              </View>
             </View>
-          </View>
+          )}
         </ScrollView>
       </TouchableWithoutFeedback>
     </SafeAreaView>
@@ -1187,7 +1169,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: hp(3),
     backgroundColor: '#F3F3F3',
-    borderRadius: 50,
+    borderRadius: 100,
   },
   toggleButton: {
     flex: 1,
@@ -1214,7 +1196,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: wp(6),
     borderRadius: 25,
-    boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
+    elevation: 8,
+
     marginBottom: hp(3),
   },
   sectionTitle: {
@@ -1257,7 +1240,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: wp(6),
     borderRadius: 25,
-    boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
+    elevation: 8,
   },
   classButtonsRow: {
     flexDirection: 'row',
@@ -1339,7 +1322,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: hp(2),
-    boxShadow: '0 0 50px 0 rgba(0, 0, 0, 0.08)',
+    elevation: 8,
+
     padding: 20,
     borderRadius: 50,
   },

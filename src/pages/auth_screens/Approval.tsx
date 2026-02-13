@@ -28,32 +28,63 @@ import { Checkbox } from 'react-native-paper';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 import { COLORS } from '../../utils/Enums';
 
-export default function Approval({ navigation, headerTitle }) {
-  return (
-<SafeAreaView style={styles.container}>
-  <ScrollView
-    contentContainerStyle={styles.scrollContent}
-    showsVerticalScrollIndicator={false}
-  >
-    <View style={styles.centeredContent}>
-      <View style={styles.successContainer}>
-        <View style={styles.successIcon}>
-          <Image source={require('../../assets/images/submit.png')} />
-        </View>
-        <Text style={styles.successTitle}>Submission Complete!</Text>
-        <Text style={styles.successSubtitle}>
-          Silently Pending Admin Approval
-        </Text>
-        <Text style={styles.successMessage}>
-          Your account has been successfully created. It is currently under
-          review and awaiting admin approval. You will be notified once your
-          account is activated.
-        </Text>
-      </View>
-    </View>
-  </ScrollView>
-</SafeAreaView>
+export default function Approval({ route, navigation, headerTitle }) {
+  const { contact, reason, status } = route.params || {};
 
+  console.log(contact, reason, status, 'contact,reason,status');
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.centeredContent}>
+          <View style={styles.successContainer}>
+            <View style={styles.successIcon}>
+              <Image source={require('../../assets/images/submit.png')} />
+            </View>
+            <Text style={styles.successTitle}>Submission Complete!</Text>
+            <Text
+              style={[
+                styles.successSubtitle,
+                {
+                  backgroundColor:
+                    status === 'Rejected'
+                      ? COLORS.error
+                      : 'rgba(248, 216, 51, 0.20)',
+                  color: status === 'Rejected' ? '#fff' : '#947C00',
+                },
+              ]}
+            >
+              Status : {status || "Pending"}
+            </Text>
+            {status === 'Rejected' && reason ? (
+              <Text style={styles.successMessage}>
+                Your account has been rejected for the following reason:{' '}
+                {reason}
+              </Text>
+            ) : (
+              <Text style={styles.successMessage}>
+                Your account has been successfully created. It is currently
+                under review and awaiting admin approval. You will be notified
+                once your account is activated.
+              </Text>
+            )}
+          </View>
+          {status === 'Rejected' && (
+            <View style={{ width: '100%' }}>
+              <Button
+                title="Fix & resubmit"
+                onPress={() => navigation.navigate('UploadDoc',{
+                  contact
+                })}
+              />
+            </View>
+          )}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -61,18 +92,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-
   },
   scrollContent: {
-  flexGrow: 1, // ensures ScrollView uses all available space
-},
+    flexGrow: 1, // ensures ScrollView uses all available space
+  },
 
-centeredContent: {
-  flex: 1,
-  justifyContent: 'center',
-  alignItems: 'center',
-  paddingHorizontal: wp(5),
-},
+  centeredContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: wp(5),
+  },
 
   header: {
     flexDirection: 'row',
@@ -107,14 +137,13 @@ centeredContent: {
   content: {
     flex: 1,
     backgroundColor: '#FFF',
-    
   },
   formContainer: {
     flex: 1,
     paddingHorizontal: wp(5),
     paddingTop: hp(2),
   },
-   
+
   pickerText: {
     fontSize: wp(3.8),
     color: '#000',
@@ -256,7 +285,6 @@ centeredContent: {
     color: '#666',
     textAlign: 'center',
     lineHeight: wp(5.5),
-     
   },
   buttonContainer: {
     backgroundColor: '#FFF',

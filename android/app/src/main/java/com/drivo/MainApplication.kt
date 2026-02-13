@@ -1,4 +1,4 @@
-package com.thechauffeurs
+package com.drivo
 
 import android.app.Application
 import com.facebook.react.PackageList

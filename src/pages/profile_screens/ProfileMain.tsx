@@ -39,7 +39,7 @@ export const ProfileMainScreen = ({ navigation }) => {
     { id: 4, icon: 'alert-circle', label: 'Complain', screen: 'ReportIssue' },
     { id: 5, icon: 'credit-card', label: 'Payment Options', screen: 'Payment' },
     { id: 6, icon: 'info', label: 'About Us', screen: 'About' },
-    { id: 7, icon: 'settings', label: 'Settings', screen: 'Settings' },
+    // { id: 7, icon: 'settings', label: 'Settings', screen: 'Settings' },
     {
       id: 8,
       icon: 'help-circle',

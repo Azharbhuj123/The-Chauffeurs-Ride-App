@@ -21,7 +21,7 @@ import Button from '../../components/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CancelRide from '../booking_screens/CancelRide';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
-import { CANCEL_REASONS } from '../../utils/Enums';
+import { CANCEL_REASONS, COLORS } from '../../utils/Enums';
 import { useUserStore } from '../../stores/useUserStore';
 import CustomDropdown from '../../components/CustomDropdown';
 import { useQuery } from '@tanstack/react-query';
@@ -175,7 +175,7 @@ export default function ReportIssue({ navigation }) {
                   style={[
                     styles.radioButton,
                     selectedReason.index === index && {
-                      borderColor: '#F8D833',
+                      borderColor: COLORS.warning,
                     }, // Highlight border when selected
                   ]}
                 >
@@ -224,19 +224,16 @@ const styles = StyleSheet.create({
   },
   forContainer: {
     paddingHorizontal: wp('5%'),
-    marginBottom: hp(Platform.OS === 'ios' ? 0 : 8),
   },
   // Card Styles
   paymentCard: {
     backgroundColor: '#fff',
 
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 5,
+    elevation: 1,
     borderRadius: 12,
     padding: wp(5),
+    marginBottom: hp(Platform.OS === 'ios' ? 0 : 3),
+
   },
 
   issueLabel: {
@@ -274,7 +271,9 @@ const styles = StyleSheet.create({
     padding: wp('5%'),
     paddingTop: hp(3),
     borderRadius: wp('4%'),
-    marginTop: hp(3),
+                elevation: 1,
+
+    // marginTop: hp(3),
   },
   sectionTitle: {
     fontSize: wp('4%'),
@@ -305,7 +304,7 @@ const styles = StyleSheet.create({
     width: wp('3%'),
     height: wp('3%'),
     borderRadius: wp('1.5%'),
-    backgroundColor: '#F8D833',
+    backgroundColor:COLORS.warning ,
   },
   radioLabel: {
     fontSize: wp('3.8%'),
@@ -373,7 +372,7 @@ const styles = StyleSheet.create({
     fontFamily: 'SF Pro',
   },
   modalButton: {
-    backgroundColor: '#F8D833',
+    backgroundColor: COLORS.warning,
     borderRadius: 16,
     paddingVertical: 14,
     paddingHorizontal: 20,

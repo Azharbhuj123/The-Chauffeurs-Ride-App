@@ -99,7 +99,7 @@ export default function SetPass({ route, navigation }) {
             onPress={() => navigation.navigate("Login")}
             style={styles.backButton}
           >
-            <Icon name="chevron-back" size={24} color="#000" />
+            <Icon name="chevron-back" size={24} color="#fff" />
             <Text style={styles.backText}>Back</Text>
           </TouchableOpacity>
 

@@ -32,7 +32,6 @@ import PaymentSummaryScreen from '../pages/booking_screens/PaymentSummaryScreen'
 import CancelRide from '../pages/booking_screens/CancelRide';
 import ProfileMainScreen from '../pages/profile_screens/ProfileMain';
 import { EditProfileScreen } from '../pages/profile_screens/EditProfile';
-import { AddNewAddressScreen } from '../pages/profile_screens/AddNewAddressScreen';
 import { TripHistoryScreen } from '../pages/profile_screens/TripHistoryScreen';
 import { TripReceiptScreen } from '../pages/profile_screens/TripReceipt';
 import ReportIssue from '../pages/profile_screens/ReportIssue';
@@ -59,6 +58,8 @@ import NotificationsAlerts from '../pages/driver_screens/NotificationsAlerts';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUserStore } from '../stores/useUserStore';
 import { COLORS } from '../utils/Enums';
+import { AddNewAddressScreen } from '../pages/profile_screens/AddNewAddressScreen';
+import { AddAddressInp } from '../pages/profile_screens/AddAddressInp';
 
 const Stack = createNativeStackNavigator();
 
@@ -89,6 +90,7 @@ function ProfileStack() {
       <Stack.Screen name="Profile" component={ProfileMainScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="Address" component={AddNewAddressScreen} />
+      <Stack.Screen name="AddAddress" component={AddAddressInp} />
       <Stack.Screen name="TripHistory" component={TripHistoryScreen} />
       <Stack.Screen name="TripReceipt" component={TripReceiptScreen} />
       <Stack.Screen name="ReportIssue" component={ReportIssue} />
@@ -107,7 +109,7 @@ function DriverHomeStack() {
       <Stack.Screen name="DriverHome" component={Driver_Home} />
       <Stack.Screen name="Chat" component={Chat} />
 
-        <Stack.Screen
+      <Stack.Screen
         name="RideConfirmationScreen"
         component={RideConfirmationScreen}
       />
@@ -184,7 +186,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
 
   return (
     <View style={[styles.tabBarContainer, { paddingBottom: insets.bottom }]}>
-      <View style={styles.tabBar}>
+      <View style={[styles.tabBar]}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
@@ -249,7 +251,7 @@ const CustomDriverTabBar = ({ state, descriptors, navigation }) => {
 
   return (
     <View style={[styles.tabBarContainer, { paddingBottom: insets.bottom }]}>
-      <View style={styles.tabBar}>
+      <View style={[styles.tabBar, { minWidth: wp('50%') }]}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
@@ -324,7 +326,7 @@ export default function BottomTabs() {
           {/* <Tab.Screen name="Loyalty" component={LoyaltyRewardsScreen} /> */}
           <Tab.Screen name="Profile" component={ProfileStack} />
         </Tab.Navigator>
-      ) :role === 'Driver' ?   (
+      ) : role === 'Driver' ? (
         <Tab.Navigator
           tabBar={props => <CustomDriverTabBar {...props} />}
           screenOptions={{
@@ -338,12 +340,14 @@ export default function BottomTabs() {
             component={EarningsStack}
             options={{ unmountOnBlur: true }}
           />
-           
+
           {/* <Tab.Screen name="Loyalty" component={OwnershipStack} /> */}
 
           {/* <Tab.Screen name="Profile" component={OperationsStack} /> */}
         </Tab.Navigator>
-      ):""}
+      ) : (
+        ''
+      )}
     </>
   );
 }
@@ -378,11 +382,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: hp('1%'),
     elevation: 8,
-    minWidth: wp('90%'),
+    minWidth: wp('60%'),
   },
   tabButton: {
-    // width: wp('15%'),
-    width: wp('28%'),
+    width: wp('15%'),
+    // width: wp('28%'),
     height: wp('15%'),
     borderRadius: wp('10%'),
     alignItems: 'center',

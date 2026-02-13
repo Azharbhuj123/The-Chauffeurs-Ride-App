@@ -17,20 +17,28 @@ export default function TopHeader({
 }) {
   return (
     <View style={styles.header}>
-      {!no_navigate && (
-        <TouchableOpacity
-          onPress={() =>
-            any_navigation
-              ? navigation?.navigate(navigate_to)
-              : navigation?.goBack()
-          }
-          activeOpacity={0.7}
-        >
-          {/* <Ionicons name="chevron-back" size={wp(6)} color="#000" /> */}
-        </TouchableOpacity>
-      )}
-      <Text style={styles.headerTitle}>{title}</Text>
-      <View style={{ width: wp(6) }} />
+      <View style={styles.side}>
+        {/* {!no_navigate && ( */}
+          <TouchableOpacity
+            onPress={() => {
+              console.log('no_navigate');
+
+              any_navigation
+                ? navigation?.navigate(navigate_to)
+                : navigation?.goBack();
+            }}
+          >
+            <Ionicons   name="chevron-back" size={wp(6)} color="#000" />
+          </TouchableOpacity>
+        {/* )} */}
+      </View>
+
+      <Text style={styles.headerTitle} numberOfLines={1} ellipsizeMode="tail"   pointerEvents="none"
+>
+        {title}
+      </Text>
+
+      <View style={styles.side} />
     </View>
   );
 }
@@ -40,15 +48,37 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: wp(5),
-    paddingVertical: hp(2),
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingHorizontal: wp(5),
+  paddingVertical: hp(2),
+},
+
+  side: {
+  width: wp(8),
+  alignItems: 'flex-start',
+},
+
+headerTitle: {
+  flex: 1,
+  textAlign: 'center',
+  fontSize: wp(4.5),
+  fontWeight: '600',
+  color: '#000',
+},
+
+  left: {
+    flex: 1,
+    alignItems: 'flex-start',
   },
-  headerTitle: {
-    fontSize: wp(4.5),
-    fontWeight: '600',
-    color: '#000',
+
+  center: {
+    flex: 1,
+    alignItems: 'center',
+  },
+
+  right: {
+    flex: 1,
+    alignItems: 'flex-end',
   },
 });

@@ -21,6 +21,7 @@ import { fetchData } from '../../queryFunctions/queryFunctions';
 import AppLoader from '../../components/AppLoader';
 import { useFocusEffect } from '@react-navigation/native';
 import useActionMutation from '../../queryFunctions/useActionMutation';
+import { COLORS } from '../../utils/Enums';
 
 const { width, height } = Dimensions.get('window');
 
@@ -81,7 +82,7 @@ export default function NotificationsAlerts({ navigation }) {
   };
 
   const alertColors = {
-    system_alert: '#F8D833',
+    system_alert: COLORS.warning,
     payment_alert: '#4CAF50',
     cancel_alert: '#FF6B6B',
   };
@@ -92,7 +93,7 @@ export default function NotificationsAlerts({ navigation }) {
       id: index + 1,
       type: item.type,
       icon: alertIcons[typeKey] || '🔔',
-      bgColor: alertColors[typeKey] || '#F8D833',
+      bgColor: alertColors[typeKey] || COLORS.warning,
       title: item.title || 'System Alert',
       description: item.message || 'No description available.',
       date: new Date(item.createdAt).toLocaleString(),
@@ -176,7 +177,7 @@ export default function NotificationsAlerts({ navigation }) {
             <Switch
               value={newRideRequests}
               onValueChange={val => handleToggle('new_ride', val)}
-              trackColor={{ false: '#E0E0E0', true: '#F8D833' }}
+              trackColor={{ false: '#E0E0E0', true: COLORS.warning }}
               thumbColor={'#f4f3f4'}
               ios_background_color="#E0E0E0"
               disabled={mutationLoading}
@@ -188,7 +189,7 @@ export default function NotificationsAlerts({ navigation }) {
             <Switch
               value={rideCancellations}
               onValueChange={val => handleToggle('ride_cancel', val)}
-              trackColor={{ false: '#E0E0E0', true: '#F8D833' }}
+              trackColor={{ false: '#E0E0E0', true: COLORS.warning }}
               thumbColor={'#f4f3f4'}
               ios_background_color="#E0E0E0"
               disabled={mutationLoading}
@@ -200,7 +201,7 @@ export default function NotificationsAlerts({ navigation }) {
             <Switch
               value={paymentUpdates}
               onValueChange={val => handleToggle('pay_update', val)}
-              trackColor={{ false: '#E0E0E0', true: '#F8D833' }}
+              trackColor={{ false: '#E0E0E0', true: COLORS.warning }}
               thumbColor={'#f4f3f4'}
               ios_background_color="#E0E0E0"
               disabled={mutationLoading}
@@ -212,7 +213,7 @@ export default function NotificationsAlerts({ navigation }) {
             <Switch
               value={systemAnnouncements}
               onValueChange={val => handleToggle('system_announcment', val)}
-              trackColor={{ false: '#E0E0E0', true: '#F8D833' }}
+              trackColor={{ false: '#E0E0E0', true: COLORS.warning }}
               thumbColor={'#f4f3f4'}
               ios_background_color="#E0E0E0"
               disabled={mutationLoading}

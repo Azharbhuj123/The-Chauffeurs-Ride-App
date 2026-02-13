@@ -24,6 +24,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import AppLoader from '../../components/AppLoader';
+import { COLORS } from '../../utils/Enums';
 
  
 
@@ -246,7 +247,7 @@ const styles = StyleSheet.create({
   },
 
   activeCard: {
-    backgroundColor: '#F8D833',
+    backgroundColor: COLORS.warning,
   },
 
   statTopText: {
