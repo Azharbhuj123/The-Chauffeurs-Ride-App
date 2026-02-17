@@ -43,7 +43,9 @@ import { useUserStore } from '../../stores/useUserStore';
 import CheckBox from '@react-native-community/checkbox';
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
-
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from '@react-native-community/datetimepicker';
 // Import your existing components
 // import TopHeader from './TopHeader';
 // import Button from './Button';
@@ -85,10 +87,7 @@ const step2Schema = yup.object().shape({
     .mixed()
     .required('Insurance papers are required')
     .test('fileSize', 'File is required', value => value !== null),
-  roadworthiness: yup
-    .mixed()
-    .required('Roadworthiness/Permit plate is required')
-    .test('fileSize', 'File is required', value => value !== null),
+
   frontView: yup
     .mixed()
     .required('Front view photo is required')
@@ -107,23 +106,19 @@ const step2Schema = yup.object().shape({
     .test('fileSize', 'Photo is required', value => value !== null),
 });
 
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
 const step3Schema = yup.object().shape({
-  inviteDriver: yup.boolean().default(false),
-
-  chauffeurType: yup.string().when('inviteDriver', {
-    is: false,
-    then: schema => schema.required('Assign any chauffeur'),
-    otherwise: schema => schema.notRequired(),
-  }),
-
-  // driverEmail: yup.string().when('inviteDriver', {
-  //   is: true,
-  //   then: schema =>
-  //     schema
-  //       .required('Driver email is required')
-  //       .email('Please enter a valid email'),
-  //   otherwise: schema => schema.notRequired(),
-  // }),
+  selectedDays: yup.array().min(1, 'Please select at least one day'),
+  fromTime: yup.date().required('Start time is required'),
+  toTime: yup
+    .date()
+    .required('End time is required')
+    .test('is-after', 'End time must be after start time', function (value) {
+      const { fromTime } = this.parent;
+      return value > fromTime;
+    }),
+  rate: yup.number().min(1).required('Rate is required'),
 });
 
 export default function UploadVehicle({ route, navigation }) {
@@ -183,48 +178,35 @@ export default function UploadVehicle({ route, navigation }) {
     watch: watch3,
     setValue: setValue3,
     trigger: trigger3,
-    getValues: getValues3,
   } = useForm({
     resolver: yupResolver(step3Schema),
     mode: 'onChange',
     defaultValues: {
-      chauffeurType: '',
-      inviteDriver: false,
-      driverEmail: '',
+      selectedDays: ['Mon'],
+      fromTime: new Date(),
+      toTime: new Date(),
+      rate: '0.50',
     },
   });
-
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['my-chauffeurs'],
-    queryFn: () => fetchData('/driver/my-free-chauffeurs'),
-    keepPreviousData: true,
-  });
+  const [showPicker, setShowPicker] = useState(null); // 'from' | 'to' | null
 
   const permanentOption = { label: 'For Self Drive', value: 'Self Drive' };
-  console.log(data, 'data');
-
-  const options = [
-    permanentOption,
-    ...(Array.isArray(data)
-      ? data.map(item => ({
-          label: `${item?.name} (Chauffeur)` ?? 'Unknown',
-          value: item?._id,
-        }))
-      : []),
-  ];
 
   const inviteDriver = watch3('inviteDriver');
   const chauffeurType = watch3('chauffeurType');
 
   const { triggerMutation, loading } = useActionMutation({
     onSuccessCallback: async data => {
-      if (data?.success) {
+      if (data) {
         showToast({
           type: 'success',
           title: 'Vehicle Registration Success',
           message: data?.message,
         });
-        setCurrentStep(5);
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Approval' }],
+        });
         resetVehicleData();
       }
     },
@@ -253,6 +235,7 @@ export default function UploadVehicle({ route, navigation }) {
         vehicleData.vehicle_description || '',
       );
       formData.append('vehicle_type', vehicleData.vehicleClass); // matches vehicle_class enum
+      formData.append('contact', vehicleData.contact); // matches vehicle_class enum
 
       // Step 3: Chauffeur / Self Drive logic
       const vehicleFor =
@@ -261,20 +244,55 @@ export default function UploadVehicle({ route, navigation }) {
           : vehicleData.chauffeurType;
       formData.append('inviteDriver', vehicleData.inviteDriver);
 
+      const formatToHHMM = date => {
+        const d = new Date(date);
+        return d.toLocaleTimeString('en-GB', {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+      };
+
+
+      const dayMapper = {
+      'Mon': 'Monday',
+      'Tue': 'Tuesday',
+      'Wed': 'Wednesday',
+      'Thu': 'Thursday',
+      'Fri': 'Friday',
+      'Sat': 'Saturday',
+      'Sun': 'Sunday'
+    };
+
+      const availability = vehicleData.selectedDays.map(day => ({
+        day: dayMapper[day], // e.g., "Mon"
+        slots: [
+          {
+            from: formatToHHMM(vehicleData.fromTime),
+            to: formatToHHMM(vehicleData.toTime),
+          },
+        ],
+      }));
+
+      // Append availability as a JSON string
+      formData.append('availability', JSON.stringify(availability));
+
+      // Append the rate as duration_rate
+      formData.append('duration_rate', Number(vehicleData.rate));
+
       // Vehicle driver
-      const vehicleDriver =
-        vehicleFor === 'Self Drive' ? userData?._id : vehicleData.chauffeurType;
-      if (vehicleDriver) formData.append('vehicle_for', vehicleDriver);
 
       // Step 2: Upload documents (binary)
       const documents = {
         vehicle_registration: vehicleData.vehicleRegistration,
         insurance_papers: vehicleData.vehicleInsurance,
-        roadworthiness_permit_docs: vehicleData.roadworthiness,
         front_view: vehicleData.frontView,
         back_view: vehicleData.backView,
         side_view: vehicleData.sideView,
         interior_view: vehicleData.interiorView,
+        governmentIdFront: vehicleData.governmentIdFront,
+        governmentIdBack: vehicleData.governmentIdBack,
+        driverLicense: vehicleData.driverLicense,
+        selfie: vehicleData.selfie,
       };
 
       Object.entries(documents).forEach(([key, file]) => {
@@ -287,8 +305,10 @@ export default function UploadVehicle({ route, navigation }) {
         }
       });
 
+      
+
       triggerMutation({
-        endPoint: '/vehicle/',
+        endPoint: '/auth/upload-documents',
         body: formData,
         method: 'post',
       });
@@ -789,94 +809,140 @@ export default function UploadVehicle({ route, navigation }) {
     );
   };
 
-  const renderStep3 = () => (
-    <View>
-      <Text style={styles.stepTitle}>Step 3: Assign Chauffeur</Text>
-      <Text style={styles.subtitle}>
-        Assign the vehicle to a company driver or indicate if it's for
-        self-driving/personal use
-      </Text>
+  const renderStep3 = () => {
+    const selectedDays = watch3('selectedDays');
+    const fromTime = watch3('fromTime');
+    const toTime = watch3('toTime');
 
-      <View style={{}}>
-        <Text style={styles.label}>Select Chauffeur</Text>
+    const toggleDay = day => {
+      const current = [...selectedDays];
+      const index = current.indexOf(day);
+      if (index > -1) {
+        current.splice(index, 1);
+      } else {
+        current.push(day);
+      }
+      setValue3('selectedDays', current, { shouldValidate: true });
+    };
+
+    const formatTime = date => {
+      return date.toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      });
+    };
+
+    return (
+      <View style={{ height: hp('65%') }}>
+        <Text style={styles.stepTitle}>Step 3: Availability</Text>
+
+        {/* Progress Bar matching image */}
+        {renderProgressBar()}
+
+        {/* Days Selection */}
+        <Text style={styles.imgLabel}>Select Available Days</Text>
+        <View style={styles.daysRow}>
+          {DAYS.map(day => {
+            const isSelected = selectedDays.includes(day);
+            return (
+              <TouchableOpacity
+                key={day}
+                onPress={() => toggleDay(day)}
+                style={[styles.dayButton, isSelected && styles.dayButtonActive]}
+              >
+                <Text
+                  style={[styles.dayText, isSelected && styles.dayTextActive]}
+                >
+                  {day}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+        {errors3.selectedDays && (
+          <Text style={styles.imgErrorText}>
+            {errors3.selectedDays.message}
+          </Text>
+        )}
+
+        {/* Hours Selection */}
+        <Text style={styles.imgLabel}>Available Hours</Text>
+        <View style={styles.timeRow}>
+          <View style={styles.timeInputCol}>
+            <Text style={styles.imgSubLabel}>From</Text>
+            <TouchableOpacity
+              style={styles.timeBox}
+              onPress={() => setShowPicker('from')}
+            >
+              <Text style={styles.timeText}>{formatTime(fromTime)}</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.timeInputCol}>
+            <Text style={styles.imgSubLabel}>To</Text>
+            <TouchableOpacity
+              style={styles.timeBox}
+              onPress={() => setShowPicker('to')}
+            >
+              <Text style={styles.timeText}>{formatTime(toTime)}</Text>
+            </TouchableOpacity>
+            {errors3.toTime && (
+              <Text style={styles.imgErrorText}>{errors3.toTime.message}</Text>
+            )}
+          </View>
+        </View>
+
+        {/* Rate Selection */}
+        <Text style={styles.imgLabel}>Set Your Rate</Text>
         <Controller
           control={control3}
-          name="chauffeurType"
+          name="rate"
           render={({ field: { onChange, value } }) => (
             <>
-              <CustomDropdown
-                data={options}
-                value={value?.value}
-                onChange={(selectedItem: { label: string, value: string }) => {
-                  onChange(selectedItem.value); // pass only the string to RHF
-                }}
-              />
-              {errors3.chauffeurType && (
-                <Text style={styles.errorText}>
-                  {errors3.chauffeurType.message}
+              <View style={styles.rateWrapper}>
+                <Text style={styles.currency}>$</Text>
+                <TextInput
+                  style={styles.rateInput}
+                  keyboardType="decimal-pad"
+                  value={value}
+                  onChangeText={onChange}
+                />
+                <Text style={styles.rateUnit}>/hrs</Text>
+              </View>
+              {errors3.rate && (
+                <Text style={[styles.imgErrorText, { marginBottom: hp(2) }]}>
+                  {errors3.rate.message}
                 </Text>
               )}
             </>
           )}
         />
-      </View>
-      {chauffeurType === '' && (
-        <Controller
-          control={control3}
-          name="inviteDriver"
-          render={({ field: { onChange, value } }) => (
-            <TouchableOpacity
-              style={styles.linkContainer}
-              onPress={() => onChange(!value)}
-            >
-              <CheckBox
-                value={value}
-                onValueChange={onChange}
-                tintColors={{ true: COLORS.warning, false: '#000' }}
-                onCheckColor={COLORS.warning} // ✅ tick color
-                onTintColor={COLORS.warning}
-                boxType="square"
-                style={{ transform: [{ scale: 0.8 }] }} // 👈 smaller size
-              />
-              <Text style={styles.linkText}>
-                Invite a New Driver (You send email to mail)
-              </Text>
-            </TouchableOpacity>
-          )}
-        />
-      )}
 
-      {/* {inviteDriver && (
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Driver Email</Text>
-          <Controller
-            control={control3}
-            name="driverEmail"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                style={[styles.input, errors3.driverEmail && styles.inputError]}
-                placeholder="e.g. driver@example.com"
-                placeholderTextColor="#999"
-                keyboardType="email-address"
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                autoCapitalize="none"
-              />
-            )}
+        {showPicker && (
+          <DateTimePicker
+            value={showPicker === 'from' ? fromTime : toTime}
+            mode="time"
+            is24Hour={true}
+            display="default"
+            onChange={(event, date) => {
+              setShowPicker(null);
+              if (date) {
+                setValue3(showPicker === 'from' ? 'fromTime' : 'toTime', date, {
+                  shouldValidate: true,
+                });
+              }
+            }}
           />
-          {errors3.driverEmail && (
-            <Text style={styles.errorText}>{errors3.driverEmail.message}</Text>
-          )}
-        </View>
-      )} */}
-    </View>
-  );
+        )}
+      </View>
+    );
+  };
 
   const renderStep4 = () => (
-    <View>
+    <View style={{ height: hp('59%') }}>
       <Text style={styles.stepTitle}>Step 4: Review & Submit</Text>
-      <View style={styles.container}>
+      <View>
         <View style={styles.card}>
           <Text style={styles.vehicleName}>{vehicleData?.vehicleMake}</Text>
           <Text style={styles.vehicleInfo}>
@@ -885,26 +951,6 @@ export default function UploadVehicle({ route, navigation }) {
           <Text style={styles.vehicleInfo}>
             Class: {vehicleData?.vehicleClass}
           </Text>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Assignment Status</Text>
-          <View style={styles.row}>
-            <Icon
-              name="checkmark-circle-outline"
-              size={18}
-              color="#6b7280"
-              style={{ marginRight: 6 }}
-            />
-            <Text style={styles.statusText}>
-              Chauffeur:{' '}
-              {vehicleData?.chauffeurType === '' && vehicleData?.inviteDriver
-                ? 'Not Assigned'
-                : vehicleData?.chauffeurType === 'Self Drive'
-                ? 'Self Drive'
-                : 'Assigned Chauffeur'}
-            </Text>
-          </View>
         </View>
 
         <View style={styles.card}>
@@ -1257,9 +1303,10 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   successContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    // flex: 1,
+    height: '100%',
+    // alignItems: 'center',
+    // justifyContent: 'center',
   },
   successIcon: {
     marginBottom: hp(3),
@@ -1382,5 +1429,120 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: COLORS.error,
+  },
+
+  stepContainer: {
+    paddingVertical: 10,
+  },
+  headerText: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#000',
+    marginBottom: 20,
+  },
+  imgProgressContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  imgProgressBarBg: {
+    flex: 1,
+    height: 8,
+    backgroundColor: '#F2F2F2',
+    borderRadius: 4,
+    marginRight: 10,
+  },
+  imgProgressBarFill: {
+    height: '100%',
+    backgroundColor: '#F1B13B',
+    borderRadius: 4,
+  },
+  imgProgressText: {
+    fontSize: 12,
+    color: '#CCCCCC',
+  },
+  imgLabel: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+    marginBottom: 15,
+  },
+  imgSubLabel: {
+    fontSize: 14,
+    color: '#999',
+    marginBottom: 8,
+  },
+  daysRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 25,
+  },
+  dayButton: {
+    width: (Dimensions.get('window').width - 80) / 7,
+    aspectRatio: 1,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF',
+  },
+  dayButtonActive: {
+    backgroundColor: '#F1B13B',
+    borderColor: '#F1B13B',
+  },
+  dayText: {
+    color: '#999',
+    fontSize: 13,
+  },
+  dayTextActive: {
+    color: '#FFF',
+    fontWeight: 'bold',
+  },
+  timeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 25,
+  },
+  timeInputCol: {
+    width: '48%',
+  },
+  timeBox: {
+    height: 55,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 12,
+    justifyContent: 'center',
+    paddingHorizontal: 15,
+  },
+  timeText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  rateWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 60,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 12,
+    paddingHorizontal: 15,
+  },
+  currency: {
+    fontSize: 18,
+    color: '#333',
+    marginRight: 10,
+  },
+  rateInput: {
+    flex: 1,
+    fontSize: 18,
+    color: '#333',
+  },
+  rateUnit: {
+    fontSize: 16,
+    color: '#999',
+  },
+  imgErrorText: {
+    ...error_msg,
   },
 });

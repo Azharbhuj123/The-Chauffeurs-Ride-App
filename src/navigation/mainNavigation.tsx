@@ -30,14 +30,15 @@ const Stack = createNativeStackNavigator();
 export default function MainNavigation() {
   return (
         <NavigationContainer ref={navigationRef}>
-      <Stack.Navigator  initialRouteName="UploadVehicle" screenOptions={{ headerShown: false }}>
+      <Stack.Navigator  initialRouteName="UploadDoc" screenOptions={{ headerShown: false }}>
+
+        <Stack.Screen  name="Signup" component={Signup} />
+        <Stack.Screen  name="UploadDoc" component={UploadDoc} />
 
         <Stack.Screen  name="UploadVehicle" component={UploadVehicle} />
-        <Stack.Screen  name="Signup" component={Signup} />
         <Stack.Screen name="intro" component={Intro} />
         <Stack.Screen name="Splash" component={Splash_Screen} />
         <Stack.Screen  name="Approval" component={Approval} />
-        <Stack.Screen  name="UploadDoc" component={UploadDoc} />
         <Stack.Screen  name="Verify" component={Verify} />
         <Stack.Screen  name="Login" component={Login} />
         <Stack.Screen  name="Forgot" component={Forgot} />

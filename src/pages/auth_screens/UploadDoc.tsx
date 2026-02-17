@@ -36,6 +36,7 @@ import Button from '../../components/Button';
 import { showToast } from '../../utils/toastHelper';
 import useActionMutation from '../../queryFunctions/useActionMutation';
 import { COLORS } from '../../utils/Enums';
+import { useStore } from '../../stores/useStore';
 
 const { width, height } = Dimensions.get('window');
 
@@ -55,15 +56,16 @@ export default function UploadDoc({ route, navigation }) {
     governmentIdBack: null,
     driverLicense: null,
     selfie: null,
-    vehicleRegistration: null,
-    vehiclePhotoFront: null,
-    vehiclePhotoBack: null,
-    vehiclePhotoSide: null,
-    vehiclePhotoInterior: null,
+    // vehicleRegistration: null,
+    // vehiclePhotoFront: null,
+    // vehiclePhotoBack: null,
+    // vehiclePhotoSide: null,
+    // vehiclePhotoInterior: null,
   });
 
   // Track upload progress for each document (for future enhancement)
   const [uploadProgress, setUploadProgress] = useState({});
+  const { vehicleData, setVehicleData, resetVehicleData } = useStore();
 
   const insets = useSafeAreaInsets();
   const { contact } = route.params || {};
@@ -73,11 +75,11 @@ export default function UploadDoc({ route, navigation }) {
     'governmentIdFront',
     'governmentIdBack',
     'driverLicense',
-    'vehicleRegistration',
-    'vehiclePhotoFront',
-    'vehiclePhotoBack',
-    'vehiclePhotoSide',
-    'vehiclePhotoInterior',
+    // 'vehicleRegistration',
+    // 'vehiclePhotoFront',
+    // 'vehiclePhotoBack',
+    // 'vehiclePhotoSide',
+    // 'vehiclePhotoInterior',
   ];
 
   /**
@@ -126,8 +128,8 @@ export default function UploadDoc({ route, navigation }) {
         }));
       }
     } catch (error) {
-      console.log(error ,"jsjsjsjsjsjsjsjj");
-      
+      console.log(error, 'jsjsjsjsjsjsjsjj');
+
       Alert.alert('Error', 'Failed to upload file');
     }
   };
@@ -221,28 +223,29 @@ export default function UploadDoc({ route, navigation }) {
       return;
     }
 
+    setVehicleData({ ...documents, contact:"driver@gmail.com" });
+        navigation.replace('UploadVehicle');
+
     // Build FormData for multipart upload
-    const form_data = new FormData();
-    form_data.append('contact', contact);
+    // const form_data = new FormData();
+    // form_data.append('contact', contact);
 
-    // Append all documents
-    Object.keys(documents).forEach(key => {
-      if (documents[key]) {
-        form_data.append(key, {
-          uri: documents[key].uri,
-          type: documents[key].type,
-          name: documents[key].name || `${key}.jpg`,
-        });
-      }
-    });
+    // // Append all documents
+    // Object.keys(documents).forEach(key => {
+    //   if (documents[key]) {
+    //     form_data.append(key, {
+    //       uri: documents[key].uri,
+    //       type: documents[key].type,
+    //       name: documents[key].name || `${key}.jpg`,
+    //     });
+    //   }
+    // });
 
-     
-
-    triggerMutation({
-      endPoint: '/auth/upload-documents',
-      body: form_data,
-      method: 'post',
-    });
+    // triggerMutation({
+    //   endPoint: '/auth/upload-documents',
+    //   body: form_data,
+    //   method: 'post',
+    // });
   };
 
   /**
@@ -403,46 +406,46 @@ export default function UploadDoc({ route, navigation }) {
           },
         ],
       },
-      {
-        title: 'Vehicle Documents',
-        documents: [
-          {
-            type: 'vehicleRegistration',
-            title: 'Registration',
-            subtitle: 'Vehicle papers',
-            required: true,
-          },
-        ],
-      },
-      {
-        title: 'Vehicle Photos',
-        documents: [
-          {
-            type: 'vehiclePhotoFront',
-            title: 'Front View',
-            subtitle: 'Clear photo',
-            required: true,
-          },
-          {
-            type: 'vehiclePhotoBack',
-            title: 'Back View',
-            subtitle: 'Clear photo',
-            required: true,
-          },
-          {
-            type: 'vehiclePhotoSide',
-            title: 'Side View',
-            subtitle: 'Clear photo',
-            required: true,
-          },
-          {
-            type: 'vehiclePhotoInterior',
-            title: 'Interior View',
-            subtitle: 'Clear photo',
-            required: true,
-          },
-        ],
-      },
+      // {
+      //   title: 'Vehicle Documents',
+      //   documents: [
+      //     {
+      //       type: 'vehicleRegistration',
+      //       title: 'Registration',
+      //       subtitle: 'Vehicle papers',
+      //       required: true,
+      //     },
+      //   ],
+      // },
+      // {
+      //   title: 'Vehicle Photos',
+      //   documents: [
+      //     {
+      //       type: 'vehiclePhotoFront',
+      //       title: 'Front View',
+      //       subtitle: 'Clear photo',
+      //       required: true,
+      //     },
+      //     {
+      //       type: 'vehiclePhotoBack',
+      //       title: 'Back View',
+      //       subtitle: 'Clear photo',
+      //       required: true,
+      //     },
+      //     {
+      //       type: 'vehiclePhotoSide',
+      //       title: 'Side View',
+      //       subtitle: 'Clear photo',
+      //       required: true,
+      //     },
+      //     {
+      //       type: 'vehiclePhotoInterior',
+      //       title: 'Interior View',
+      //       subtitle: 'Clear photo',
+      //       required: true,
+      //     },
+      //   ],
+      // },
     ],
     [],
   );
