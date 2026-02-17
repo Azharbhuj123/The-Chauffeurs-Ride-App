@@ -16,7 +16,7 @@ import BottomTabs from "./BottomTabs";
 import UploadDoc from "../pages/auth_screens/UploadDoc";
 import Approval from "../pages/auth_screens/Approval";
 import { navigationRef } from "../utils/NavigationService";
-
+import UploadVehicle from "../pages/auth_screens/UploadVehicle"
 const { width } = Dimensions.get("window");
 
 
@@ -30,11 +30,12 @@ const Stack = createNativeStackNavigator();
 export default function MainNavigation() {
   return (
         <NavigationContainer ref={navigationRef}>
-      <Stack.Navigator  initialRouteName="intro" screenOptions={{ headerShown: false }}>
+      <Stack.Navigator  initialRouteName="UploadVehicle" screenOptions={{ headerShown: false }}>
 
+        <Stack.Screen  name="UploadVehicle" component={UploadVehicle} />
+        <Stack.Screen  name="Signup" component={Signup} />
         <Stack.Screen name="intro" component={Intro} />
         <Stack.Screen name="Splash" component={Splash_Screen} />
-        <Stack.Screen  name="Signup" component={Signup} />
         <Stack.Screen  name="Approval" component={Approval} />
         <Stack.Screen  name="UploadDoc" component={UploadDoc} />
         <Stack.Screen  name="Verify" component={Verify} />

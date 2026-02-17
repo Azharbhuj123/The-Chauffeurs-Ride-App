@@ -203,7 +203,10 @@ export default function Home({ navigation }) {
 
     // Update ride data
     setRideData({ pick_location, drop_location });
-    navigation.navigate('Bookings');
+    navigation.navigate('Bookings',{
+      screen: 'BookingMain',
+      params: { prevRideData : true}
+    });
   };
 
   if (isLoading) {

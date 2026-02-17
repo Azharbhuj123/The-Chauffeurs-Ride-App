@@ -22,7 +22,6 @@ export const no_found = {
   marginVertical: 16,
   fontStyle: 'italic',
   alignItems: 'center',
-
   justifyContent: 'center',
 };
 

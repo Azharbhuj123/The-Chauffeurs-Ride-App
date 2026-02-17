@@ -159,14 +159,18 @@ const LocationInput = ({
         userLocation?.longitude &&
         !fromLocation?.address
       ) {
-        
         reverseGeocode(userLocation.latitude, userLocation.longitude).then(
           data => {
             if (data) onFromChange(data);
           },
         );
       }
-    }, [userLocation?.latitude, userLocation?.longitude, userLocation, fromLocation]),
+    }, [
+      userLocation?.latitude,
+      userLocation?.longitude,
+      userLocation,
+      fromLocation,
+    ]),
   );
 
   useEffect(() => {
@@ -290,11 +294,14 @@ const LocationInput = ({
         </View>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.swapButton} onPress={handleSwap}>
+
+
+
+      {/* <TouchableOpacity style={styles.swapButton} onPress={handleSwap}>
         <SwapIcon />
       </TouchableOpacity>
 
-      {/* To/Destination Input */}
+      To/Destination Input
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => handleInputPress('to')}
@@ -325,7 +332,7 @@ const LocationInput = ({
             {destinationLocation?.address || 'Where to?'}
           </Text>
         </View>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       {/* Suggestions Modal */}
       <Modal
@@ -613,8 +620,10 @@ const CarCard = ({ car, isSelected, onSelect }) => {
 };
 
 // --- Main App Component ---
-export default function BookingMain({ navigation }) {
-  const { setRideData, rideData } = useRideStore();
+export default function BookingMain({ navigation, route }) {
+  const { setRideData, rideData, clearRideRequests } = useRideStore();
+
+  const { prevRideData } = route.params || {};
 
   const [isScheduledRide, setIsScheduledRide] = useState(false);
 
@@ -848,6 +857,9 @@ export default function BookingMain({ navigation }) {
               onToChange={setToLocation}
               userLocation={location}
             />
+            <View>
+              
+            </View>
 
             {/* --- Booking Toggle --- */}
             <View style={styles.toggleContainer}>

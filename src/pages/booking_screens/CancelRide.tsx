@@ -27,7 +27,7 @@ import { CANCEL_REASONS, COLORS } from '../../utils/Enums';
 import useActionMutation from '../../queryFunctions/useActionMutation';
 import { showToast } from '../../utils/toastHelper';
 import { useRideStore } from '../../stores/rideStore';
- 
+
 // Make sure to receive the navigation prop
 export default function CancelRide({
   headerShow = true,
@@ -42,7 +42,7 @@ export default function CancelRide({
   const navigation = useNavigation(); // ✅ this gives you access to navigate()
   const tabBarHeight = useTabBarHeightHelper();
   const { userData, role } = useUserStore();
-  const {setRideRequests} = useRideStore();
+  const { setRideRequests } = useRideStore();
   const { rideId } = route.params || {};
 
   // 2. State to control the modal's visibility
@@ -53,7 +53,6 @@ export default function CancelRide({
       if (data?.success) {
         setModalVisible(true);
         setRideRequests(data?.data?._id);
-
       }
     },
     onErrorCallback: errmsg => {
@@ -96,22 +95,20 @@ export default function CancelRide({
   const handleGoHome = () => {
     setModalVisible(false);
     // Navigate to the Home screen or any other screen as needed
-    navigation.navigate(role === "User"?'Home':'DriverHome');
-    if(role === "User"){
-
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Bookings' }], // 👈 take user to Home first
-    });
-
-    // Optionally also reset the Booking stack when user revisits it
-    setTimeout(() => {
-      navigation.navigate('Bookings', {
-        screen: 'BookingMain', // 👈 start fresh page 1
+    navigation.navigate(role === 'User' ? 'Home' : 'DriverHome');
+    if (role === 'User') {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Bookings' }], // 👈 take user to Home first
       });
-    }, 300);
-    }
 
+      // Optionally also reset the Booking stack when user revisits it
+      setTimeout(() => {
+        navigation.navigate('Bookings', {
+          screen: 'BookingMain', // 👈 start fresh page 1
+        });
+      }, 300);
+    }
   };
 
   return (
@@ -178,7 +175,11 @@ export default function CancelRide({
             </View>
             <View style={styles.btnContainer}>
               {/* 3. Add onPress to trigger the modal */}
-              <Button isLoading={loading} title={btnText} onPress={handleCancelRide} />
+              <Button
+                isLoading={loading}
+                title={btnText}
+                onPress={handleCancelRide}
+              />
             </View>
           </View>
         </ScrollView>

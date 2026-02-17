@@ -26,7 +26,7 @@ type ButtonProps = {
   color: string;
   textColor: string;
   loading: Boolean;
-  disabled :Boolean;
+  disabled: Boolean;
 };
 
 export default function Button({
@@ -35,7 +35,7 @@ export default function Button({
   color = '#EEAF32',
   textColor = '#000',
   isLoading = false,
-  disabled =false
+  disabled = false,
 }: ButtonProps) {
   return (
     <View>
@@ -90,6 +90,6 @@ const styles = StyleSheet.create({
   },
   signUpButtonText: {
     fontSize: fs(16),
-    fontWeight:"bold"
+    fontWeight: 'bold',
   },
 });

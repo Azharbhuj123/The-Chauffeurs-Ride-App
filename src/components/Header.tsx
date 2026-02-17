@@ -1,5 +1,12 @@
 // @ts-nocheck
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Image } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+  Image,
+} from 'react-native';
 import React, { useState } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Logout from 'react-native-vector-icons/MaterialIcons';
@@ -11,9 +18,9 @@ import { useUserStore } from '../stores/useUserStore';
 import { COLORS } from '../utils/Enums';
 import Button from './Button';
 
-export default function UserHeader({navigation}) {
-  const { token, userData, role,resetAll } = useUserStore();
-    const [isModalVisible, setModalVisible] = useState(false);
+export default function UserHeader({ navigation }) {
+  const { token, userData, role, resetAll } = useUserStore();
+  const [isModalVisible, setModalVisible] = useState(false);
 
   const hour = new Date().getHours();
 
@@ -26,7 +33,7 @@ export default function UserHeader({navigation}) {
   } else {
     greeting = 'Good evening';
   }
-const handleLogout = () => {
+  const handleLogout = () => {
     setModalVisible(false);
     resetAll();
 
@@ -43,7 +50,10 @@ const handleLogout = () => {
         </View>
       </View>
       {role === 'Driver' ? (
-        <TouchableOpacity  onPress={() => setModalVisible(true)} style={styles.profileButton}>
+        <TouchableOpacity
+          onPress={() => setModalVisible(true)}
+          style={styles.profileButton}
+        >
           <Logout name="logout" size={wp('6%')} color="#FFD700" />
         </TouchableOpacity>
       ) : (
@@ -53,38 +63,38 @@ const handleLogout = () => {
       )}
 
       <Modal
-                    animationType="fade"
-                    transparent={true}
-                    visible={isModalVisible}
-                    onRequestClose={() => {
-                      setModalVisible(false);
-                    }}
-                  >
-                    <View style={styles.modalBackdrop}>
-                      <View style={styles.modalContainer}>
-                        <Image source={require('../assets/images/logout.png')} />
-                        <Text style={styles.modalTitle}>Confirm Logout</Text>
-                        <Text style={styles.modalSubtitle}>
-                          Are you sure you want to log out of your PrimeRide account? You
-                          will need to sign in again to book a ride.{' '}
-                        </Text>
-            
-                        <View style={styles.btnContainer}>
-                          <Button
-                            title="Logout"
-                            textColor="#fff"
-                            color="#FF3A2F"
-                            onPress={handleLogout}
-                          />
-                          <Button
-                            title="Cancel"
-                            onPress={() => setModalVisible(false)}
-                            color="#F1F1F1"
-                          />
-                        </View>
-                      </View>
-                    </View>
-                  </Modal>
+        animationType="fade"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+        }}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalContainer}>
+            <Image source={require('../assets/images/logout.png')} />
+            <Text style={styles.modalTitle}>Confirm Logout</Text>
+            <Text style={styles.modalSubtitle}>
+              Are you sure you want to log out of your PrimeRide account? You
+              will need to sign in again to book a ride.{' '}
+            </Text>
+
+            <View style={styles.btnContainer}>
+              <Button
+                title="Logout"
+                textColor="#fff"
+                color="#FF3A2F"
+                onPress={handleLogout}
+              />
+              <Button
+                title="Cancel"
+                onPress={() => setModalVisible(false)}
+                color="#F1F1F1"
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -125,9 +135,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#131104',
     alignItems: 'center',
     justifyContent: 'center',
-    textAlign:"center"
+    textAlign: 'center',
   },
-  
+
   modalBackdrop: {
     flex: 1,
     justifyContent: 'center',
