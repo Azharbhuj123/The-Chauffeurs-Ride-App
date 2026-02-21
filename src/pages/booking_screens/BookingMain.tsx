@@ -32,7 +32,15 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
-import { COLORS, GOOGLE_MAP_API_KEY, no_found } from '../../utils/Enums';
+import {
+  COLORS,
+  format24h,
+  formatAPIDate,
+  formatAPITime,
+  formatDate,
+  GOOGLE_MAP_API_KEY,
+  no_found,
+} from '../../utils/Enums';
 import { useStore } from '../../stores/useStore';
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
@@ -40,7 +48,6 @@ import UpgradeModal from '../../components/Upgrade';
 import { useRideStore } from '../../stores/rideStore';
 import { showToast } from '../../utils/toastHelper';
 import SkeletonBox from '../../utils/SkeletonBox';
-
 // --- Responsive Utility Functions (Mocking Libraries like 'react-native-responsive-screen') ---
 const { width, height } = Dimensions.get('window');
 
@@ -53,6 +60,12 @@ const LocationInput = ({
   onFromChange,
   onToChange,
   userLocation,
+  city,
+  setCity,
+  postalCode,
+  setPostalCode,
+  state,
+  setState,
 }) => {
   const [isSwapped, setIsSwapped] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
@@ -294,8 +307,35 @@ const LocationInput = ({
         </View>
       </TouchableOpacity>
 
+      <View style={styles.formWrapper}>
+        {/* Top Row: City and Postal Code */}
+        <View style={styles.row}>
+          <TextInput
+            style={[styles.input, styles.halfInput]}
+            placeholder="City"
+            placeholderTextColor="#C7C7CD"
+            value={city}
+            onChangeText={setCity}
+          />
+          <TextInput
+            style={[styles.input, styles.halfInput]}
+            placeholder="Postal Code"
+            placeholderTextColor="#C7C7CD"
+            value={postalCode}
+            onChangeText={setPostalCode}
+            keyboardType="numeric"
+          />
+        </View>
 
-
+        {/* Bottom Row: State */}
+        <TextInput
+          style={[styles.input, styles.fullInput]}
+          placeholder="State"
+          placeholderTextColor="#C7C7CD"
+          value={state}
+          onChangeText={setState}
+        />
+      </View>
 
       {/* <TouchableOpacity style={styles.swapButton} onPress={handleSwap}>
         <SwapIcon />
@@ -484,30 +524,30 @@ const VehicleClassSelector = ({
   upgradeShownOnce,
   setUpgradeShownOnce,
 }) => {
-  const classes = ['Luxury', 'Business'];
+  const classes = ['Luxury Sedan', 'SUV', 'Executive SUV', 'Limousine'];
 
   const handleSelect = cls => {
     onSelect(cls);
 
     if (!hasVoucher) return; // no voucher = no modal
     if (upgradeShownOnce) return; // user already saw modal
+    setFromClass('Economy');
 
-    if (cls === 'Economy') {
-      setFromClass('Economy');
-      setToClass('Business');
-      setShowUpgradeModal(true);
-      setUpgradeShownOnce(true);
-    }
+    // if (cls === 'Economy') {
+    //   setToClass('Business');
+    //   setShowUpgradeModal(true);
+    //   setUpgradeShownOnce(true);
+    // }
 
-    if (cls === 'Business') {
-      setFromClass('Business');
-      setToClass('Luxury');
-      setShowUpgradeModal(true);
-      setUpgradeShownOnce(true);
-    }
-    if (cls === 'Luxury') {
-      setFromClass('Luxury');
-    }
+    // if (cls === 'Business') {
+    //   setFromClass('Business');
+    //   setToClass('Luxury');
+    //   setShowUpgradeModal(true);
+    //   setUpgradeShownOnce(true);
+    // }
+    // if (cls === 'Luxury') {
+    //   setFromClass('Luxury');
+    // }
   };
 
   return (
@@ -633,20 +673,26 @@ export default function BookingMain({ navigation, route }) {
   );
 
   const [toLocation, setToLocation] = useState(rideData?.drop_location || null);
-  const [showPicker, setShowPicker] = useState(false);
+  const [showPicker1, setShowPicker] = useState(false);
   const [pickerMode, setPickerMode] = useState('date'); // 'date' | 'time'
-  const [selectedClass, setSelectedClass] = useState('Business');
+  const [selectedClass, setSelectedClass] = useState('Luxury Sedan');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isUpgradeClass, setIsUpgradeClass] = useState(false);
   const [fromClass, setFromClass] = useState('');
   const [toClass, setToClass] = useState('');
   const [upgradeShownOnce, setUpgradeShownOnce] = useState(false);
+  const [city, setCity] = useState(rideData?.city || '');
+  const [postalCode, setPostalCode] = useState(rideData?.postalCode || '');
+  const [state, setState] = useState(rideData?.state || '');
   const tabBarHeight = useTabBarHeightHelper();
   const { location } = useStore();
-
-  const [dateTime, setDateTime] = useState({
-    date: 'Select Date',
-    time: 'Select Time',
+  const [activeField, setActiveField] = useState('date'); // 'date', 'from', or 'to'
+  const [show, setShow] = useState(false);
+  const [mode, setMode] = useState('date');
+  const [schedule, setSchedule] = useState({
+    date: null,
+    fromTime: null,
+    toTime: null,
   });
   const resetDone = useRef(false);
 
@@ -656,15 +702,31 @@ export default function BookingMain({ navigation, route }) {
       selectedClass,
       fromLocation?.latitude,
       fromLocation?.longitude,
+      schedule.date,
+      schedule.fromTime,
+      schedule.toTime,
     ],
     queryFn: () =>
       fetchData(
-        `/ride/get-drivers?category_type=${selectedClass}&lat=${fromLocation?.latitude}&lng=${fromLocation?.longitude}`,
+        `/ride/get-drivers?category_type=${selectedClass}&lat=${
+          fromLocation?.latitude
+        }&lng=${fromLocation?.longitude}&day=${formatAPIDate(
+          schedule.date,
+        )}&fromTime=${formatAPITime(schedule.fromTime)}&toTime=${formatAPITime(
+          schedule.toTime,
+        )}`,
       ),
     keepPreviousData: true,
     enabled:
-      !!selectedClass && !!fromLocation?.latitude && !!fromLocation?.longitude,
+      !!selectedClass &&
+      !!fromLocation?.latitude &&
+      !!fromLocation?.longitude &&
+      !!schedule.date &&
+      !!schedule.fromTime &&
+      !!schedule.toTime,
   });
+
+  console.log(data, 'get-drivers');
 
   // ride fare
   const {
@@ -678,20 +740,20 @@ export default function BookingMain({ navigation, route }) {
       selectedClass,
       fromLocation?.latitude,
       fromLocation?.longitude,
-      toLocation?.latitude,
-      toLocation?.longitude,
       selectedCar,
       // voucherData?.voucher?.type,
       isUpgradeClass,
+      schedule.date,
+      schedule.fromTime,
+      schedule.toTime,
     ],
     queryFn: () => {
       const queryParams = new URLSearchParams({
-        pickup_lat: fromLocation?.latitude?.toString(),
-        pickup_lng: fromLocation?.longitude?.toString(),
-        drop_lat: toLocation?.latitude?.toString(),
-        drop_lng: toLocation?.longitude?.toString(),
-        category_type: fromClass == '' ? selectedClass : fromClass,
-        upgrade_class: isUpgradeClass,
+        category_type: selectedClass,
+        day: formatAPIDate(schedule.date),
+        fromTime: formatAPITime(schedule.fromTime),
+        toTime: formatAPITime(schedule.toTime),
+
         vehicle_id: selectedCar || '',
       }).toString();
 
@@ -699,17 +761,29 @@ export default function BookingMain({ navigation, route }) {
     },
     keepPreviousData: true,
     enabled:
-      !!selectedClass &&
-      !!fromLocation?.latitude &&
-      !!fromLocation?.longitude &&
-      !!toLocation?.latitude &&
-      !!toLocation?.longitude &&
+      !!schedule.date &&
+      !!schedule.fromTime &&
+      !!schedule.toTime &&
       !!selectedCar,
   });
+
+  console.log(ridefare, 'ridefare');
 
   useEffect(() => {
     if (rideData?.pick_location) {
       setFromLocation(rideData?.pick_location);
+    }
+
+    if (rideData?.postalCode) {
+      setPostalCode(rideData?.postalCode);
+    }
+
+    if (rideData?.city) {
+      setCity(rideData?.city);
+    }
+
+    if (rideData?.state) {
+      setState(rideData?.state);
     }
 
     if (rideData?.drop_location) {
@@ -730,20 +804,52 @@ export default function BookingMain({ navigation, route }) {
     setToLocation(prev => fromLocation);
   }, [fromLocation, toLocation]);
 
-  const onChange = (event, selectedDate) => {
-    if (selectedDate) {
-      const currentDate = new Date(selectedDate);
+  const onChange = (event, selectedTime) => {
+    if (event.type === 'dismissed') {
+      setShow(false);
+      return;
+    }
 
-      if (pickerMode === 'date') {
-        const formattedDate = currentDate.toISOString().split('T')[0];
-        setDateTime(prev => ({ ...prev, date: formattedDate }));
-      } else {
-        const hours = currentDate.getHours().toString().padStart(2, '0');
-        const minutes = currentDate.getMinutes().toString().padStart(2, '0');
-        const formattedTime = `${hours}:${minutes}`;
-        setDateTime(prev => ({ ...prev, time: formattedTime }));
+    // Get the current date or selected date
+    const baseDate = schedule.date || new Date();
+
+    // Merge the selected time into the base date
+    const mergedDateTime = new Date(baseDate);
+    mergedDateTime.setHours(selectedTime.getHours());
+    mergedDateTime.setMinutes(selectedTime.getMinutes());
+    mergedDateTime.setSeconds(0);
+    mergedDateTime.setMilliseconds(0);
+
+    if (Platform.OS === 'android') setShow(false);
+
+    // --- VALIDATION LOGIC ---
+    if (activeField === 'fromTime' && schedule.toTime) {
+      if (mergedDateTime >= schedule.toTime) {
+        Alert.alert(
+          'Invalid Time',
+          "The 'From' time must be earlier than the 'To' time.",
+        );
+        return;
       }
     }
+
+    if (activeField === 'toTime' && schedule.fromTime) {
+      if (mergedDateTime <= schedule.fromTime) {
+        Alert.alert(
+          'Invalid Time',
+          "The 'To' time must be later than the 'From' time.",
+        );
+        return;
+      }
+    }
+    // ------------------------
+
+    console.log(mergedDateTime, 'selectedDateTime');
+
+    setSchedule(prev => ({
+      ...prev,
+      [activeField]: mergedDateTime,
+    }));
   };
 
   const showDatepicker = () => {
@@ -773,7 +879,6 @@ export default function BookingMain({ navigation, route }) {
 
     setRideData({
       pick_location: fromLocation,
-      drop_location: toLocation,
       selectedClass,
       for_api_class: fromClass == '' ? selectedClass : fromClass,
       ...ridefare?.data,
@@ -781,8 +886,11 @@ export default function BookingMain({ navigation, route }) {
       is_upgrade_class: isUpgradeClass,
       is_schedule: false,
       isScheduledRide,
-      dateTime,
+      schedule,
       voucher_ids,
+      postalCode,
+      city,
+      state,
     });
 
     navigation.navigate('ConfirmBooking');
@@ -818,6 +926,13 @@ export default function BookingMain({ navigation, route }) {
       });
     }
   }, [isError]);
+  const showPicker = (field, pickerMode) => {
+    setActiveField(field);
+    setMode(pickerMode);
+    setShow(true);
+  };
+
+  console.log(schedule, 'schedule');
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -840,7 +955,7 @@ export default function BookingMain({ navigation, route }) {
 
       <TouchableWithoutFeedback onPress={() => setShowPicker(false)}>
         <ScrollView
-          contentContainerStyle={{ paddingBottom: tabBarHeight - 20 }}
+          contentContainerStyle={{ paddingBottom: tabBarHeight + 50 }}
           showsVerticalScrollIndicator={false}
         >
           {/* --- White Section (main content) --- */}
@@ -856,13 +971,17 @@ export default function BookingMain({ navigation, route }) {
               onFromChange={setFromLocation}
               onToChange={setToLocation}
               userLocation={location}
+              city={city}
+              setCity={setCity}
+              setState={setState}
+              state={state}
+              setPostalCode={setPostalCode}
+              postalCode={postalCode}
             />
-            <View>
-              
-            </View>
+            {/* <View></View> */}
 
             {/* --- Booking Toggle --- */}
-            <View style={styles.toggleContainer}>
+            {/* <View style={styles.toggleContainer}>
               <TouchableOpacity
                 style={[
                   styles.toggleButton,
@@ -896,73 +1015,81 @@ export default function BookingMain({ navigation, route }) {
                   Schedule a Ride
                 </Text>
               </TouchableOpacity>
-            </View>
+            </View> */}
 
             {/* --- Schedule Details --- */}
-            {isScheduledRide && (
-              <View style={styles.scheduleDetails}>
-                <Text style={styles.sectionTitle}>
-                  Select desired date & time
+            <View style={styles.scheduleDetails}>
+              <Text style={styles.sectionTitle}>
+                Select desired date & time
+              </Text>
+
+              {/* Date Picker */}
+              <TouchableOpacity
+                style={styles.fullPicker}
+                onPress={() => showPicker('date', 'date')}
+              >
+                <Text
+                  style={[
+                    styles.pickerText,
+                    !schedule.date && styles.placeholderText,
+                  ]}
+                >
+                  {formatDate(schedule.date)}
                 </Text>
+                <Icon name="calendar-outline" size={20} color="#999" />
+              </TouchableOpacity>
 
-                <View style={styles.dateTimeRow}>
-                  <TouchableOpacity
-                    style={styles.datePicker}
-                    onPress={showDatepicker}
-                  >
-                    <Text style={styles.datePickerText}>{dateTime.date}</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={styles.timePicker}
-                    onPress={showTimepicker}
-                  >
-                    <Text style={styles.datePickerText}>{dateTime.time}</Text>
-                  </TouchableOpacity>
-                </View>
-
-                {showPicker && (
-                  // 👇 Wrap in TouchableWithoutFeedback to detect outside taps
-                  <View style={styles.overlay}>
-                    <View style={styles.pickerContainer}>
-                      <DateTimePicker
-                        value={
-                          pickerMode === 'date'
-                            ? new Date(dateTime.date)
-                            : new Date(dateTime.time)
-                        }
-                        mode={pickerMode}
-                        display={'spinner'} // 👈 for date use 'default'
-                        onChange={onChange}
-                        textColor="black"
-                        themeVariant="light"
-                        is24Hour={false}
-                        minimumDate={new Date()} // ⛔ Prevent past date
-                        style={{
-                          marginTop: 10,
-                          backgroundColor: '#f2f2f2',
-                          borderRadius: 12,
-                        }}
-                      />
-                      <TouchableOpacity
-                        style={styles.doneBtn}
-                        onPress={() => setShowPicker(false)}
-                      >
-                        <Text
-                          style={{
-                            color: '#000',
-                            fontSize: 16,
-                            textAlign: 'center',
-                          }}
-                        >
-                          Done
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                )}
+              <View style={styles.labelRow}>
+                <Text style={styles.timeLabel}>From</Text>
+                <Text style={styles.timeLabel}>To</Text>
               </View>
-            )}
+
+              <View style={styles.row}>
+                {/* From Time */}
+                <TouchableOpacity
+                  style={styles.halfPicker}
+                  onPress={() => showPicker('fromTime', 'time')}
+                >
+                  <Text
+                    style={[
+                      styles.pickerText,
+                      !schedule.fromTime && styles.placeholderText,
+                    ]}
+                  >
+                    {format24h(schedule.fromTime)}
+                  </Text>
+                  <Icon name="time-outline" size={18} color="#999" />
+                </TouchableOpacity>
+
+                {/* To Time */}
+                <TouchableOpacity
+                  style={styles.halfPicker}
+                  onPress={() => showPicker('toTime', 'time')}
+                >
+                  <Text
+                    style={[
+                      styles.pickerText,
+                      !schedule.toTime && styles.placeholderText,
+                    ]}
+                  >
+                    {format24h(schedule.toTime)}
+                  </Text>
+                  <Icon name="time-outline" size={18} color="#999" />
+                </TouchableOpacity>
+              </View>
+
+              {show && (
+                <DateTimePicker
+                  // Pass new Date() if null so the picker opens at current time
+                  value={schedule[activeField] || new Date()}
+                  mode={mode}
+                  is24Hour={true}
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={onChange}
+                  minimumDate={new Date()} // 👈 Past dates block
+                />
+              )}
+            </View>
 
             {/* --- Vehicle Class Selector --- */}
             <VehicleClassSelector
@@ -1039,8 +1166,8 @@ export default function BookingMain({ navigation, route }) {
           </View>
 
           {/* --- Grey Bottom Section --- */}
-          {ridefare?.data?.totalFare && ridefare?.data?.totalFare !== 0 && (
-            <View style={[styles.bottomContent]}>
+          {(ridefareLoad || ridefare?.data?.totalFare > 0) && (
+            <View style={styles.bottomContent}>
               {ridefareLoad ? (
                 <SkeletonBox
                   height={90}
@@ -1052,14 +1179,12 @@ export default function BookingMain({ navigation, route }) {
               ) : (
                 <View style={styles.fareContainer}>
                   <View>
-                    <Text style={styles.fareTitle}>Estimated Fare:</Text>
+                    <Text style={styles.fareTitle}>Total:</Text>
+                  </View>
+                  <Text style={styles.fareDetails}>
                     <Text style={styles.fareAmount}>
                       ${ridefare?.data?.totalFare || 0}
                     </Text>
-                  </View>
-                  <Text style={styles.fareDetails}>
-                    {ridefare?.data?.distance || `0.0 km`} |{' '}
-                    {ridefare?.data?.duration_min_value || `0.0 min`}
                   </Text>
                 </View>
               )}
@@ -1107,7 +1232,6 @@ const styles = StyleSheet.create({
     // paddingHorizontal: PADDING_HORIZONTAL,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    height: height * 0.3,
   },
 
   headerContainer: {
@@ -1206,7 +1330,7 @@ const styles = StyleSheet.create({
 
   scheduleDetails: {
     backgroundColor: '#fff',
-    padding: wp(6),
+    padding: wp(5),
     borderRadius: 25,
     elevation: 8,
 
@@ -1218,6 +1342,54 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: hp(1.5),
     fontFamily: 'SF Pro',
+  },
+  fullPicker: {
+    backgroundColor: '#F2F2F2',
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: wp(3),
+
+    height: hp(6.5),
+
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+    marginBottom: 20,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  timeLabel: {
+    width: '48%',
+    fontSize: 14,
+    color: '#444',
+    paddingLeft: 4,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  halfPicker: {
+    backgroundColor: '#F2F2F2',
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: wp(3),
+
+    height: hp(6.5),
+
+    width: '48%',
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+  },
+  pickerText: {
+    fontSize: 14,
+    color: '#1A1A1A',
+    fontWeight: '500',
   },
   dateTimeRow: {
     flexDirection: 'row',
@@ -1256,23 +1428,26 @@ const styles = StyleSheet.create({
   },
   classButtonsRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap', // important
     justifyContent: 'space-between',
     borderRadius: 10,
     padding: 3,
-    gap: 5,
+    gap: 8,
   },
+
   classButton: {
-    flex: 1,
+    width: '48%', // 2 buttons per row
     paddingVertical: hp(1),
     borderRadius: 8,
     alignItems: 'center',
     backgroundColor: LIGHT_GREY,
   },
+
   classButtonActive: {
     backgroundColor: PRIMARY_YELLOW,
   },
   classButtonText: {
-    fontSize: wp(3.5),
+    fontSize: wp(4),
     fontWeight: '500',
     color: '#333',
   },
@@ -1366,14 +1541,15 @@ const styles = StyleSheet.create({
     width: wp(90),
     borderWidth: wp(0.3),
     borderColor: '#AFAFAF',
-    paddingVertical: hp(1.2),
+    paddingVertical: hp(2.2),
     paddingHorizontal: wp(8),
     borderRadius: wp(5),
     alignSelf: 'center',
   },
   fareTitle: {
-    fontSize: wp(3.5),
-    color: '#888',
+    fontSize: wp(5.5),
+    color: '#111',
+    fontWeight: '600',
   },
   fareAmount: {
     fontSize: wp(5.5),
@@ -1559,5 +1735,32 @@ const styles = StyleSheet.create({
     marginTop: hp(2),
     padding: hp(1.5),
     borderRadius: 12,
+  },
+  formWrapper: {
+    width: '100%',
+    marginTop: hp(2),
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  input: {
+    height: 55,
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
+    borderRadius: 18, // High radius for that "pill" look
+    paddingHorizontal: 20,
+    fontSize: 16,
+    height: hp(6.5),
+
+    color: '#333',
+  },
+  halfInput: {
+    // Calculates width to be roughly half minus half the gap
+    width: '48.5%',
+  },
+  fullInput: {
+    width: '100%',
+    marginTop: hp(2),
   },
 });

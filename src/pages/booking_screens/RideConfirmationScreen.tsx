@@ -106,6 +106,8 @@ const RideConfirmationScreen = ({ navigation, route }) => {
 
   useEffect(() => {
     const driver_id = data?.data?.driver?._id;
+    console.log(data?.data,"data");
+    
     const driver_loc = {
       latitude: data?.data?.driver?.location?.coordinates[1],
       longitude: data?.data?.driver?.location?.coordinates[0],

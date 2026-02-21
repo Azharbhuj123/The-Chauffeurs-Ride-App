@@ -44,20 +44,20 @@ export default function App() {
   const { userData, role } = useUserStore();
   const queryClient = new QueryClient();
   const { rideId } = useRideStore(); // get latest rideId
-const rideIdRef = useRef(rideId);
+  const rideIdRef = useRef(rideId);
 
-// Update ref whenever rideId changes
-const [permissionStatus, setPermissionStatus] = useState('');
-const [appState, setAppState] = useState(AppState.currentState);
+  // Update ref whenever rideId changes
+  const [permissionStatus, setPermissionStatus] = useState('');
+  const [appState, setAppState] = useState(AppState.currentState);
 
-// Toast configuration
-const toastConfig = {
-  success: props => (
-    <BaseToast
-    {...props}
-    style={{
-      borderLeftColor: '#000',
-      
+  // Toast configuration
+  const toastConfig = {
+    success: props => (
+      <BaseToast
+        {...props}
+        style={{
+          borderLeftColor: '#000',
+
           backgroundColor: '#fff',
           marginTop: Platform.OS === 'ios' ? hp(3) : 2,
         }}
@@ -99,10 +99,9 @@ const toastConfig = {
     ),
   };
 
-
   useEffect(() => {
-        rideIdRef.current = rideId;
-      }, [rideId]);
+    rideIdRef.current = rideId;
+  }, [rideId]);
   // Socket & user room initialization
   useEffect(() => {
     if (userData?._id) {
@@ -113,44 +112,43 @@ const toastConfig = {
 
   // Request location permissions (foreground + background)
   const requestLocationPermission = async () => {
-  try {
-    if (Platform.OS === 'ios') {
-      // Step 1: Request "When In Use" permission first
-      const whenInUse = await request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
-      console.log('When In Use:', whenInUse);
+    try {
+      if (Platform.OS === 'ios') {
+        // Step 1: Request "When In Use" permission first
+        const whenInUse = await request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
+        console.log('When In Use:', whenInUse);
 
-      if (whenInUse === RESULTS.GRANTED) {
-        // Step 2: Then request "Always" permission
-        const always = await request(PERMISSIONS.IOS.LOCATION_ALWAYS);
-        console.log('Always permission:', always);
+        if (whenInUse === RESULTS.GRANTED) {
+          // Step 2: Then request "Always" permission
+          const always = await request(PERMISSIONS.IOS.LOCATION_ALWAYS);
+          console.log('Always permission:', always);
 
-        setPermissionStatus(always);
+          setPermissionStatus(always);
 
-        // Start tracking once we have any permission
-        if (always === RESULTS.GRANTED || whenInUse === RESULTS.GRANTED) {
-          startLocationTracking();
+          // Start tracking once we have any permission
+          if (always === RESULTS.GRANTED || whenInUse === RESULTS.GRANTED) {
+            startLocationTracking();
+          }
+        } else {
+          console.warn('Location permission not granted.');
         }
       } else {
-        console.warn('Location permission not granted.');
+        // Android flow
+        const fine = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
+        const background = await request(
+          PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION,
+        );
+
+        console.log('Fine location:', fine);
+        console.log('Background location:', background);
+
+        setPermissionStatus(fine);
+        if (fine === RESULTS.GRANTED) startLocationTracking();
       }
-    } else {
-      // Android flow
-      const fine = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
-      const background = await request(
-        PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION,
-      );
-
-      console.log('Fine location:', fine);
-      console.log('Background location:', background);
-
-      setPermissionStatus(fine);
-      if (fine === RESULTS.GRANTED) startLocationTracking();
+    } catch (error) {
+      console.error('Permission request error:', error);
     }
-  } catch (error) {
-    console.error('Permission request error:', error);
-  }
-};
-
+  };
 
   // Check permission on app start
   useEffect(() => {
@@ -163,14 +161,13 @@ const toastConfig = {
       position => {
         console.log('User location:', position.coords);
         setLocation(position.coords);
-        
+
         if (userData?._id) {
           socket.emit('user-location', {
             userId: userData._id.toString(),
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           });
-        
         }
       },
       error => console.error('Location watch error:', error),

@@ -105,31 +105,30 @@ export const TripHistoryScreen = ({ navigation }) => {
                 <View style={styles.itineraryContainer}>
                   <View style={styles.line} />
                   <View style={[styles.dot, styles.pickupDot]} />
-                  <View style={[styles.dot, styles.dropoffDot]} />
+                  {/* <View style={[styles.dot, styles.dropoffDot]} /> */}
 
                   <View style={styles.locationDetails}>
                     <View style={{ marginBottom: hp(2.5) }}>
                       <Text style={styles.locationTitle}>Pickup</Text>
                       <Text style={styles.locationSub}>{pickup}</Text>
                     </View>
-                    <View>
+                    {/* <View>
                       <Text style={styles.locationTitle}>Drop-off</Text>
                       <Text style={styles.locationSub}>{dropoff}</Text>
-                    </View>
+                    </View> */}
                   </View>
                 </View>
 
                 {/* View Details Button */}
-                
-                  <Button
-                    onPress={() =>
-                      navigation.navigate('TripReceipt', {
-                        tripId: trip._id,
-                      })
-                    }
-                    title="View Receipt & Details"
-                  />
-                 
+
+                <Button
+                  onPress={() =>
+                    navigation.navigate('TripReceipt', {
+                      tripId: trip._id,
+                    })
+                  }
+                  title="View Receipt & Details"
+                />
               </View>
             );
           })

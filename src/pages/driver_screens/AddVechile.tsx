@@ -207,7 +207,6 @@ export default function VehicleRegistration({ route, navigation }) {
   });
 
 const permanentOption = { label: 'For Self Drive', value: 'Self Drive' };
-console.log(data,"data");
 
 const options = [
   permanentOption,
@@ -991,7 +990,7 @@ const options = [
           </View>
         )}
 
-        {currentStep === 5 && (
+        {/* {currentStep === 5 && (
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={styles.button}
@@ -1001,7 +1000,7 @@ const options = [
               <Text style={styles.buttonText}>Go to Home</Text>
             </TouchableOpacity>
           </View>
-        )}
+        )} */}
       </ScrollView>
     </SafeAreaView>
   );

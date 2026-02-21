@@ -86,6 +86,10 @@ const MapScreen = ({ driverLocation = { latitude: 0, longitude: 0 }, userLoc = {
     }
   };
 
+  console.log(driverLocation,"driverLocation");
+  console.log(userLoc,"userLoc");
+  
+
   return (
     <View style={styles.container}>
       <MapView

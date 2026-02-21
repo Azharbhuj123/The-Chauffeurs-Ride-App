@@ -23,12 +23,14 @@ import { useUserStore } from '../../stores/useUserStore';
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
 import { formatSmartDate } from '../../utils/DateFormats';
-import { COLORS } from '../../utils/Enums';
+import { COLORS, formatDate2, formatTime } from '../../utils/Enums';
 import { useLoaderStore } from '../../stores/useLoaderStore';
 import AppLoader from '../../components/AppLoader';
 import { useStore } from '../../stores/useStore';
 import { socket, joinUserRoom } from '../../utils/socket';
 import { useRideStore } from '../../stores/rideStore';
+
+ 
 
 export default function Home({ navigation }) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -54,8 +56,6 @@ export default function Home({ navigation }) {
   useFocusEffect(
     useCallback(() => {
       if (!userLastRide) return; // wait until userLastRide is defined
-
-      console.log(userLastRide, 'userLastRide');
 
       if (!userLastRide.IsPaid) {
         navigation.navigate('Bookings', {
@@ -173,8 +173,6 @@ export default function Home({ navigation }) {
   };
 
   const handleBookAgain = data => {
-    console.log(data, 'again');
-
     // Extract coordinates
     const pickLat = data?.pickup_location?.coordinates[1];
     const pickLng = data?.pickup_location?.coordinates[0];
@@ -194,18 +192,23 @@ export default function Home({ navigation }) {
       shortAddress: data?.pickup_location?.famous_location,
     };
 
-    const drop_location = {
-      latitude: dropLat,
-      longitude: dropLng,
-      address: data?.drop_location?.address,
-      shortAddress: data?.drop_location?.famous_location,
-    };
+    // const drop_location = {
+    //   latitude: dropLat,
+    //   longitude: dropLng,
+    //   address: data?.drop_location?.address,
+    //   shortAddress: data?.drop_location?.famous_location,
+    // };
 
     // Update ride data
-    setRideData({ pick_location, drop_location });
-    navigation.navigate('Bookings',{
+    setRideData({
+      pick_location,
+      postalCode: data?.postalCode,
+      city: data?.city,
+      state: data?.state,
+    });
+    navigation.navigate('Bookings', {
       screen: 'BookingMain',
-      params: { prevRideData : true}
+      params: { prevRideData: true },
     });
   };
 
@@ -235,9 +238,9 @@ export default function Home({ navigation }) {
             style={styles.ctaCard}
           >
             <View>
-              <Text style={styles.ctaTitle}>Book a Ride</Text>
+              <Text style={styles.ctaTitle}>Hire a Driver</Text>
               <Text style={styles.ctaSubtitle}>
-                Instant or Scheduled Luxury
+                Book for Hours • Flexible & Reliable
               </Text>
             </View>
             <Icon name="chevron-forward" size={wp('8%')} color="#000" />
@@ -293,6 +296,39 @@ export default function Home({ navigation }) {
             />
           </View> */}
 
+          {/* Schedule Ride */}
+          {Array.isArray(data?.schedule_destination) &&
+            data?.schedule_destination?.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Schedule Ride</Text>
+                {data?.schedule_destination?.map(des => (
+                  <View key={des?._id} style={styles.destinationCard}>
+                    <View>
+                      <Text style={styles.destinationTitle}>
+                        {des?.pickup_location?.famous_location}
+                      </Text>
+                      <Text style={styles.destinationSubtitle}>
+                     Schedule At: {formatDate2(new Date(des?.schedule?.date))} {formatTime(new Date(des?.schedule?.from))}  - {formatTime(new Date(des?.schedule?.to))}
+                        {/* {des?.distance} */}
+                      </Text>
+                    </View>
+                    {/* <Icon name="chevron-forward" size={wp('5%')} color="#666" /> */}
+                    {/* <TouchableOpacity onPress={() => handleBookAgain(des)}>
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          color: COLORS.warning,
+                          fontFamily: 'Poppins-Regular',
+                        }}
+                      >
+                        Book Again
+                      </Text>
+                    </TouchableOpacity> */}
+                  </View>
+                ))}
+              </View>
+            )}
+
           {/* Quick Destinations */}
           {Array.isArray(data?.quick_destination) &&
             data?.quick_destination?.length > 0 && (
@@ -305,8 +341,8 @@ export default function Home({ navigation }) {
                         {des?.pickup_location?.famous_location}
                       </Text>
                       <Text style={styles.destinationSubtitle}>
-                        Last Trip: {formatSmartDate(des?.ride_complete_at)} |{' '}
-                        {des?.distance}
+                        Last Trip: {formatSmartDate(des?.schedule?.date)}
+                        {/* {des?.distance} */}
                       </Text>
                     </View>
                     {/* <Icon name="chevron-forward" size={wp('5%')} color="#666" /> */}
@@ -373,7 +409,7 @@ const styles = StyleSheet.create({
   },
   rideStatusCard: {
     backgroundColor: '#fff',
-                    elevation: 8,
+    elevation: 8,
 
     borderWidth: 1,
     borderColor: '1px solid rgba(17, 17, 17, 0.10)',
@@ -474,7 +510,7 @@ const styles = StyleSheet.create({
   },
   destinationCard: {
     backgroundColor: '#fff',
-                    elevation: 8,
+    elevation: 8,
 
     borderWidth: 1,
     borderColor: '1px solid rgba(17, 17, 17, 0.10)',

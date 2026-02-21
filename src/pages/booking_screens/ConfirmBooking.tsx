@@ -13,9 +13,12 @@ import {
   Pressable,
   ActivityIndicator,
   FlatList,
+  Alert,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon2 from 'react-native-vector-icons/Ionicons';
 import TimeIcon from 'react-native-vector-icons/Ionicons';
 import {
   heightPercentageToDP as hp,
@@ -29,7 +32,14 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { COLORS, GOOGLE_MAP_API_KEY } from '../../utils/Enums';
+import {
+  COLORS,
+  format24h,
+  formatAPIDate,
+  formatAPITime,
+  formatDate,
+  GOOGLE_MAP_API_KEY,
+} from '../../utils/Enums';
 import { useStore } from '../../stores/useStore';
 import useActionMutation from '../../queryFunctions/useActionMutation';
 import { showToast } from '../../utils/toastHelper';
@@ -40,7 +50,11 @@ import { showFlash } from '../../utils/flashMessageHelper';
 import { useRideStore } from '../../stores/rideStore';
 import SkeletonContent from 'react-native-skeleton-content';
 import SkeletonBox from '../../utils/SkeletonBox';
+const { width, height } = Dimensions.get('window');
 
+const fs = size => {
+  return Math.sqrt(height * height + width * width) * (size / 1000);
+};
 const ConfirmBooking = ({ navigation, route }) => {
   const [paymentMethod, setPaymentMethod] = useState('Card');
   const [pickup, setPickup] = useState('Current Location');
@@ -50,7 +64,7 @@ const ConfirmBooking = ({ navigation, route }) => {
   const [time, setTime] = useState();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const { rideData, setRideData } = useRideStore();
+  const { rideData, setRideData, clearRideRequests } = useRideStore();
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   // New states for location suggestions
@@ -64,6 +78,15 @@ const ConfirmBooking = ({ navigation, route }) => {
   const [timer, setTimer] = useState(0);
   const [ride_id, setRide_id] = useState(null);
   const intervalRef = useRef(null);
+  const [activeField, setActiveField] = useState('date'); // 'date', 'from', or 'to'
+
+  const [show, setShow] = useState(false);
+  const [mode, setMode] = useState('date');
+  const [schedule, setSchedule] = useState({
+    date: rideData?.schedule.date,
+    fromTime: rideData?.schedule.fromTime,
+    toTime: rideData?.schedule.toTime,
+  });
 
   const searchInputRef = useRef(null);
   const debounceTimerRef = useRef(null);
@@ -81,37 +104,28 @@ const ConfirmBooking = ({ navigation, route }) => {
   });
 
   const { data: rideFare } = useQuery({
-    queryKey: ['ride-Fare', rideData],
+    queryKey: ['ride-Fare', schedule],
     queryFn: () => {
-      const {
-        drop_location,
-        pick_location,
-        selectedClass,
-        for_api_class,
-        selectedCar,
-        is_upgrade_class,
-      } = rideData || {};
       const params = new URLSearchParams({
-        pickup_lat: pick_location?.latitude,
-        pickup_lng: pick_location?.longitude,
-        drop_lat: drop_location?.latitude,
-        drop_lng: drop_location?.longitude,
-        category_type: for_api_class,
-        upgrade_class: is_upgrade_class || false,
-        vehicle_id: selectedCar || '',
+        category_type: rideData?.selectedClass,
+        day: formatAPIDate(schedule.date),
+        fromTime: formatAPITime(schedule.fromTime),
+        toTime: formatAPITime(schedule.toTime),
+
+        vehicle_id: rideData?.selectedCar || '',
       }).toString();
 
       return fetchData(`/ride/ride-estimation?${params}`);
     },
     keepPreviousData: true,
     enabled:
-      !!rideData?.for_api_class &&
-      !!rideData?.drop_location?.latitude &&
-      !!rideData?.drop_location?.longitude &&
-      !!rideData?.pick_location?.latitude &&
-      !!rideData?.pick_location?.longitude &&
+      !!schedule.date &&
+      !!schedule.fromTime &&
+      !!schedule.toTime &&
       !!rideData?.selectedCar,
   });
+
+  console.log(rideFare, 'rideFare');
 
   const { data: voucherData } = useQuery({
     queryKey: ['check-voucher'],
@@ -316,7 +330,17 @@ const ConfirmBooking = ({ navigation, route }) => {
   const { triggerMutation, loading } = useActionMutation({
     onSuccessCallback: async data => {
       if (data?.is_schedule) {
-        navigation.navigate('Home');
+        showFlash({
+          type: 'success',
+          title: 'Ride Scheduled',
+          message: 'Your ride has been scheduled successfully.',
+          backgroundColor: COLORS.success,
+        });
+        clearRideRequests();
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Home' }],
+        });
         return;
       }
       if (data?.data?._id) {
@@ -330,6 +354,8 @@ const ConfirmBooking = ({ navigation, route }) => {
       }
     },
     onErrorCallback: errmsg => {
+      console.log(errmsg, 'errmsg');
+
       showToast({
         type: 'error',
         title: 'Ride Creation Failed',
@@ -351,12 +377,20 @@ const ConfirmBooking = ({ navigation, route }) => {
       total_fare: rideData?.totalFare,
       category_type: rideData?.selectedClass,
       ride_time_out: ride_id ? true : false,
-      remaining_fare: parseInt(rideData?.remaining_due),
+      remaining_fare: 0,
       ride_id: ride_id,
       is_upgrade_class: rideData?.is_upgrade_class,
       duration: rideData?.duration_min_value,
       distance: rideData?.distance,
       voucher_ids: final_voucher_ids,
+      postalCode:rideData?.postalCode,
+      city:rideData?.city,
+      state:rideData?.state,
+      schedule: {
+        date: schedule?.date,
+        from: schedule?.fromTime,
+        to: schedule?.toTime,
+      },
     };
 
     const pickup_location = {
@@ -367,13 +401,13 @@ const ConfirmBooking = ({ navigation, route }) => {
       city: pickupLocation?.city,
     };
 
-    const drop_location = {
-      type: 'Point',
-      coordinates: [dropoffLocation?.longitude, dropoffLocation?.latitude],
-      address: dropoffLocation?.address,
-      famous_location: dropoffLocation?.shortAddress,
-      city: dropoffLocation?.city,
-    };
+    // const drop_location = {
+    //   type: 'Point',
+    //   coordinates: [dropoffLocation?.longitude, dropoffLocation?.latitude],
+    //   address: dropoffLocation?.address,
+    //   famous_location: dropoffLocation?.shortAddress,
+    //   city: dropoffLocation?.city,
+    // };
     if (
       rideData?.isScheduledRide &&
       date instanceof Date &&
@@ -401,8 +435,7 @@ const ConfirmBooking = ({ navigation, route }) => {
     }
 
     body.pickup_location = pickup_location;
-    body.drop_location = drop_location;
-    body.drop_location = drop_location;
+    // body.drop_location = drop_location;
 
     triggerMutation({
       endPoint: '/ride/',
@@ -456,6 +489,53 @@ const ConfirmBooking = ({ navigation, route }) => {
       setTotalFare(rideData?.totalFare);
     }
   };
+
+  const showPicker = (field, pickerMode) => {
+    setActiveField(field);
+    setMode(pickerMode);
+    setShow(true);
+  };
+
+  const onChange = (event, selectedDate) => {
+    if (event.type === 'dismissed') {
+      setShow(false);
+      return;
+    }
+
+    const selectedValue = selectedDate || new Date();
+    if (Platform.OS === 'android') setShow(false);
+
+    // --- VALIDATION LOGIC ---
+    if (activeField === 'fromTime' && schedule.toTime) {
+      // If setting 'From', check if it's after the existing 'To'
+      if (selectedValue >= schedule.toTime) {
+        Alert.alert(
+          'Invalid Time',
+          "The 'From' time must be earlier than the 'To' time.",
+        );
+        return; // Stop execution
+      }
+    }
+
+    if (activeField === 'toTime' && schedule.fromTime) {
+      // If setting 'To', check if it's before the existing 'From'
+      if (selectedValue <= schedule.fromTime) {
+        Alert.alert(
+          'Invalid Time',
+          "The 'To' time must be later than the 'From' time.",
+        );
+        return; // Stop execution
+      }
+    }
+    // ------------------------
+
+    setSchedule(prev => ({
+      ...prev,
+      [activeField]: selectedValue,
+    }));
+  };
+
+  console.log(rideData, 'schedule');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -686,86 +766,70 @@ const ConfirmBooking = ({ navigation, route }) => {
             <Icon name="pencil" size={wp(4)} color="#9CA3AF" />
           </TouchableOpacity>
 
-          {/* Drop-off Location */}
-          <Text style={styles.sectionLabel}>Drop-off Location</Text>
+          {/* Date Picker */}
           <TouchableOpacity
-            style={styles.locationCard}
-            onPress={() => handleLocationInputPress('dropoff')}
-            activeOpacity={0.7}
+            style={styles.fullPicker}
+            onPress={() => showPicker('date', 'date')}
           >
-            <Icon name="map-marker" size={wp(5)} color="#374151" />
-            <Text style={styles.locationInput} numberOfLines={1}>
-              {dropoff}
+            <Text
+              style={[
+                styles.pickerText,
+                !schedule.date && styles.placeholderText,
+              ]}
+            >
+              {formatDate(schedule.date)}
             </Text>
-            <Icon name="pencil" size={wp(4)} color="#9CA3AF" />
+            <Icon name="calendar-outline" size={20} color="#999" />
           </TouchableOpacity>
-          {rideData?.isScheduledRide && (
-            <View style={styles.dateTimeContainer}>
-              {/* Date Picker Field */}
-              <TouchableOpacity
-                style={styles.dateTimeInput}
-                onPress={() => setShowDatePicker(true)}
-                activeOpacity={0.8}
+
+          <View style={styles.labelRow}>
+            <Text style={styles.timeLabel}>From</Text>
+            <Text style={styles.timeLabel}>To</Text>
+          </View>
+
+          <View style={styles.row}>
+            {/* From Time */}
+            <TouchableOpacity
+              style={styles.halfPicker}
+              onPress={() => showPicker('fromTime', 'time')}
+            >
+              <Text
+                style={[
+                  styles.pickerText,
+                  !schedule.fromTime && styles.placeholderText,
+                ]}
               >
-                <Text style={styles.textValue}>
-                  {date?.toLocaleDateString('en-US')}
-                </Text>
-                <Icon name="calendar-outline" size={wp(4.5)} color="#6B7280" />
-              </TouchableOpacity>
+                {format24h(schedule.fromTime)}
+              </Text>
+              <Icon2 name="time-outline" size={18} color="#999" />
+            </TouchableOpacity>
 
-              {/* Time Picker Field */}
-              <TouchableOpacity
-                style={styles.dateTimeInput}
-                onPress={() => setShowTimePicker(true)}
-                activeOpacity={0.8}
+            {/* To Time */}
+            <TouchableOpacity
+              style={styles.halfPicker}
+              onPress={() => showPicker('toTime', 'time')}
+            >
+              <Text
+                style={[
+                  styles.pickerText,
+                  !schedule.toTime && styles.placeholderText,
+                ]}
               >
-                <Text style={styles.textValue}>
-                  {time
-                    ? time.toLocaleTimeString('en-GB', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })
-                    : ''}
-                </Text>
+                {format24h(schedule.toTime)}
+              </Text>
+              <Icon2 name="time-outline" size={18} color="#999" />
+            </TouchableOpacity>
+          </View>
 
-                <TimeIcon name="time-outline" size={wp(4.5)} color="#6B7280" />
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {/* Date Picker Overlay */}
-          {showDatePicker && (
-            <View style={styles.pickerOverlay}>
-              <DateTimePicker
-                value={date}
-                mode="date"
-                minimumDate={new Date()} // ⛔ Prevent past date
-                display="spinner"
-                onChange={onChangeDate}
-                style={{
-                  marginTop: 10,
-                  backgroundColor: 'gray',
-                  borderRadius: 12,
-                }}
-              />
-            </View>
-          )}
-
-          {/* Time Picker Overlay */}
-          {showTimePicker && (
-            <View style={styles.pickerOverlay}>
-              <DateTimePicker
-                value={time}
-                mode="time"
-                display="spinner"
-                onChange={onChangeTime}
-                style={{
-                  marginTop: 10,
-                  backgroundColor: 'gray',
-                  borderRadius: 12,
-                }}
-              />
-            </View>
+          {show && (
+            <DateTimePicker
+              // Pass new Date() if null so the picker opens at current time
+              value={schedule[activeField] || new Date()}
+              mode={mode}
+              is24Hour={true}
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={onChange}
+            />
           )}
         </View>
 
@@ -812,7 +876,7 @@ const ConfirmBooking = ({ navigation, route }) => {
         <View style={styles.fareCard}>
           <View style={styles.fareContent}>
             <View>
-              <Text style={styles.fareLabel}>Total Estimated Fare</Text>
+              <Text style={styles.fareLabel}>Total Cost:</Text>
               <Text style={styles.fareAmount}>
                 ${Number(totalFare)?.toFixed(2)}
               </Text>
@@ -821,9 +885,9 @@ const ConfirmBooking = ({ navigation, route }) => {
               <Text style={styles.fareClass}>
                 {rideData?.selectedClass} Class
               </Text>
-              <Text style={styles.fareDistance}>
+              {/* <Text style={styles.fareDistance}>
                 {rideData?.distance} | {rideData?.duration_min_value}
-              </Text>
+              </Text> */}
             </View>
           </View>
         </View>
@@ -834,7 +898,7 @@ const ConfirmBooking = ({ navigation, route }) => {
             title={
               timer > 0
                 ? `Waiting... ${timer}s`
-                : rideData?.isScheduledRide
+                : rideData?.schedule?.date
                 ? 'Confirm Scheduled Ride'
                 : 'Confirm Booking'
             }
@@ -855,6 +919,9 @@ const ConfirmBooking = ({ navigation, route }) => {
     </SafeAreaView>
   );
 };
+const PRIMARY_YELLOW = COLORS.warning;
+const LIGHT_GREY = '#F3F3F3';
+const PADDING_HORIZONTAL = wp(5);
 
 const styles = StyleSheet.create({
   container: {
@@ -885,9 +952,8 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 20,
-        elevation: 8,
+    elevation: 8,
     backgroundColor: '#fff',
-
 
     padding: 16,
     borderRadius: 20,
@@ -1103,7 +1169,7 @@ const styles = StyleSheet.create({
   fareContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   fareLabel: {
     fontSize: 12,
@@ -1118,7 +1184,7 @@ const styles = StyleSheet.create({
     fontFamily: 'SF Pro',
   },
   fareDetails: {
-    alignItems: 'flex-end',
+    alignItems: 'center',
   },
   fareClass: {
     fontSize: 14,
@@ -1158,7 +1224,7 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     textAlign: 'center',
-    fontSize: 15,
+    fontSize: fs(16),
     fontWeight: '600',
     color: '#000',
     fontFamily: 'SF Pro',
@@ -1238,7 +1304,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 14,
   },
-  currentLocationText: { fontSize: 16, fontWeight: '600', color: COLORS.success },
+  currentLocationText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.success,
+  },
   suggestionsList: { paddingTop: 4 },
   suggestionItem: {
     flexDirection: 'row',
@@ -1270,6 +1340,82 @@ const styles = StyleSheet.create({
   emptyContainer: { paddingVertical: 48, alignItems: 'center' },
   emptyText: { fontSize: 16, color: '#999', marginTop: 12, fontWeight: '500' },
   emptySubtext: { fontSize: 14, color: '#bbb', marginTop: 4 },
+
+  fullPicker: {
+    backgroundColor: '#F2F2F2',
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: wp(3),
+
+    height: hp(6.5),
+
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+    marginBottom: 20,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  timeLabel: {
+    width: '48%',
+    fontSize: 14,
+    color: '#444',
+    paddingLeft: 4,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  halfPicker: {
+    backgroundColor: '#F2F2F2',
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: wp(3),
+
+    height: hp(6.5),
+
+    width: '48%',
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+  },
+  pickerText: {
+    fontSize: 14,
+    color: '#1A1A1A',
+    fontWeight: '500',
+  },
+  dateTimeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  datePicker: {
+    width: '48%',
+    backgroundColor: LIGHT_GREY,
+    borderRadius: 12,
+    paddingHorizontal: wp(3),
+    paddingVertical: hp(1.5),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timePicker: {
+    width: '48%',
+    backgroundColor: LIGHT_GREY,
+    borderRadius: 12,
+    paddingHorizontal: wp(3),
+    paddingVertical: hp(1.5),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  datePickerText: {
+    fontSize: wp(4),
+    color: '#333',
+    fontWeight: '500',
+  },
 });
 
 export default ConfirmBooking;

@@ -74,3 +74,55 @@ export const monthly_filter = [
 
 
 export const GOOGLE_MAP_API_KEY = 'AIzaSyAO096xo1HoduYAuLsAwrHkNUNRedReQkQ';
+
+export const formatAPIDate = (date) => {
+  if (!date) return '';
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
+
+export const formatAPITime = date => {
+  if (!date) return '';
+  return date.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+};
+
+
+
+  // Helper for 24h formatting
+  // 24h Formatter: Returns "HH:mm" or placeholder
+  export const  format24h = date => {
+    if (!date) return 'Select time';
+    return date.toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+  };
+  export const  formatDate = date => {
+    if (!date) return 'Select date';
+    return date.toLocaleDateString('en-US'); // MM/DD/YYYY
+  };
+
+
+
+
+
+    export const formatDate2 = (date) => {
+    return date
+      ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
+      : '';
+  };
+  
+    export const formatTime = (time) => {
+    return time
+      ? `${String(time.getHours()).padStart(2,'0')}:${String(time.getMinutes()).padStart(2,'0')}`
+      : '';
+  };

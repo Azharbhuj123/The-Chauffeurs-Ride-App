@@ -52,6 +52,9 @@ export const TripReceiptScreen = ({ navigation, route }) => {
     Number(ride_detail_payment?.driver_tip || 0)
   ).toFixed(2);
 
+
+
+  
   if(isLoading) {
     return <AppLoader/>
   }
@@ -80,13 +83,13 @@ export const TripReceiptScreen = ({ navigation, route }) => {
           <Text style={styles.sectionTitle}>Trip Summary</Text>
           <DetailRow label="Date & Time" value={formatReadableDate(ride_detail?.ride_complete_at)} />
           <DetailRow label="Vehicle Class" value={`${ride_detail?.vehicle?.vehicle_make} (${ride_detail?.vehicle?.vehicle_model})`} />
-          <DetailRow label="Distance" value={`${ride_detail?.distance}`} />
+          {/* <DetailRow label="Distance" value={`${ride_detail?.distance}`} /> */}
 
           {/* Itinerary */}
           <View style={styles.itineraryContainer}>
             <View style={styles.line} />
             <View style={[styles.dot, styles.pickupDot]} />
-            <View style={[styles.dot, styles.dropoffDot]} />
+            {/* <View style={[styles.dot, styles.dropoffDot]} /> */}
             <View style={styles.locationDetails}>
               <View style={{ marginBottom: hp(2) }}>
                 <Text style={styles.locationLabel}>Pickup Location</Text>
@@ -94,19 +97,20 @@ export const TripReceiptScreen = ({ navigation, route }) => {
                   {ride_detail?.pickup_location?.address}
                 </Text>
               </View>
-              <View>
+              {/* <View>
                 <Text style={styles.locationLabel}>Drop-off Location</Text>
                 <Text style={styles.locationValue}>
                                    {ride_detail?.drop_location?.address}
 
                 </Text>
-              </View>
+              </View> */}
             </View>
           </View>
 
           <Text style={styles.sectionTitle}>Fare Breakdown</Text>
           <DetailRow label="Base Fare" value={ride_detail_payment?.driver_earning} />
-          <DetailRow label="Taxes & Tolls" value={ride_detail_payment?.platform_fee} />
+          <DetailRow label="Platform Fee" value={ride_detail_payment?.platform_fee} />
+          <DetailRow label="Taxes & Tolls" value={ride_detail_payment?.service_tax} />
           {ride_detail_payment?.driver_tip > 0 && (
             <DetailRow label="Driver Tip" value={ride_detail_payment?.driver_tip} />
           )}

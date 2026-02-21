@@ -223,7 +223,7 @@ export default function UploadDoc({ route, navigation }) {
       return;
     }
 
-    setVehicleData({ ...documents, contact:"driver@gmail.com" });
+    setVehicleData({ ...documents, contact});
         navigation.replace('UploadVehicle');
 
     // Build FormData for multipart upload
