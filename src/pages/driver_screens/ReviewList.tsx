@@ -98,7 +98,8 @@ const styles = StyleSheet.create({
   },
   reviewTitle: {
     fontSize: fs(16),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginBottom: hp(1),
   },
@@ -121,7 +122,8 @@ const styles = StyleSheet.create({
   },
   ownerResponseTitle: {
     fontSize: fs(16),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginBottom: hp(1.5),
   },
@@ -137,7 +139,8 @@ const styles = StyleSheet.create({
   },
   repliedLabel: {
     fontSize: fs(14),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#4CAF50',
     marginBottom: hp(0.8),
   },

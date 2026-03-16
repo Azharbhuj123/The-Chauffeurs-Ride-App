@@ -63,8 +63,10 @@ headerTitle: {
   flex: 1,
   textAlign: 'center',
   fontSize: wp(4.5),
-  fontWeight: '600',
+  fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   color: '#000',
+  fontFamily:"Poppins-Regular",
 },
 
   left: {

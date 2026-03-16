@@ -205,7 +205,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
 
-        backgroundColor: COLORS.warning,
+               backgroundColor: '#0D1831',
+
     },
     errorText:error_msg,
     scrollContent: {
@@ -213,7 +214,8 @@ const styles = StyleSheet.create({
     },
     header: {
         height: hp(25),
-        backgroundColor: COLORS.warning,
+               backgroundColor: '#0D1831',
+
         paddingTop: Platform.OS === 'ios' ? hp(6) : hp(4),
         paddingHorizontal: wp(4),
     },
@@ -243,13 +245,17 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: fs(20),
-        fontWeight: 'bold',
+        fontWeight: '0',
+        fontFamily:"Poppins-Regular",
+
         color: '#000',
         marginBottom: hp(1),
     },
     subtitle: {
         fontSize: fs(14),
         color: '#666',
+              fontWeight: '0',
+        fontFamily:"Poppins-Regular",
         marginBottom: hp(3),
     },
     toggleContainer: {
@@ -275,7 +281,8 @@ const styles = StyleSheet.create({
     },
     toggleTextActive: {
         color: '#FFF',
-        fontWeight: '600',
+        fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     },
     inputContainer: {
         flexDirection: 'row',
@@ -295,6 +302,8 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: fs(16),
         color: '#000',
+              fontWeight: '0',
+        fontFamily:"Poppins-Regular",
         paddingVertical: 0,
     },
     signUpButton: {
@@ -318,7 +327,8 @@ const styles = StyleSheet.create({
     },
     signUpButtonText: {
         fontSize: fs(16),
-        fontWeight: '600',
+        fontWeight: '0',
+        fontFamily:"Poppins-Regular",
         color: '#000',
     },
     divider: {
@@ -356,7 +366,8 @@ const styles = StyleSheet.create({
     socialText: {
         fontSize: fs(14),
         color: '#000',
-        fontWeight: '500',
+        fontWeight: '0',
+        fontFamily:"Poppins-Regular",
         marginLeft: wp(2),
     },
     signInContainer: {
@@ -371,7 +382,8 @@ const styles = StyleSheet.create({
     signInLink: {
         fontSize: fs(14),
         color: '#000',
-        fontWeight: '600',
+        fontWeight: '0',
+        fontFamily:"Poppins-Regular",
         textDecorationLine: 'underline',
     },
 

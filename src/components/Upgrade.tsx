@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 10,
     color: "#111",
-    fontFamily:"Poppins"
+    fontFamily:"Poppins-Regular"
   },
   text: {
     fontSize: 15,
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     color: "#444",
     lineHeight: 22,
     marginBottom: 18,
-    fontFamily:"Poppins"
+    fontFamily:"Poppins-Regular"
 
   },
   highlight: {
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   cancelText: {
     textAlign: "center",
     fontWeight: "600",
-    fontFamily:"Poppins",
+    fontFamily:"Poppins-Regular",
 
     color: "#000",
   },
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "700",
         color: "#000",
-    fontFamily:"Poppins"
+    fontFamily:"Poppins-Regular"
 
 
   },

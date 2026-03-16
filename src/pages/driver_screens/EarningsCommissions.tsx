@@ -80,7 +80,6 @@ const EarningsCommissions = ({ navigation }) => {
     keepPreviousData: true,
   });
 
-
   const ride_data = rideData?.data?.data;
 
   const driver_state = data?.stats;
@@ -197,7 +196,7 @@ const EarningsCommissions = ({ navigation }) => {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[{ paddingBottom: tabBarHeight - 50 }]}
+        contentContainerStyle={[{ paddingBottom: tabBarHeight + 20 }]}
       >
         {/* Header Section */}
         {isLoading ? (
@@ -513,14 +512,7 @@ const EarningsCommissions = ({ navigation }) => {
 
         {/* Reports Section */}
         <View style={styles.reportsCard}>
-          <Text style={styles.reportTitle}>Reports & Payout</Text>
-          <Text style={styles.reportSubtitle}>Earnings Trend (Monthly)</Text>
-
-          <View style={styles.reportPlaceholderbox}>
-            <Text style={styles.reportPlaceholder}>
-              [Mock Earnings Trend Graph Placeholder]
-            </Text>
-          </View>
+          
           <Button
             title="Request Payout"
             onPress={() => setShowPayoutModal(true)}
@@ -565,13 +557,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  totalBalanceLabel: { fontSize: 14, color: '#000', fontWeight: '600' },
+  totalBalanceLabel: { fontSize: 14, color: '#000', fontWeight: '600',        fontFamily:"Poppins-Regular",
+ },
   dropdown: {
     width: width * 0.3,
   },
   dropdownText: { fontSize: 12, color: '#444' },
   totalBalance: {
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     fontSize: 26,
     color: '#4CD964',
     marginTop: 4,
@@ -587,8 +581,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#F4F4F4',
     padding: 16,
   },
-  statTitle: { fontSize: 14, color: '#000' },
-  statValue: { fontSize: 12, color: '#000' },
+  statTitle: { fontSize: 14, color: '#000' ,        fontFamily:"Poppins-Regular",
+},
+  statValue: { fontSize: 12, color: '#000',        fontFamily:"Poppins-Regular",
+ },
 
   tabsContainer: {
     flexDirection: 'row',
@@ -598,8 +594,8 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     // marginVertical: 20,
   },
-  tab: { paddingVertical: 10, borderRadius: 20,fontSize:20 },
-  tabText: { fontSize: 16, color: '#777' },
+  tab: { paddingVertical: 10, borderRadius: 20, fontSize: 20 },
+  tabText: { fontSize: 16, color: '#000', fontFamily: 'Poppins-Regular' },
   activeTabText: { color: '#000', fontWeight: '700' },
 
   cardsContainer: {
@@ -636,14 +632,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 6,
   },
-  clientName: { fontSize: 15, fontWeight: '600', color: '#000' },
+  clientName: {
+    fontSize: 15,
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
+    color: '#000',
+  },
   clientAmount: { fontSize: 14, fontWeight: '700', color: '#38A169' },
   clientDetail: { fontSize: 12.5, color: '#666', marginBottom: 2 },
   clientDetailred: {
     fontSize: 12.5,
     color: '#ff0000ff',
     marginBottom: 2,
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
   },
   viewReportButton: {
     backgroundColor: '#FFF',
@@ -660,14 +662,13 @@ const styles = StyleSheet.create({
   reportsCard: {
     marginHorizontal: 16,
     padding: 20,
-    borderRadius: 15,
-    borderWidth: 1,
-    borderColor: 'rgba(17,17,17,0.10)',
-    backgroundColor: '#FFF',
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 50,
-    marginBottom: 100,
+    // borderRadius: 15,
+    // borderWidth: 1,
+    // borderColor: 'rgba(17,17,17,0.10)',
+    // backgroundColor: '#FFF',
+    // shadowColor: '#000',
+    // shadowOpacity: 0.08,
+    // shadowRadius: 50,
   },
   reportTitle: {
     fontSize: 15,

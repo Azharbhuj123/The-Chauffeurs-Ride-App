@@ -17,6 +17,7 @@ import UploadDoc from "../pages/auth_screens/UploadDoc";
 import Approval from "../pages/auth_screens/Approval";
 import { navigationRef } from "../utils/NavigationService";
 import UploadVehicle from "../pages/auth_screens/UploadVehicle"
+import NotificationsScreen from "../pages/notification_screens/NotificationsScreen";
 const { width } = Dimensions.get("window");
 
 
@@ -43,6 +44,7 @@ export default function MainNavigation() {
         <Stack.Screen  name="Login" component={Login} />
         <Stack.Screen  name="Forgot" component={Forgot} />
         <Stack.Screen  name="SetPass" component={SetPass} />
+          <Stack.Screen name="Notification" component={NotificationsScreen} />
 
         <Stack.Screen name="MainTabs" component={BottomTabs} />
       </Stack.Navigator>

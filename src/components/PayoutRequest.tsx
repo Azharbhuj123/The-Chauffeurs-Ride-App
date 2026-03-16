@@ -19,32 +19,32 @@ export default function PayoutRequest({
   showPayoutModal,
   setShowPayoutModal,
   balance,
-  isLoading
+  isLoading,
 }) {
   const [amount, setAmount] = useState(0); // <-- State to store input amount
   const [err_msg, setErr_msg] = useState('');
 
- const handleAmountChange = (number) => {
-  // Remove any non-numeric characters
-  const numericValue = parseFloat(number);
-  const numericBalance = parseFloat(balance);
+  const handleAmountChange = number => {
+    // Remove any non-numeric characters
+    const numericValue = parseFloat(number);
+    const numericBalance = parseFloat(balance);
 
-  if (number === '' || isNaN(numericValue)) {
-    setErr_msg('Must be a valid number');
-    setAmount(number); // keep user input
-    return;
-  }
+    if (number === '' || isNaN(numericValue)) {
+      setErr_msg('Must be a valid number');
+      setAmount(number); // keep user input
+      return;
+    }
 
-  if (numericValue > balance) {
-    setErr_msg('Cannot exceed available balance');
-  } else if (numericValue <= 0) {
-    setErr_msg('Amount must be greater than zero');
-  } else {
-    setErr_msg(''); // valid amount
-  }
+    if (numericValue > balance) {
+      setErr_msg('Cannot exceed available balance');
+    } else if (numericValue <= 0) {
+      setErr_msg('Amount must be greater than zero');
+    } else {
+      setErr_msg(''); // valid amount
+    }
 
-  setAmount(`${number}`);
-};
+    setAmount(`${number}`);
+  };
 
   return (
     <View>
@@ -95,8 +95,8 @@ export default function PayoutRequest({
             {/* Confirm Button */}
             <View style={styles.confirmButton}>
               <Button
-              disabled={err_msg !== '' || amount === 0}
-              isLoading={isLoading}
+                disabled={err_msg !== '' || amount === 0}
+                isLoading={isLoading}
                 title="Confirm Payout"
                 onPress={() => handleConfirmPayout(amount)}
               />
@@ -136,10 +136,11 @@ const styles = StyleSheet.create({
 
   modalTitle: {
     fontSize: 24,
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     marginBottom: 20,
-    textAlign:"center"
+    textAlign: 'center',
   },
   amountBox: {
     width: '100%',
@@ -156,6 +157,7 @@ const styles = StyleSheet.create({
     shadowRadius: 50,
     elevation: 3,
     alignItems: 'center',
+    fontFamily: 'Poppins-Regular',
   },
   amountTital: {
     fontSize: 12,
@@ -163,10 +165,12 @@ const styles = StyleSheet.create({
     color: 'rgba(17, 17, 17, 0.70)',
     textAlign: 'center',
     marginBottom: 10,
+    fontFamily: 'Poppins-Regular',
   },
   amountInput: {
     fontSize: 30,
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     color: '#4CD964',
     textAlign: 'center',
     width: '100%',
@@ -178,6 +182,7 @@ const styles = StyleSheet.create({
     color: '#555',
     marginVertical: 8,
     paddingHorizontal: 10,
+    fontFamily: 'Poppins-Regular',
   },
   confirmButton: {
     width: '100%',

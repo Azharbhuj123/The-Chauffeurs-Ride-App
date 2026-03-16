@@ -233,7 +233,7 @@ const onboardingStyles = StyleSheet.create({
     color: '#ffffff',
     lineHeight: width * 0.08,
     textAlign:"center",
-    fontFamily:"SFPRODISPLAYREGULAR"
+    fontFamily:"Poppins-Regular"
 
   },
   description: {
@@ -242,7 +242,7 @@ const onboardingStyles = StyleSheet.create({
     lineHeight: width * 0.055,
     textAlign:"center",
     paddingBottom: TEXT_PADDING * 1.2,
-    fontFamily:"SF Pro Display"
+    fontFamily:"Poppins-Regular"
 
   },
   
@@ -262,12 +262,13 @@ const onboardingStyles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    fontFamily:"SF Pro Display"
+    fontFamily:"Poppins-Regular"
 
   },
   skipText: {
     color: '#ffffff',
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     fontSize: width * 0.04,
   },
   nextButton: {

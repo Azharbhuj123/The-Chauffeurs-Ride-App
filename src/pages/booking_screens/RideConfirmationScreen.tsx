@@ -35,7 +35,7 @@ import { joinUserRoom, socket } from '../../utils/socket';
 import { useRideStore } from '../../stores/rideStore';
 import MapScreen from '../../components/MapScreen';
 import { useDriverLocationStore } from '../../stores/driverLocationStore';
- import Geolocation from '@react-native-community/geolocation';
+import Geolocation from '@react-native-community/geolocation';
 
 // Get screen dimensions
 const { width, height } = Dimensions.get('window');
@@ -63,30 +63,29 @@ const startDriverLocationTracking = (rideId, driverId) => {
       fastestInterval: 1000,
       forceRequestLocation: true,
       useSignificantChanges: false,
-    }
+    },
   );
 };
 
-
-
-
 const RideConfirmationScreen = ({ navigation, route }) => {
-
   const [title, setTitle] = useState('Your Ride is Accepted');
-  const [rideStatus, setRideStatus] = useState('Accepted');
+  const [rideStatus, setRideStatus] = useState('Scheduled');
   const [driverLocation, setDriverLocation] = useState({
     latitude: 0,
     longitude: 0,
   });
   const tabBarHeight = useTabBarHeightHelper();
   const { rideId, from } = route.params || {};
-  console.log(rideId, 'rideId');
   const { startTracking, stopTracking } = useDriverLocationStore();
 
   const { role, userData } = useUserStore();
- 
-  const { clearRideRequests, sethasUnreadMessages, hasUnreadMessages ,setRideId} =
-    useRideStore();
+
+  const {
+    clearRideRequests,
+    sethasUnreadMessages,
+    hasUnreadMessages,
+    setRideId,
+  } = useRideStore();
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['ride_view', rideId],
@@ -96,18 +95,15 @@ const RideConfirmationScreen = ({ navigation, route }) => {
   });
 
   useEffect(() => {
-  if (rideId && userData?._id) {
-    startDriverLocationTracking(rideId, userData._id.toString());
-  }
-}, [rideId, userData]);
-
-
- 
+    if (rideId && userData?._id) {
+      startDriverLocationTracking(rideId, userData._id.toString());
+    }
+  }, [rideId, userData]);
 
   useEffect(() => {
     const driver_id = data?.data?.driver?._id;
-    console.log(data?.data,"data");
-    
+    console.log(data?.data, 'data');
+
     const driver_loc = {
       latitude: data?.data?.driver?.location?.coordinates[1],
       longitude: data?.data?.driver?.location?.coordinates[0],
@@ -157,12 +153,10 @@ const RideConfirmationScreen = ({ navigation, route }) => {
     initials: getInitials(data?.data?.driver?.name),
     carModel:
       role === 'Driver'
-        ? `${data?.data?.pickup_location?.famous_location} ➞ `
+        ? `${data?.data?.pickup_location?.famous_location}`
         : data?.data?.vehicle?.vehicle_model,
     licensePlate:
-      role === 'Driver'
-        ? `${data?.data?.drop_location?.famous_location}`
-        : data?.data?.vehicle?.vehicle_plate_number,
+      role === 'Driver' ? `` : data?.data?.vehicle?.vehicle_plate_number,
     rating: role === 'Driver' ? 0 : data?.data?.driver?.rating,
   };
 
@@ -228,8 +222,6 @@ const RideConfirmationScreen = ({ navigation, route }) => {
   });
 
   const handleAction = action => {
-    
-
     const body = {
       ride_id: rideId,
       action,
@@ -249,7 +241,6 @@ const RideConfirmationScreen = ({ navigation, route }) => {
 
   useFocusEffect(
     useCallback(() => {
- 
       if (!rideId || !userData?._id) return;
 
       socket.emit('join-ride', { rideId, userId: userData._id });
@@ -266,8 +257,6 @@ const RideConfirmationScreen = ({ navigation, route }) => {
       return () => socket.off('driver-location', handleDriverLocation);
     }, [rideId, userData?._id]),
   );
-
- 
 
   if (isLoading) {
     return <AppLoader />;
@@ -409,7 +398,7 @@ const RideConfirmationScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
         {role === 'Driver' &&
-          (rideStatus === 'Accepted' ? (
+          (rideStatus === 'Scheduled' ? (
             <View style={{ marginTop: hp(3) }}>
               <Button
                 onPress={() => handleAction('arrived')}
@@ -453,7 +442,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#000',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   mapContainer: {
     flex: 1, // Takes up remaining space
@@ -486,14 +475,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
     fontSize: 16,
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   etaText: {
     marginLeft: 'auto', // Pushes it to the right
     fontWeight: 'bold',
     color: '#333',
     fontSize: 16,
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   pickupMarkerContainer: {
     position: 'absolute',
@@ -527,13 +516,15 @@ const styles = StyleSheet.create({
   pickupLabel: {
     color: '#6B7280',
     fontSize: 12,
-    fontWeight: '500',
-    fontFamily: 'SF Pro',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
+    fontFamily: 'Poppins-Regular',
   },
   pickupAddress: {
     color: '#1F2937',
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
   },
   pinCircle: {
     width: 16,
@@ -569,7 +560,7 @@ const styles = StyleSheet.create({
   driverInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   avatar: {
     width: 60,
@@ -583,7 +574,7 @@ const styles = StyleSheet.create({
     color: '#000', // Darker yellow
     fontSize: 20,
     fontWeight: 'bold',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   driverDetails: {
     flex: 1,
@@ -592,7 +583,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#000',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   carDetails: {
     fontSize: 14,
@@ -602,7 +593,7 @@ const styles = StyleSheet.create({
     color: 'gray',
     borderLeftWidth: 1,
     borderLeftColor: 'gray',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -612,7 +603,7 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     fontSize: 16,
     fontWeight: 'bold',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
 
     color: COLORS.warning,
   },
@@ -632,13 +623,14 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
     marginRight: 10,
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   cancelButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     color: '#1F2937',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   contactButton: {
     flex: 1,
@@ -649,14 +641,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 10,
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   contactButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     marginLeft: 8,
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
 });
 

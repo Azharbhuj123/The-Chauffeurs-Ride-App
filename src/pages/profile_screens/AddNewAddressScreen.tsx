@@ -152,7 +152,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: wp(4.5),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
   },
   scrollView: {
@@ -191,7 +192,8 @@ const styles = StyleSheet.create({
     fontSize: wp(4),
     color: '#666',
     marginLeft: wp(2),
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
   addressListContainer: {
     // No specific styles needed here, cards handle their own shadow
@@ -235,7 +237,8 @@ const styles = StyleSheet.create({
   },
   addressType: {
     fontSize: wp(4),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginBottom: hp(0.5),
   },
@@ -243,5 +246,7 @@ const styles = StyleSheet.create({
     fontSize: wp(3.5), // Slightly larger font size
     color: '#666',
     lineHeight: wp(5), // Adjusted line height
+    fontWeight: '500',
+        fontFamily:"Poppins-Regular",
   },
 });

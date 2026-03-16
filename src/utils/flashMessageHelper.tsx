@@ -1,4 +1,5 @@
 import { showMessage, MessageType } from 'react-native-flash-message';
+import { COLORS } from './Enums';
 
 export type FlashMessageOptions = {
   type?: MessageType;
@@ -17,22 +18,47 @@ export const showFlash = ({
   backgroundColor,
   duration = 3000,
   icon = 'auto',
-  onPress, // ✅ accept press action
+  onPress,
 }: FlashMessageOptions) => {
+  // Custom Styling Logic for "Info" type
+  const isInfo = type === 'info';
+
+  // If type is info, use Black background, otherwise use the passed color or default
+  const finalBackgroundColor = isInfo
+    ? '#1A1A1A'
+    : backgroundColor || undefined;
+  const brandYellow = COLORS.warning;
+
   showMessage({
     message: title,
     description: message,
     type,
-    backgroundColor,
-    icon,
+    backgroundColor: finalBackgroundColor,
+    icon: isInfo ? 'info' : icon, // Force info icon for info type
     duration,
     floating: true,
-    onPress, // ✅ attach callback
-    titleStyle: { fontFamily: 'Poppins-Regular', fontSize: 16, color: '#fff' },
-    textStyle: { fontFamily: 'Poppins-Regular', fontSize: 14, color: '#fff' },
+    onPress,
+    // Style adjustments for the "Stylish" Info look
+    titleStyle: {
+      fontFamily: 'Poppins-Bold', // Bold for better readability
+      fontSize: 16,
+      color: isInfo ? brandYellow : '#fff',
+    },
+    textStyle: {
+      fontFamily: 'Poppins-Regular',
+      fontSize: 14,
+      color: isInfo ? '#f2f2f2' : '#fff',
+    },
+    // Adding a subtle border/shadow effect for that "stylish" feel
+    style: isInfo
+      ? {
+          borderLeftWidth: 5,
+          borderLeftColor: brandYellow,
+          borderRadius: 10,
+        }
+      : {},
   });
 };
-
 /*
 Usage Example:
 

@@ -61,7 +61,7 @@ export default function Forgot({ navigation }) {
   const { triggerMutation, loading } = useActionMutation({
     onSuccessCallback: async data => {
       if (data?.codeSent) {
-    setForgotTrue(); // ✅ mark as forgot flow
+        setForgotTrue(); // ✅ mark as forgot flow
 
         navigation.navigate('Verify', { contact: data.contact }); // ✅ pass contact
       }
@@ -149,7 +149,11 @@ export default function Forgot({ navigation }) {
           )}
 
           {/* Button */}
-          <Button isLoading={loading} title="Send Code" onPress={handleSubmit(handleSend)} />
+          <Button
+            isLoading={loading}
+            title="Send Code"
+            onPress={handleSubmit(handleSend)}
+          />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -179,7 +183,8 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: fs(16),
-       color:"#fff",
+    color: '#fff',
+    fontFamily: 'Poppins-Regular',
 
     marginLeft: wp(1),
   },
@@ -198,7 +203,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: fs(20),
-    fontWeight: 'bold',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     marginBottom: hp(1),
   },
@@ -206,6 +212,8 @@ const styles = StyleSheet.create({
     fontSize: fs(14),
     color: '#666',
     marginBottom: hp(3),
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
   },
   toggleContainer: {
     flexDirection: 'row',
@@ -230,7 +238,8 @@ const styles = StyleSheet.create({
   },
   toggleTextActive: {
     color: '#FFF',
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -251,6 +260,8 @@ const styles = StyleSheet.create({
     fontSize: fs(16),
     color: '#000',
     paddingVertical: 0,
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
   },
   signUpButton: {
     width: '100%',
@@ -274,7 +285,8 @@ const styles = StyleSheet.create({
   },
   signUpButtonText: {
     fontSize: fs(16),
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     color: '#000',
   },
   divider: {
@@ -312,7 +324,8 @@ const styles = StyleSheet.create({
   socialText: {
     fontSize: fs(14),
     color: '#000',
-    fontWeight: '500',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     marginLeft: wp(2),
   },
   signInContainer: {
@@ -327,7 +340,8 @@ const styles = StyleSheet.create({
   signInLink: {
     fontSize: fs(14),
     color: '#000',
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     textDecorationLine: 'underline',
   },
 
@@ -354,5 +368,7 @@ const styles = StyleSheet.create({
   },
   forgotText: {
     textAlign: 'right',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
   },
 });

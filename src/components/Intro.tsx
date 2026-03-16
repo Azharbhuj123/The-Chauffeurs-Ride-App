@@ -191,7 +191,8 @@ const styles = StyleSheet.create({
   },
   textBottom: {
     fontSize: LOGO_SIZE * 0.06, // Smaller responsive font size
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: 'black',
     letterSpacing: 0.8,
   },

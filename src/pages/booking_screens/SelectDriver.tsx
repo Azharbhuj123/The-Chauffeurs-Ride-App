@@ -162,9 +162,10 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   filterContainer: {
     flexDirection: 'row',
@@ -183,7 +184,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     gap: 8,
     width: '45%',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   filterText: {
     fontSize: 14,
@@ -215,7 +216,7 @@ const styles = StyleSheet.create({
   driverInfo: {
     flexDirection: 'row',
     gap: 12,
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   avatar: {
     width: 48,
@@ -226,15 +227,17 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   driverName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -244,7 +247,8 @@ const styles = StyleSheet.create({
   },
   rating: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
   },
   trips: {
@@ -257,15 +261,16 @@ const styles = StyleSheet.create({
   },
   carName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   carPrice: {
     fontSize: 12,
     color: '#9CA3AF',
     marginTop: 2,
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   driverFooter: {
     flexDirection: 'row',
@@ -284,16 +289,17 @@ const styles = StyleSheet.create({
   },
   selectButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   scrollText: {
     textAlign: 'center',
     color: '#9CA3AF',
     fontSize: 14,
     marginVertical: 16,
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
 });
 

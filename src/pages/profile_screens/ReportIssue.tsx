@@ -277,10 +277,11 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: wp('4%'),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginBottom: hp('2%'),
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   radioOption: {
     flexDirection: 'row',
@@ -298,7 +299,7 @@ const styles = StyleSheet.create({
     marginRight: wp('4%'),
     justifyContent: 'center',
     alignItems: 'center',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   radioButtonSelected: {
     width: wp('3%'),
@@ -320,11 +321,11 @@ const styles = StyleSheet.create({
     minHeight: hp('15%'),
     borderWidth: 1,
     borderColor: '#CFCFCF',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   description: {
     marginTop: hp(3),
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   btnContainer: {
     marginTop: hp(3),
@@ -361,7 +362,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
     marginBottom: 10,
 
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   modalSubtitle: {
     fontSize: 14,
@@ -369,7 +370,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 25,
 
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   modalButton: {
     backgroundColor: COLORS.warning,
@@ -382,8 +383,9 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: '#1F2937',
     fontSize: 16,
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
 
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
 });

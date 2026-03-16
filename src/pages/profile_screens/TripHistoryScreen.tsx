@@ -188,14 +188,14 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: wp(3),
     color: '#666',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   priceText: {
     fontSize: wp(5),
     fontWeight: 'bold',
     color: '#000',
     marginTop: hp(0.5),
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   statusBadge: {
     backgroundColor: '#e0f8e9',
@@ -206,8 +206,9 @@ const styles = StyleSheet.create({
   statusText: {
     color: '#4caf50',
     fontSize: wp(3),
-    fontWeight: '500',
-    fontFamily: 'SF Pro',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
   itineraryContainer: {
     flexDirection: 'row',
@@ -242,8 +243,9 @@ const styles = StyleSheet.create({
   locationTitle: {
     fontSize: wp(3.8),
     color: '#333',
-    fontWeight: '500',
-    fontFamily: 'SF Pro',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
   locationSub: {
     fontSize: wp(3.5),
@@ -256,7 +258,8 @@ const styles = StyleSheet.create({
   detailsButtonText: {
     fontSize: wp(4),
     color: '#000',
-    fontWeight: '600',
-    fontFamily: 'SF Pro',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
 });

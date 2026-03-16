@@ -254,7 +254,8 @@ const styles = StyleSheet.create({
   },
   totalLabel: {
     fontSize: wp('3.2%'),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginBottom: hp('1%'),
     letterSpacing: 0.5,
@@ -278,7 +279,8 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: wp('4%'),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginBottom: hp('2%'),
   },
@@ -301,12 +303,14 @@ const styles = StyleSheet.create({
   paymentText: {
     fontSize: wp('3.8%'),
     color: '#000',
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
   defaultBadge: {
     fontSize: wp('3.2%'),
     color: '#FFD700',
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
   changeButton: {
     flexDirection: 'row',
@@ -323,7 +327,8 @@ const styles = StyleSheet.create({
   changeText: {
     fontSize: wp('3.8%'),
     color: '#000',
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
   tipOptionsContainer: {
     flexDirection: 'row',
@@ -346,11 +351,13 @@ const styles = StyleSheet.create({
   tipButtonText: {
     fontSize: wp('3.2%'),
     color: '#666',
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
   tipButtonTextSelected: {
     color: '#000',
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
   customTipBox: {
     backgroundColor: '#F8F8F8',
@@ -360,7 +367,8 @@ const styles = StyleSheet.create({
   },
   customTipAmount: {
     fontSize: wp('4.5%'),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
   },
   finalChargeContainer: {
@@ -375,7 +383,8 @@ const styles = StyleSheet.create({
   },
   finalChargeLabel: {
     fontSize: wp('4.2%'),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
   },
   finalChargeAmount: {

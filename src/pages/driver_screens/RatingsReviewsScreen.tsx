@@ -297,7 +297,8 @@ const styles = StyleSheet.create({
 
   reviewerName: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#1a1a1a',
     marginRight: 6,
   },
@@ -318,13 +319,15 @@ const styles = StyleSheet.create({
 
   statusPendingText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#2563EB',
   },
 
   statusRepliedText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#16A34A',
   },
 
@@ -335,7 +338,8 @@ const styles = StyleSheet.create({
 
   star: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
 
   starFilled: {

@@ -47,7 +47,7 @@ function Login({ navigation }) {
   const { resetForgotTrue } = useStore();
   const insets = useSafeAreaInsets();
   const [showPassword, setShowPassword] = useState(false);
-  const { setUserData } = useUserStore();
+  const { setUserData, fcmToken } = useUserStore();
 
   const {
     control,
@@ -78,6 +78,7 @@ function Login({ navigation }) {
         });
         return;
       }
+      
       setUserData(data?.userData, data?.token);
       reset();
       navigation.reset({
@@ -98,7 +99,7 @@ function Login({ navigation }) {
     console.log('Form Data:', data);
     triggerMutation({
       endPoint: '/auth/login',
-      body: data,
+      body: { ...data, fcmToken },
       method: 'post',
     });
   };
@@ -259,7 +260,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: fs(20),
-    fontWeight: 'bold',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     marginBottom: hp(1),
   },
@@ -267,6 +269,8 @@ const styles = StyleSheet.create({
     fontSize: fs(14),
     color: '#666',
     marginBottom: hp(3),
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
   },
   toggleContainer: {
     flexDirection: 'row',
@@ -291,7 +295,8 @@ const styles = StyleSheet.create({
   },
   toggleTextActive: {
     color: '#FFF',
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -312,6 +317,8 @@ const styles = StyleSheet.create({
     fontSize: fs(16),
     color: '#000',
     paddingVertical: 0,
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
   },
   signUpButton: {
     backgroundColor: COLORS.warning,
@@ -334,7 +341,8 @@ const styles = StyleSheet.create({
   },
   signUpButtonText: {
     fontSize: fs(16),
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     color: '#000',
   },
   divider: {
@@ -372,8 +380,9 @@ const styles = StyleSheet.create({
   socialText: {
     fontSize: fs(14),
     color: '#000',
-    fontWeight: '500',
     marginLeft: wp(2),
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
   },
   signInContainer: {
     flexDirection: 'row',
@@ -383,11 +392,13 @@ const styles = StyleSheet.create({
   signInText: {
     fontSize: fs(14),
     color: '#666',
+    fontFamily: 'Poppins-Regular',
   },
   signInLink: {
     fontSize: fs(14),
     color: '#000',
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     textDecorationLine: 'underline',
   },
 
@@ -414,6 +425,7 @@ const styles = StyleSheet.create({
   },
   forgotText: {
     textAlign: 'right',
+    fontFamily: 'Poppins-Regular',
   },
 });
 export default Login;

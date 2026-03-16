@@ -5,7 +5,7 @@ macmini@Macs-Mac-mini The-Chauffeurs-Ride-App % fc-scan assets/fonts/Poppins-Reg
         family: "Poppins"(s)
         familylang: "en"(s)
 macmini@Macs-Mac-mini The-Chauffeurs-Ride-App % fc-scan assets/fonts/SFPRODISPLAYREGULAR.OTF | grep family                                  
-        family: "SF Pro Display"(s)
+        family: "Poppins-Regular"(s)
         familylang: "en"(s)
 
 

@@ -92,7 +92,8 @@ const styles = StyleSheet.create({
 
   modalTitle: {
     fontSize: 24,
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginBottom: 20,
   },
@@ -120,7 +121,8 @@ const styles = StyleSheet.create({
   },
   amountText: {
     fontSize: 30,
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#4CD964',
     textAlign: 'center',
   },
@@ -135,7 +137,8 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: 10,
   },
-  confirmButtonText: { fontSize: 14, fontWeight: '600', color: '#000' },
+  confirmButtonText: { fontSize: 14, fontWeight: '0',
+        fontFamily:"Poppins-Regular", color: '#000' },
 
   /* ✅ Success Modal */
   successIconCircle: {
@@ -158,5 +161,6 @@ const styles = StyleSheet.create({
   doneButton: {
     width: '100%',
   },
-  doneButtonText: { fontSize: 14, fontWeight: '600', color: '#000' },
+  doneButtonText: { fontSize: 14, fontWeight: '0',
+        fontFamily:"Poppins-Regular", color: '#000' },
 })

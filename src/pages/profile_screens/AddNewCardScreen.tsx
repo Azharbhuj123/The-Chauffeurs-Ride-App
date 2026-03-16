@@ -132,6 +132,8 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: wp(4),
     color: '#000',
+        fontFamily:"Poppins-Regular",
+
   },
   row: {
     flexDirection: 'row',

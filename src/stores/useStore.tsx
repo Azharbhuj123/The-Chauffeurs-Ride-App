@@ -16,6 +16,7 @@ interface AppState {
   setForgotTrue: () => void;
   resetForgotTrue: () => void;
   setLocation: (loc: LocationState) => void;
+  
 
 
   setVehicleData: (data: any) => void; // append new entry
@@ -25,9 +26,11 @@ export const useStore = create<AppState>((set) => ({
   isForgot: false,
   location: null,
   vehicleData: null,
+  fcmToken: undefined,
 
   setForgotTrue: () => set({ isForgot: true }),
   resetForgotTrue: () => set({ isForgot: false }),
+  setFcmToken: (token) => set({ fcmToken: token }),
   setVehicleData: (values) =>
     set((state) => ({ vehicleData: { ...state.vehicleData, ...values } })), // merge!
   setLocation: (loc) => set({ location: loc }),

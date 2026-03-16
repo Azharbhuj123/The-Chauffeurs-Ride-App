@@ -98,7 +98,8 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: wp('4.5%'),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     paddingHorizontal: wp('4%'),
     paddingTop: hp('1.5%'),
@@ -148,7 +149,8 @@ const styles = StyleSheet.create({
   contactTitle: {
     fontSize: wp('4%'),
     color: '#000',
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
   contactSubtitle: {
     fontSize: wp('3.5%'),

@@ -1,6 +1,9 @@
 // AppLoader.js
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 
+
+
+
 export default function AppLoader() {
   return (
     <View style={styles.overlay}>

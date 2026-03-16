@@ -188,7 +188,8 @@ const styles = StyleSheet.create({
     color: '#5A5A5A',
     fontSize: 15,
 
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
 
   OperationsCardPara: {
@@ -230,7 +231,7 @@ const styles = StyleSheet.create({
 
   modalTitle: {
     fontSize: 22,
-    fontWeight: 'bold',
+    
     color: '#1F2937',
     textAlign: 'center',
     fontFamily: 'Poppins-Regular',
@@ -258,7 +259,8 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: '#1F2937',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     fontFamily: 'Poppins-Regular',
   },
   btnContainer: {

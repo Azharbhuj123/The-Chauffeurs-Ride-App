@@ -122,7 +122,8 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: wp('4.5%'),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginBottom: hp('1.5%'),
   },

@@ -170,7 +170,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: wp(4.5),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
   },
   scrollView: {
@@ -208,15 +209,16 @@ const styles = StyleSheet.create({
   },
   profileName: {
     fontSize: wp(5),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginBottom: hp(0.5),
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   profileEmail: {
     fontSize: wp(3.5),
     color: '#666',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   menuContainer: {
     paddingHorizontal: wp(5),
@@ -248,8 +250,9 @@ const styles = StyleSheet.create({
   menuLabel: {
     fontSize: wp(4),
     color: '#000',
-    fontWeight: '500',
-    fontFamily: 'SF Pro',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
   logoutButton: {
     flexDirection: 'row',
@@ -260,8 +263,9 @@ const styles = StyleSheet.create({
   logoutText: {
     fontSize: wp(4),
     color: '#FF3B30',
-    fontWeight: '500',
-    fontFamily: 'SF Pro',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
   // Edit Profile Screen Styles
   editProfileImageSection: {
@@ -307,13 +311,14 @@ const styles = StyleSheet.create({
     borderRadius: wp(2),
     alignItems: 'center',
     marginBottom: hp(2),
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   saveButtonText: {
     fontSize: wp(4.5),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   deleteButton: {
     backgroundColor: '#FF3B30',
@@ -324,9 +329,10 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: {
     fontSize: wp(4.5),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#fff',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   // Add Address Screen Styles
   addAddressButton: {
@@ -336,14 +342,15 @@ const styles = StyleSheet.create({
     paddingVertical: hp(2),
     paddingHorizontal: wp(5),
     marginBottom: hp(2),
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   addAddressText: {
     fontSize: wp(4),
     color: '#666',
     marginLeft: wp(2),
-    fontWeight: '500',
-    fontFamily: 'SF Pro',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
   addressListContainer: {
     backgroundColor: '#fff',
@@ -376,7 +383,8 @@ const styles = StyleSheet.create({
   },
   addressType: {
     fontSize: wp(4),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginBottom: hp(0.5),
   },
@@ -384,7 +392,7 @@ const styles = StyleSheet.create({
     fontSize: wp(3.3),
     color: '#666',
     lineHeight: wp(4.5),
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
 
  
@@ -413,7 +421,7 @@ const styles = StyleSheet.create({
 
   modalTitle: {
     fontSize: 22,
-    fontWeight: 'bold',
+     
     color: '#1F2937',
     textAlign: 'center',
     fontFamily: 'Poppins-Regular',
@@ -441,7 +449,8 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: '#1F2937',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     fontFamily: 'Poppins-Regular',
   },
   btnContainer: {

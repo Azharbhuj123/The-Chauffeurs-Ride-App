@@ -143,18 +143,24 @@ const styles = StyleSheet.create({
   },
   cardNumber: {
     fontSize: wp(4),
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
+
     color: '#000',
   },
   cardExpires: {
     fontSize: wp(3.5),
     color: '#666',
     marginTop: hp(0.3),
+        fontFamily:"Poppins-Regular",
+
   },
   addCardText: {
     fontSize: wp(4),
     color: '#333',
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
+
     marginLeft: wp(3),
   },
 });

@@ -509,7 +509,7 @@ export default function UploadDoc({ route, navigation }) {
             onPress={handleSubmit}
           />
 
-          {/* Help text - iOS: SF Pro font, Android: Roboto */}
+          {/* Help text - iOS: Poppins-Regular font, Android: Roboto */}
           <Text style={styles.helpText}>
             Make sure all documents are clear and readable. Blurry or incomplete
             documents may delay approval.
@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
   /* Title & Subtitle */
   title: {
     fontSize: fs(24), // Scaled: ~20-24px on most devices
-    fontWeight: Platform.OS === 'ios' ? '700' : 'bold', // iOS: SF Pro weights, Android: Roboto
+    fontWeight: Platform.OS === 'ios' ? '700' : 'bold', // iOS: Poppins-Regular weights, Android: Roboto
     color: '#000000',
     marginBottom: hp(1),
     letterSpacing: Platform.OS === 'ios' ? -0.5 : 0, // iOS: Tighter tracking for readability
@@ -589,7 +589,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: fs(16),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#333333',
     marginBottom: hp(1.5),
     letterSpacing: Platform.OS === 'ios' ? -0.3 : 0,
@@ -650,7 +651,8 @@ const styles = StyleSheet.create({
   /* Upload Box Text */
   uploadBoxTitle: {
     fontSize: fs(14),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#333333',
     textAlign: 'center',
     marginTop: hp(0.5),
@@ -672,7 +674,8 @@ const styles = StyleSheet.create({
   },
   requirementText: {
     fontSize: fs(11),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#FF3B30',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -696,7 +699,8 @@ const styles = StyleSheet.create({
   },
   uploadButtonText: {
     fontSize: fs(13),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: COLORS.warning,
     textAlign: 'center',
   },
@@ -722,7 +726,8 @@ const styles = StyleSheet.create({
   uploadedText: {
     fontSize: fs(13),
     color: '#4CAF50',
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     marginLeft: wp(1.5),
   },
 
@@ -778,7 +783,8 @@ const styles = StyleSheet.create({
     fontSize: fs(13),
     color: COLORS.warning,
     marginTop: hp(1),
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
 
   /* Help Text - Bottom informational text */

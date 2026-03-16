@@ -109,7 +109,8 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: wp('4.5%'),
         color: '#000',
-        fontWeight: '500',
+        fontWeight: '0',
+        fontFamily:"Poppins-Regular",
         marginBottom: hp('2%'),
         marginLeft: wp(3.5),
     },

@@ -13,6 +13,7 @@ import {
   StatusBar,
   StyleSheet,
   useColorScheme,
+  Alert,
 } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
@@ -28,7 +29,7 @@ import AppLoader from './src/components/AppLoader';
 import { PERMISSIONS, request, check, RESULTS } from 'react-native-permissions';
 // import Geolocation from 'react-native-geolocation-service';
 import Geolocation from '@react-native-community/geolocation';
-
+import messaging from '@react-native-firebase/messaging';
 import { useStore } from './src/stores/useStore';
 import { joinUserRoom, socket } from './src/utils/socket';
 import { useUserStore } from './src/stores/useUserStore';
@@ -37,11 +38,12 @@ import { useNavigation } from '@react-navigation/native';
 import { navigationRef } from './src/utils/NavigationService';
 import { useRideStore } from './src/stores/rideStore';
 import MainNavigation from './src/navigation/mainNavigation';
+import { showFlash } from './src/utils/flashMessageHelper';
 
 export default function App() {
   const isDarkMode = useColorScheme() === 'dark';
   const { setLocation } = useStore();
-  const { userData, role } = useUserStore();
+  const { userData, role, setFcmToken } = useUserStore();
   const queryClient = new QueryClient();
   const { rideId } = useRideStore(); // get latest rideId
   const rideIdRef = useRef(rideId);
@@ -192,6 +194,49 @@ export default function App() {
     });
     return () => subscription.remove();
   }, [permissionStatus]);
+
+  useEffect(() => {
+    // 1️⃣ Request permission (Android 13+)
+    const requestPermission = async () => {
+      const authStatus = await messaging().requestPermission();
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+      if (enabled) {
+        console.log('Notification permission enabled');
+        getToken();
+      } else {
+        console.log('Notification permission denied');
+      }
+    };
+
+    requestPermission();
+
+    // 2️⃣ Foreground messages
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      console.log('Foreground message:', remoteMessage);
+      showFlash({
+        type: 'info',
+        title: remoteMessage.notification?.title || 'New Notification',
+        message: remoteMessage.notification?.body || '',
+      });
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const getToken = async () => {
+    try {
+      const token = await messaging().getToken();
+      console.log('FCM Token:', token);
+      setFcmToken(token);
+
+      // ✅ TODO: Send token to your backend
+    } catch (error) {
+      console.log('Error getting FCM token:', error);
+    }
+  };
 
   return (
     <QueryClientProvider client={queryClient}>

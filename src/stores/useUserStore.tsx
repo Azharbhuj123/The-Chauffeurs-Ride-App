@@ -15,6 +15,8 @@ interface CounterState {
   setUserData: (user: string, token: string) => Promise<void>;
   loadStoredData: () => Promise<void>;
   resetAll: () => Promise<void>;
+  fcmToken?: string;
+  setFcmToken: (data: any) => void; // append new entry
 }
 
 export const useUserStore = create<CounterState>(set => ({
@@ -23,10 +25,12 @@ export const useUserStore = create<CounterState>(set => ({
   token: null,
   userData: null,
   hydrated: false,
+  fcmToken: undefined,
 
   setForgotTrue: () => set({ isForgot: true }),
   resetForgotTrue: () => set({ isForgot: false }),
   setRole: newRole => set({ role: newRole }),
+  setFcmToken: token => set({ fcmToken: token }),
 
   // ✅ Save to async storage + state
   setUserData: async (user, token) => {
@@ -68,6 +72,7 @@ export const useUserStore = create<CounterState>(set => ({
         token: null,
         userData: null,
         hydrated: false,
+        fcmToken: undefined,
       });
     } catch (err) {
       console.error('Error resetting store:', err);

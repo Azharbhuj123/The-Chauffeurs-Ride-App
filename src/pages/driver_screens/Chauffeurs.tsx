@@ -319,7 +319,8 @@ const styles = StyleSheet.create({
   },
   joeTitle: {
     fontSize: wp(3.8),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginBottom: hp(0.3),
   },
@@ -334,7 +335,8 @@ const styles = StyleSheet.create({
   onlineText: {
     fontSize: wp(3.3),
     color: '#34C759',
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     marginRight: wp(2),
   },
   switch: {
@@ -351,7 +353,8 @@ const styles = StyleSheet.create({
   blockButtonText: {
     color: '#FF5252',
     fontSize: wp(3.6),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
   allChauffeursSection: {
     marginHorizontal: wp(4),
@@ -387,7 +390,8 @@ const styles = StyleSheet.create({
   },
   chauffeurName: {
     fontSize: wp(3.8),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginBottom: hp(0.5),
   },
@@ -406,7 +410,8 @@ const styles = StyleSheet.create({
   availableText: {
     color: '#fff',
     fontSize: wp(2.8),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
   menuDots: {
     padding: wp(1),
@@ -472,7 +477,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   modalCloseText: {
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     fontFamily: 'Poppins-Regular',
   },

@@ -328,10 +328,12 @@ export const LoyaltyRewardsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8f8f8' },
   header: { paddingVertical: hp('2%'), alignItems: 'center' },
-  headerTitle: { fontSize: wp('5%'), fontWeight: '600', color: '#000' },
+  headerTitle: { fontSize: wp('5%'), fontWeight: '0',
+        fontFamily:"Poppins-Regular", color: '#000' },
   sectionTitle: {
     fontSize: wp('4.5%'),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginHorizontal: wp('5%'),
     marginTop: hp('3%'),
@@ -374,7 +376,8 @@ const styles = StyleSheet.create({
   unlockedTierCard: { borderColor: COLORS.warning },
   tierName: {
     fontSize: wp('4%'),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginTop: hp('1%'),
     fontFamily: 'Poppins-Regular',
@@ -416,7 +419,8 @@ const styles = StyleSheet.create({
   listItemTitle: {
     fontSize: wp('3.75%'),
     color: '#000',
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     fontFamily: 'Poppins-Regular',
   },
   listItemSubtitle: {
@@ -434,7 +438,8 @@ const styles = StyleSheet.create({
   },
   redeemButtonText: {
     color: '#000',
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     fontSize: wp('3%'),
     fontFamily: 'Poppins-Regular',
   },
@@ -468,11 +473,12 @@ const styles = StyleSheet.create({
   modalSub: { fontSize: wp('3%'), color: '#666', marginTop: hp('1.75%') },
   modalItem: {
     fontSize: wp('5%'),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginVertical: hp('0.5%'),
     marginTop: hp('1.75%'),
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   modalPointsBox: {
     width: '100%',
@@ -483,25 +489,25 @@ const styles = StyleSheet.create({
     padding: wp('3%'),
     marginVertical: hp('2%'),
     alignItems: 'center',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   modalPointsLabel: {
     fontSize: wp('3.5%'),
     color: '#666',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   modalPointsValue: {
     fontSize: wp('4.5%'),
     fontWeight: 'bold',
     color: '#000',
     marginTop: hp('0.5%'),
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   modalWarning: {
     fontSize: wp('3.5%'),
     color: 'red',
     marginBottom: hp('2%'),
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   btnContainer: {
     paddingHorizontal: wp(5),

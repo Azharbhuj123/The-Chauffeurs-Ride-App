@@ -30,8 +30,6 @@ import { useStore } from '../../stores/useStore';
 import { socket, joinUserRoom } from '../../utils/socket';
 import { useRideStore } from '../../stores/rideStore';
 
- 
-
 export default function Home({ navigation }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef(null);
@@ -230,7 +228,7 @@ export default function Home({ navigation }) {
           showsVerticalScrollIndicator={false}
         >
           {/* Header */}
-          <UserHeader />
+          <UserHeader navigation={navigation} />
 
           {/* Yellow CTA Card */}
           <TouchableOpacity
@@ -308,7 +306,10 @@ export default function Home({ navigation }) {
                         {des?.pickup_location?.famous_location}
                       </Text>
                       <Text style={styles.destinationSubtitle}>
-                     Schedule At: {formatDate2(new Date(des?.schedule?.date))} {formatTime(new Date(des?.schedule?.from))}  - {formatTime(new Date(des?.schedule?.to))}
+                        Schedule At:{' '}
+                        {formatDate2(new Date(des?.schedule?.date))}{' '}
+                        {formatTime(new Date(des?.schedule?.from))} -{' '}
+                        {formatTime(new Date(des?.schedule?.to))}
                         {/* {des?.distance} */}
                       </Text>
                     </View>
@@ -395,7 +396,8 @@ const styles = StyleSheet.create({
   },
   ctaTitle: {
     fontSize: wp('4.5%'),
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     marginBottom: hp('0.5%'),
     fontFamily: 'Poppins-Regular',
@@ -419,7 +421,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: wp('4%'),
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     marginBottom: hp('1.5%'),
     fontFamily: 'Poppins-Regular',
@@ -459,7 +462,8 @@ const styles = StyleSheet.create({
     fontSize: wp('2.8%'),
     color: COLORS.warning,
     marginBottom: hp('1%'),
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     fontFamily: 'Poppins-Regular',
   },
   loyaltyPoints: {
@@ -524,7 +528,8 @@ const styles = StyleSheet.create({
   },
   destinationTitle: {
     fontSize: wp('4%'),
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     marginBottom: hp('0.5%'),
     fontFamily: 'Poppins-Regular',

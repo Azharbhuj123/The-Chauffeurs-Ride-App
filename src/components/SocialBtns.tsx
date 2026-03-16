@@ -73,7 +73,8 @@ const styles = StyleSheet.create({
   socialText: {
     fontSize: fs(14),
     color: '#000',
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     marginLeft: wp(2),
   },
   signInContainer: {
@@ -89,7 +90,8 @@ const styles = StyleSheet.create({
   signInLink: {
     fontSize: fs(14),
     color: '#000',
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     textDecorationLine: 'underline',
   },
 

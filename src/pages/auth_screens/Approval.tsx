@@ -115,7 +115,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: wp(4.5),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
   },
   progressContainer: {
@@ -153,7 +154,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: wp(3.8),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
   },
   documentItem: {
@@ -347,7 +349,8 @@ const styles = StyleSheet.create({
 
   sectionTitle: {
     fontSize: wp(4),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#111827',
     marginBottom: hp(0.8),
   },
@@ -365,6 +368,7 @@ const styles = StyleSheet.create({
   successText: {
     fontSize: wp(3.6),
     color: '#047857',
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
 });

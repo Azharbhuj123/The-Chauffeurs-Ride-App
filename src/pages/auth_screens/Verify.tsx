@@ -304,7 +304,8 @@ const styles = StyleSheet.create({
   },
   emailText: {
     color: '#4CAF50',
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
   otpContainer: {
     flexDirection: 'row',
@@ -346,7 +347,8 @@ const styles = StyleSheet.create({
   resendLink: {
     fontSize: fs(14),
     color: '#4CAF50',
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     textDecorationLine: 'underline',
   },
   verifyButton: {
@@ -369,7 +371,8 @@ const styles = StyleSheet.create({
   },
   verifyButtonText: {
     fontSize: fs(16),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
   },
 
@@ -408,7 +411,8 @@ const styles = StyleSheet.create({
   },
   congratsTitle: {
     fontSize: fs(30),
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginBottom: hp(2),
     fontFamily: 'Poppins-Regular',

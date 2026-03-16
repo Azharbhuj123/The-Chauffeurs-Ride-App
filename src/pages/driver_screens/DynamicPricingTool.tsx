@@ -352,7 +352,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: fs(16),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginBottom: hp(0.5),
   },
@@ -435,7 +436,8 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     fontSize: fs(16),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
   },
   errorText: error_msg,

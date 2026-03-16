@@ -3,6 +3,22 @@ export const COLORS = {
   error: '#FF3A2F',
   warning: '#EEAF32',
   info: '#3498db',
+
+  primary: '#F5A623', // Golden yellow from "Confirm Booking" / active tabs
+  primaryLight: '#FFF3D6',
+  primaryDark: '#D4891C',
+  accent: '#2D2D2D', // Dark charcoal for headings
+  background: '#F5F5F5', // Light grey app background
+  white: '#FFFFFF',
+  card: '#FFFFFF',
+  textPrimary: '#1A1A1A',
+  textSecondary: '#7A7A7A',
+  textMuted: '#AAAAAA',
+  border: '#EEEEEE',
+  shadow: 'rgba(0,0,0,0.08)',
+  navBackground: '#1E2233', // Dark navy bottom nav
+  unreadDot: '#F5A623',
+  badgeRed: '#FF3B30',
 };
 
 export const error_msg = {
@@ -11,8 +27,9 @@ export const error_msg = {
   marginTop: 0,
   marginBottom: 5,
   marginLeft: 10,
-  fontWeight: '600',
-  fontFamily: 'Poppins-Regular',
+  fontWeight: '0',
+        fontFamily:"Poppins-Regular",
+ 
 };
 
 export const no_found = {

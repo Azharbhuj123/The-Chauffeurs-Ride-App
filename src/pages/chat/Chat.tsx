@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#000',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   chatContainer: {
     flex: 1,
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
     fontSize: wp('3.8%'),
     color: '#000',
     lineHeight: hp('2.5%'),
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   userMessageContainer: {
     flexDirection: 'row',
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
     fontSize: wp('3.8%'),
     color: '#000',
     lineHeight: hp('2.5%'),
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   timeRow: {
     flexDirection: 'row',
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
     fontSize: wp('3%'),
     color: '#999',
     marginTop: hp('0.5%'),
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
     fontSize: wp('3.8%'),
     color: '#000',
     maxHeight: hp('12%'),
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   sendButton: {
     width: wp('10%'),

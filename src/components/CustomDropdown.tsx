@@ -62,6 +62,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 10,
     backgroundColor: '#fff',
+            fontFamily:"Poppins-Regular",
   },
 });
 

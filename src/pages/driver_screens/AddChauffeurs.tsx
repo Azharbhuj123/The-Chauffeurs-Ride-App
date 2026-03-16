@@ -663,7 +663,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: wp(4.5),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
   },
   progressContainer: {
@@ -694,7 +695,8 @@ const styles = StyleSheet.create({
   },
   stepTitle: {
     fontSize: wp(4.2),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginBottom: hp(2),
   },
@@ -711,7 +713,8 @@ const styles = StyleSheet.create({
     fontSize: wp(3.8),
     color: '#000',
     marginBottom: hp(1),
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
   input: {
     borderWidth: 1,
@@ -742,7 +745,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: wp(3.8),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
   },
   documentItem: {
@@ -937,7 +941,8 @@ const styles = StyleSheet.create({
 
   sectionTitle: {
     fontSize: wp(4),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#111827',
     marginBottom: hp(0.8),
   },
@@ -955,7 +960,8 @@ const styles = StyleSheet.create({
   successText: {
     fontSize: wp(3.6),
     color: '#047857',
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
 
   card1: {
@@ -978,7 +984,8 @@ const styles = StyleSheet.create({
   },
   headerText1: {
     fontSize: wp(4.2),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#111827',
     marginLeft: wp(2),
   },
@@ -998,7 +1005,8 @@ const styles = StyleSheet.create({
   buttonText1: {
     color: '#000',
     fontSize: wp(3.8),
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
 
   flexbox: {

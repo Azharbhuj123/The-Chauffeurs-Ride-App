@@ -84,9 +84,14 @@ export default function HomeScreen({ navigation }) {
     keepPreviousData: true,
     enabled: !!showRejectPopup,
   });
+
   const { data: scheduleRides, refetch } = useQuery({
     queryKey: ['driver-schdeule-ride'],
-    queryFn: () => fetchData(`/ride/driver-schdeule-ride`),
+    queryFn: async () => {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // "Asia/Karachi"
+
+      return fetchData(`/ride/driver-schdeule-ride?timezone=${timezone}`);
+    },
     keepPreviousData: true,
   });
 
@@ -153,8 +158,7 @@ export default function HomeScreen({ navigation }) {
   );
   useFocusEffect(
     useCallback(() => {
-      
-     refetch();
+      refetch();
     }, []),
   );
 
@@ -314,8 +318,6 @@ export default function HomeScreen({ navigation }) {
           <>
             <Text style={styles.sectionTitle}>Scheduled Rides</Text>
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Scheduled Rides</Text>
-
               {ridesArray.map(ride => (
                 <View
                   key={ride?._id}
@@ -342,7 +344,15 @@ export default function HomeScreen({ navigation }) {
                   </View>
 
                   {ride.time_for_ride && (
-                    <Text style={{ color: '#28a745', fontWeight: '600' }}>
+                    <Text
+                      onPress={() => {
+                        navigation.navigate('RideConfirmationScreen', {
+                          rideId: ride?._id,
+                          from: 'driver',
+                        });
+                      }}
+                      style={{ color: '#28a745', fontWeight: '600' }}
+                    >
                       Time for Ride!
                     </Text>
                   )}
@@ -464,7 +474,8 @@ const styles = StyleSheet.create({
   },
   addVehicleText: {
     fontSize: fs(16),
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     color: '#000',
   },
   manageChauffeurButton: {
@@ -477,7 +488,8 @@ const styles = StyleSheet.create({
   },
   manageChauffeurText: {
     fontSize: fs(16),
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     color: '#000',
   },
 
@@ -505,14 +517,16 @@ const styles = StyleSheet.create({
   },
   repositioningTitle: {
     fontSize: fs(16),
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     marginBottom: hp(0.5),
   },
   repositioningSubtitle: {
     fontSize: fs(14),
     color: '#4CAF50',
-    fontWeight: '500',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
   },
 
   incomingRideContainer: {
@@ -597,7 +611,8 @@ const styles = StyleSheet.create({
   },
   acceptText: {
     fontSize: fs(14),
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     marginLeft: wp(1),
   },
@@ -614,7 +629,8 @@ const styles = StyleSheet.create({
   },
   rejectText: {
     fontSize: fs(14),
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     color: '#666',
     marginLeft: wp(1),
   },
@@ -659,7 +675,8 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: fs(14),
     color: '#000',
-    fontWeight: '500',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     marginBottom: hp(1),
   },
   selectInput: {
@@ -686,7 +703,8 @@ const styles = StyleSheet.create({
   assignButton: {},
   assignButtonText: {
     fontSize: fs(15),
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     color: '#000',
   },
 
@@ -695,7 +713,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: wp('4%'),
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     marginBottom: hp('1.5%'),
     fontFamily: 'Poppins-Regular',
@@ -716,7 +735,8 @@ const styles = StyleSheet.create({
   },
   destinationTitle: {
     fontSize: wp('4%'),
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     marginBottom: hp('0.5%'),
     fontFamily: 'Poppins-Regular',
@@ -735,7 +755,8 @@ const styles = StyleSheet.create({
   noSchedule: {
     fontStyle: 'italic',
     fontSize: 16, // Text ko bada kar diya
-    fontWeight: '600', // Bold
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular', // Bold
     color: '#555', // Thoda dark gray for emphasis
     textAlign: 'center', // Center text
     marginHorizontal: 20, // Side padding

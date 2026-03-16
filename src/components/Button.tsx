@@ -86,10 +86,11 @@ const styles = StyleSheet.create({
         elevation: 2,
       },
     }),
-    fontFamily: 'SF Pro',
+    // fontFamily: 'Poppins-Regular',
   },
   signUpButtonText: {
+    fontFamily:"Poppins-Regular",
     fontSize: fs(16),
-    fontWeight: 'bold',
+
   },
 });

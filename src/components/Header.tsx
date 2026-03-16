@@ -57,7 +57,10 @@ export default function UserHeader({ navigation }) {
           <Logout name="logout" size={wp('6%')} color="#FFD700" />
         </TouchableOpacity>
       ) : (
-        <TouchableOpacity style={styles.profileButton}>
+        <TouchableOpacity
+          onPress={() =>navigation.navigate('Notification')}
+          style={styles.profileButton}
+        >
           <Icon name="notifications-outline" size={wp('6%')} color="#FFD700" />
         </TouchableOpacity>
       )}
@@ -119,7 +122,7 @@ const styles = StyleSheet.create({
     fontSize: wp('6%'),
     fontWeight: '590',
     color: '#000',
-    fontFamily: 'SF Pro Display',
+    fontFamily: 'Poppins-Regular',
   },
   onlineDot: {
     width: wp('2.5%'),
@@ -162,7 +165,7 @@ const styles = StyleSheet.create({
 
   modalTitle: {
     fontSize: 22,
-    fontWeight: 'bold',
+
     color: '#1F2937',
     textAlign: 'center',
     fontFamily: 'Poppins-Regular',
@@ -190,7 +193,8 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: '#1F2937',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
     fontFamily: 'Poppins-Regular',
   },
   btnContainer: {

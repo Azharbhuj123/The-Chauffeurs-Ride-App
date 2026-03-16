@@ -340,7 +340,8 @@ const styles = StyleSheet.create({
   checkboxLabel: {
     fontSize: wp(4),
     color: '#333',
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
   buttonContainer: {
     marginTop: hp(3),

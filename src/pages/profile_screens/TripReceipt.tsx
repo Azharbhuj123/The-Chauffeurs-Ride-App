@@ -193,7 +193,8 @@ const styles = StyleSheet.create({
   // Text & Section Styles
   sectionTitle: {
     fontSize: wp(4.5),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginBottom: hp(2),
   },
@@ -224,7 +225,8 @@ const styles = StyleSheet.create({
   detailValue: {
     fontSize: wp(3.8),
     color: '#000',
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
   finalAmountValue: {
     fontWeight: 'bold',
@@ -264,7 +266,8 @@ const styles = StyleSheet.create({
   locationLabel: {
     fontSize: wp(3.8),
     color: '#000',
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
   locationValue: {
     fontSize: wp(3.5),
@@ -294,7 +297,8 @@ const styles = StyleSheet.create({
   },
   driverName: {
     fontSize: wp(4.2),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
   },
   driverPlate: {
@@ -318,6 +322,7 @@ const styles = StyleSheet.create({
   downloadButtonText: {
     fontSize: wp(4.2),
     color: '#000',
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
 });

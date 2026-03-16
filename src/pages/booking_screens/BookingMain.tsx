@@ -960,7 +960,7 @@ export default function BookingMain({ navigation, route }) {
         >
           {/* --- White Section (main content) --- */}
           <View style={styles.whiteContainer}>
-            <UserHeader />
+            <UserHeader navigation={navigation} />
             {/* User Header */}
 
             {/* --- Location Section --- */}
@@ -1243,7 +1243,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: wp(5),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     position: 'absolute',
     alignSelf: 'center',
     left: PADDING_HORIZONTAL,
@@ -1284,6 +1285,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: LIGHT_GREY,
     borderRadius: 12,
+
     paddingHorizontal: wp(3),
     height: hp(6.5),
     borderWidth: 1,
@@ -1296,6 +1298,8 @@ const styles = StyleSheet.create({
     color: '#333',
     paddingTop: hp(0.4),
     marginLeft: wp(2),
+    fontFamily:"Poppins-Regular",
+
   },
   swapButton: { position: 'absolute', right: 0, zIndex: 10 },
   swapper: { position: 'relative', top: hp(1.4), zIndex: 50000, right: hp(-2) },
@@ -1313,16 +1317,17 @@ const styles = StyleSheet.create({
     marginHorizontal: wp(1.5),
     borderRadius: 50,
     alignItems: 'center',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   toggleButtonActive: {
     backgroundColor: PRIMARY_YELLOW,
   },
   toggleText: {
     fontSize: wp(3.8),
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#333',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   toggleTextActive: {
     color: 'black',
@@ -1338,10 +1343,11 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: wp(4),
-    fontWeight: 'bold',
+    // fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#333',
     marginBottom: hp(1.5),
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   fullPicker: {
     backgroundColor: '#F2F2F2',
@@ -1389,7 +1395,8 @@ const styles = StyleSheet.create({
   pickerText: {
     fontSize: 14,
     color: '#1A1A1A',
-    fontWeight: '500',
+        fontFamily:"Poppins-Regular",
+
   },
   dateTimeRow: {
     flexDirection: 'row',
@@ -1416,7 +1423,8 @@ const styles = StyleSheet.create({
   datePickerText: {
     fontSize: wp(4),
     color: '#333',
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
 
   classSelectorContainer: {
@@ -1448,11 +1456,15 @@ const styles = StyleSheet.create({
   },
   classButtonText: {
     fontSize: wp(4),
-    fontWeight: '500',
+    // fontWeight: '0',
+        fontFamily:"Poppins-Regular",
+    fontFamily:"Poppins-Regular",
+
     color: '#333',
   },
   classButtonTextActive: {
-    fontWeight: 'bold',
+        fontFamily:"Poppins-Regular",
+
   },
 
   carCardsRow: {
@@ -1486,13 +1498,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
     textAlign: 'left',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   carDescription: {
     fontSize: wp(2.8),
     color: '#888',
     marginVertical: hp(0.5),
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   carIconsRow: {
     marginTop: hp(1),
@@ -1522,14 +1534,16 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: wp(2),
     fontSize: wp(3.8),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#333',
-    fontFamily: 'SF Pro',
+    fontFamily: 'Poppins-Regular',
   },
   viewDriverText: {
     color: PRIMARY_YELLOW,
     fontSize: wp(3.5),
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
 
   fareContainer: {
@@ -1549,7 +1563,8 @@ const styles = StyleSheet.create({
   fareTitle: {
     fontSize: wp(5.5),
     color: '#111',
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
   fareAmount: {
     fontSize: wp(5.5),
@@ -1630,7 +1645,8 @@ const styles = StyleSheet.create({
   },
   suggestionsTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#333',
   },
   closeButton: {
@@ -1663,7 +1679,8 @@ const styles = StyleSheet.create({
   },
   currentLocationText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: COLORS.success,
   },
   suggestionsList: {
@@ -1691,7 +1708,8 @@ const styles = StyleSheet.create({
   },
   suggestionMain: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#333',
     marginBottom: 4,
   },
@@ -1717,7 +1735,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#999',
     marginTop: 12,
-    fontWeight: '500',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
   },
   emptySubtext: {
     fontSize: 14,
@@ -1745,14 +1764,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   input: {
-    height: 55,
     borderWidth: 1.5,
     borderColor: '#E0E0E0',
     borderRadius: 18, // High radius for that "pill" look
     paddingHorizontal: 20,
-    fontSize: 16,
+    fontSize: 14,
     height: hp(6.5),
-
+    fontFamily:"Poppins-Regular",
+textAlign: 'left',
     color: '#333',
   },
   halfInput: {

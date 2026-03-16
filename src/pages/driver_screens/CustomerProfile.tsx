@@ -293,7 +293,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarText: { fontWeight: '700', color: '#000' },
-  name: { fontSize: 14, fontWeight: '600', color: '#000' },
+  name: { fontSize: 14, fontWeight: '0',
+        fontFamily:"Poppins-Regular", color: '#000' },
 
   loyaltyTag: {
     backgroundColor: '#0519F3',
@@ -309,7 +310,8 @@ const styles = StyleSheet.create({
   ratingStar: { fontSize: 16 },
   ratingValue: {
     color: '#FFD600',
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     marginLeft: 4,
     fontSize: 20,
   },
@@ -325,7 +327,8 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginBottom: 10,
   },
@@ -364,9 +367,11 @@ const styles = StyleSheet.create({
     width: '100%',
   },
 
-  bookingDate: { fontSize: 14, fontWeight: '600', color: '#000' },
+  bookingDate: { fontSize: 14, fontWeight: '0',
+        fontFamily:"Poppins-Regular", color: '#000' },
   bookingRoute: { fontSize: 12, color: '#666', marginTop: 10 },
-  bookingPrice: { fontSize: 16, fontWeight: '600', color: '#4CD964' },
+  bookingPrice: { fontSize: 16, fontWeight: '0',
+        fontFamily:"Poppins-Regular", color: '#4CD964' },
   notesBox: {
     backgroundColor: '#FFF',
     borderRadius: 12,
@@ -414,7 +419,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: 'center',
   },
-  modalButtonText: { color: '#000', fontWeight: '600', fontSize: 14 },
+  modalButtonText: { color: '#000', fontWeight: '0',
+        fontFamily:"Poppins-Regular", fontSize: 14 },
 
   successCircle: {
     width: 60,
@@ -474,7 +480,8 @@ const styles = StyleSheet.create({
 
   contactHeading: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '0',
+        fontFamily:"Poppins-Regular",
     color: '#000',
     marginHorizontal: wp(6),
     marginTop: hp(2),

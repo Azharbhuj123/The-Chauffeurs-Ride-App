@@ -60,6 +60,7 @@ import { useUserStore } from '../stores/useUserStore';
 import { COLORS } from '../utils/Enums';
 import { AddNewAddressScreen } from '../pages/profile_screens/AddNewAddressScreen';
 import { AddAddressInp } from '../pages/profile_screens/AddAddressInp';
+import NotificationsScreen from '../pages/notification_screens/NotificationsScreen';
 
 const Stack = createNativeStackNavigator();
 
