@@ -57,7 +57,7 @@ export default function Approval({ route, navigation, headerTitle }) {
                 },
               ]}
             >
-              Status : {status || "Pending"}
+              Status : {status || 'Pending'}
             </Text>
             {status === 'Rejected' && reason ? (
               <Text style={styles.successMessage}>
@@ -76,9 +76,11 @@ export default function Approval({ route, navigation, headerTitle }) {
             <View style={{ width: '100%' }}>
               <Button
                 title="Fix & resubmit"
-                onPress={() => navigation.navigate('UploadDoc',{
-                  contact
-                })}
+                onPress={() =>
+                  navigation.navigate('UploadDoc', {
+                    contact,
+                  })
+                }
               />
             </View>
           )}
@@ -116,7 +118,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: wp(4.5),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
   },
   progressContainer: {
@@ -155,7 +157,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: wp(3.8),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
   },
   documentItem: {
@@ -350,7 +352,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: wp(4),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#111827',
     marginBottom: hp(0.8),
   },
@@ -369,6 +371,6 @@ const styles = StyleSheet.create({
     fontSize: wp(3.6),
     color: '#047857',
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
 });

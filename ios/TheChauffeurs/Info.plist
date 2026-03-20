@@ -35,20 +35,20 @@
   <key>Permitted background task scheduler identifiers</key>
   <string>com.transistorsoft.customtask</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Background mein bhi location access required hai taa ke ride tracking aur safety features sahi tareeke se kaam kar saken.</string>
+	<string>Location access is also required in the background so that ride tracking and safety features can work even in the dark.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>App ko background location access chahiye taa ke ongoing rides ko track kiya ja sake.</string>
+	<string>The app needs background location access to track the number of trips.</string>
 	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
 	<dict>
 		<key>Default</key>
-		<string>Temporary precise location required for accurate driver matching and route calculation.</string>
+		<string>A temporarily accurate position is required for accurate driver matching and route calculation.</string>
 	</dict>
 	<key>NSLocationUsageDescription</key>
-	<string>Location access zaroori hai taa ke app aapke near available drivers aur accurate pickup location show kar sake.</string>
+	<string>Location access is required so that the app can show your available channels and specific locations.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>App ko aapki location tab chahiye jab aap app use kar rahe hon, taa ke ride tracking aur nearby features kaam kar saken.</string>
+	<string>The app needs your location tab when you're using it, so that ride tracking and nearby features can work.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>App ko aapki location tab chahiye jab aap app use kar rahe hon, taa ke ride tracking aur nearby features kaam kar saken.</string>
+	<string>The app needs your location tab when you're using it, so that ride tracking and nearby features can work.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>
@@ -76,6 +76,7 @@
 		<string>SF-Pro.ttf</string>
 		<string>Inter 28pt.ttf</string>
 	</array>
+
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
@@ -96,6 +97,17 @@
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>drivo</string>
+    </array>
+    <key>CFBundleURLName</key>
+    <string>com.drivo.app</string>
+  </dict>
+</array>
 	<false/>
 </dict>
 </plist>

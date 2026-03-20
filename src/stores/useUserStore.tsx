@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
+import { useStripeStore } from './stripeStore';
 
 type Role = 'User' | 'Driver' | 'Admin' | '';
 
@@ -65,6 +66,7 @@ export const useUserStore = create<CounterState>(set => ({
   resetAll: async () => {
     try {
       await AsyncStorage.multiRemove(['userData', 'token']); // clear both keys
+      useStripeStore.getState().clearStore();
 
       set({
         isForgot: false,

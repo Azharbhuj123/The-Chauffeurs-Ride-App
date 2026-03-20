@@ -244,7 +244,7 @@ function Signup({ navigation }) {
             <SocialBtns />
 
             <View style={styles.signInContainer}>
-              <Text>Already have an account? </Text>
+              <Text style={styles.signInText}>Already have an account? </Text>
               <TouchableOpacity onPress={() => navigation.navigate('Login')}>
                 <Text style={styles.signInLink}>Sign In</Text>
               </TouchableOpacity>

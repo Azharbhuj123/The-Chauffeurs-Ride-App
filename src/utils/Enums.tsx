@@ -28,8 +28,7 @@ export const error_msg = {
   marginBottom: 5,
   marginLeft: 10,
   fontWeight: '0',
-        fontFamily:"Poppins-Regular",
- 
+  fontFamily: 'Poppins-Regular',
 };
 
 export const no_found = {
@@ -59,40 +58,36 @@ export const CANCEL_REASONS = {
   ],
 };
 
-
 export const vehicle_class = [
-  { label: "Hatchback", value: "Hatchback" },
-  { label: "Sedan", value: "Sedan" },
-  { label: "SUV", value: "SUV" },
-  { label: "Van / MPV", value: "Van / MPV" },
-  { label: "XL / Large", value: "XL / Large" },
-  { label: "Luxury Sedan", value: "Luxury Sedan" },
-  { label: "Prestige Sedan", value: "Prestige Sedan" },
-  { label: "Luxury SUV", value: "Luxury SUV" },
-  { label: "Electric (EV)", value: "Electric (EV)" },
-  { label: "Motorbike", value: "Motorbike" },
-  { label: "Auto Rickshaw", value: "Auto Rickshaw" },
-  { label: "Chauffeur Class", value: "Chauffeur Class" },
+  { label: 'Hatchback', value: 'Hatchback' },
+  { label: 'Sedan', value: 'Sedan' },
+  { label: 'SUV', value: 'SUV' },
+  { label: 'Van / MPV', value: 'Van / MPV' },
+  { label: 'XL / Large', value: 'XL / Large' },
+  { label: 'Luxury Sedan', value: 'Luxury Sedan' },
+  { label: 'Prestige Sedan', value: 'Prestige Sedan' },
+  { label: 'Luxury SUV', value: 'Luxury SUV' },
+  { label: 'Electric (EV)', value: 'Electric (EV)' },
+  { label: 'Motorbike', value: 'Motorbike' },
+  { label: 'Auto Rickshaw', value: 'Auto Rickshaw' },
+  { label: 'Chauffeur Class', value: 'Chauffeur Class' },
 ];
 
 export const category_class = [
-  { label: "Luxury", value: "Luxury" },
-  { label: "Business", value: "Business" },
-  { label: "Economy", value: "Economy" },
+  { label: 'Luxury', value: 'Luxury' },
+  { label: 'Business', value: 'Business' },
+  { label: 'Economy', value: 'Economy' },
 ];
-
 
 export const monthly_filter = [
-  { label: "Weekly", value: "weekly" },
-  { label: "Monthly", value: "monthly" },
-  { label: "Yearly", value: "yearly" },
+  { label: 'Weekly', value: 'weekly' },
+  { label: 'Monthly', value: 'monthly' },
+  { label: 'Yearly', value: 'yearly' },
 ];
-
-
 
 export const GOOGLE_MAP_API_KEY = 'AIzaSyAO096xo1HoduYAuLsAwrHkNUNRedReQkQ';
 
-export const formatAPIDate = (date) => {
+export const formatAPIDate = (date: Date) => {
   if (!date) return '';
 
   const year = date.getFullYear();
@@ -102,7 +97,7 @@ export const formatAPIDate = (date) => {
   return `${year}-${month}-${day}`;
 };
 
-export const formatAPITime = date => {
+export const formatAPITime = (date: Date) => {
   if (!date) return '';
   return date.toLocaleTimeString('en-GB', {
     hour: '2-digit',
@@ -111,35 +106,34 @@ export const formatAPITime = date => {
   });
 };
 
+// Helper for 24h formatting
+// 24h Formatter: Returns "HH:mm" or placeholder
+export const format24h = (date: Date) => {
+  if (!date) return 'Select time';
+  return date.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+};
+export const formatDate = (date: Date) => {
+  if (!date) return 'Select date';
+  return date.toLocaleDateString('en-US'); // MM/DD/YYYY
+};
 
-
-  // Helper for 24h formatting
-  // 24h Formatter: Returns "HH:mm" or placeholder
-  export const  format24h = date => {
-    if (!date) return 'Select time';
-    return date.toLocaleTimeString('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
-  };
-  export const  formatDate = date => {
-    if (!date) return 'Select date';
-    return date.toLocaleDateString('en-US'); // MM/DD/YYYY
-  };
-
-
-
-
-
-    export const formatDate2 = (date) => {
-    return date
-      ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
-      : '';
-  };
+export const formatDate2 = (date: Date) => {
+  return date
+    ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+        2,
+        '0',
+      )}-${String(date.getDate()).padStart(2, '0')}`
+    : '';
+};
   
-    export const formatTime = (time) => {
-    return time
-      ? `${String(time.getHours()).padStart(2,'0')}:${String(time.getMinutes()).padStart(2,'0')}`
-      : '';
-  };
+export const formatTime = (time: any) => {
+  return time
+    ? `${String(time.getHours()).padStart(2, '0')}:${String(
+        time.getMinutes(),
+      ).padStart(2, '0')}`
+    : '';
+};

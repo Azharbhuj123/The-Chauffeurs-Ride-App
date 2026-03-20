@@ -36,6 +36,7 @@ import { COLORS, error_msg } from '../../utils/Enums';
 import useActionMutation from '../../queryFunctions/useActionMutation';
 import { showToast } from '../../utils/toastHelper';
 import { useUserStore } from '../../stores/useUserStore';
+import { useStripeStore } from '../../stores/stripeStore';
 
 const { width, height } = Dimensions.get('window');
 
@@ -78,8 +79,14 @@ function Login({ navigation }) {
         });
         return;
       }
-      
+       
       setUserData(data?.userData, data?.token);
+      if (data?.userData?.stripeAccountId) {
+  useStripeStore.setState({
+    accountId: data.userData.stripeAccountId,
+    chargesEnabled: data.userData.stripeChargesEnabled,
+  });
+}
       reset();
       navigation.reset({
         index: 0,

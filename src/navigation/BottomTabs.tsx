@@ -61,6 +61,7 @@ import { COLORS } from '../utils/Enums';
 import { AddNewAddressScreen } from '../pages/profile_screens/AddNewAddressScreen';
 import { AddAddressInp } from '../pages/profile_screens/AddAddressInp';
 import NotificationsScreen from '../pages/notification_screens/NotificationsScreen';
+import StripeConnectScreen from '../pages/stripe_screens/StripeConnectScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -336,6 +337,7 @@ export default function BottomTabs() {
           }}
         >
           <Tab.Screen name="Home" component={DriverHomeStack} />
+          {/* <Tab.Screen name="Home" component={StripeConnectScreen} /> */}
           <Tab.Screen
             name="Earning"
             component={EarningsStack}

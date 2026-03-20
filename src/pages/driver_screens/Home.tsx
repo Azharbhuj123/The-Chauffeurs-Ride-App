@@ -34,6 +34,8 @@ import { useRideStore } from '../../stores/rideStore';
 import AppLoader from '../../components/AppLoader';
 import CustomDropdown from '../../components/CustomDropdown';
 import { COLORS, formatDate2, formatTime } from '../../utils/Enums';
+import StripeWarningBox from '../../components/StripeWarningBox';
+import { useStripeStore } from '../../stores/stripeStore';
 
 const { width, height } = Dimensions.get('window');
 
@@ -72,11 +74,17 @@ export default function HomeScreen({ navigation }) {
   const [driverId, setDriverId] = useState(null);
   const [selectedRide, setSelectedRide] = useState(null);
   const tabBarHeight = useTabBarHeightHelper();
-  const { token, userData } = useUserStore();
+  const { token, userData, role } = useUserStore();
   const { location } = useStore();
   const is_chauffeur = userData?.owned_By ? true : false;
 
   const { setRideRequests, rideRequests } = useRideStore();
+  const accountId = useStripeStore(s => s.accountId);
+  const chargesEnabled = useStripeStore(s => s.chargesEnabled);
+  const fetchStatus = useStripeStore(s => s.fetchAccountStatus);
+  const connectState = useStripeStore(s => s.connectState);
+
+  const showStripeWarning = role === 'Driver' && !chargesEnabled;
 
   const { data: ridePartner } = useQuery({
     queryKey: ['get-ride-partner'],
@@ -162,6 +170,21 @@ export default function HomeScreen({ navigation }) {
     }, []),
   );
 
+  useFocusEffect(
+    useCallback(() => {
+      console.log(
+        connectState,
+        'connectState',
+        token,
+        'token',
+        accountId,
+        'accountId',
+      );
+
+      fetchStatus(accountId, token);
+    }, [connectState.status]),
+  );
+
   const { triggerMutation, loading } = useActionMutation({
     onSuccessCallback: async data => {
       if (data?.success && data?.action === 'reject_transfer') {
@@ -239,6 +262,8 @@ export default function HomeScreen({ navigation }) {
         ]}
       >
         <UserHeader navigation={navigation} />
+
+        {showStripeWarning && <StripeWarningBox />}
 
         {rideRequests?.length > 0 && (
           <View style={styles.incomingRideContainer}>

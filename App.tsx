@@ -14,6 +14,7 @@ import {
   StyleSheet,
   useColorScheme,
   Alert,
+  Linking,
 } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
@@ -39,11 +40,15 @@ import { navigationRef } from './src/utils/NavigationService';
 import { useRideStore } from './src/stores/rideStore';
 import MainNavigation from './src/navigation/mainNavigation';
 import { showFlash } from './src/utils/flashMessageHelper';
+import { useStripeStore } from './src/stores/stripeStore';
+import StripeConnectModal from './src/components/StripeConnectModal';
 
 export default function App() {
   const isDarkMode = useColorScheme() === 'dark';
   const { setLocation } = useStore();
   const { userData, role, setFcmToken } = useUserStore();
+  const handleSuccess = useStripeStore(s => s.handleSuccess);
+  const handleRefresh = useStripeStore(s => s.handleRefresh);
   const queryClient = new QueryClient();
   const { rideId } = useRideStore(); // get latest rideId
   const rideIdRef = useRef(rideId);
@@ -238,6 +243,37 @@ export default function App() {
     }
   };
 
+  useEffect(() => {
+    // Handle deep link when app is launched cold (was closed)
+    Linking.getInitialURL().then(url => {
+      if (url) handleDeepLink(url);
+    });
+
+    // Handle deep link when app is already running in background
+    const subscription = Linking.addEventListener('url', ({ url }) =>
+      handleDeepLink(url),
+    );
+
+    return () => subscription.remove();
+  }, []);
+
+  function handleDeepLink(url: string) {
+    if (!url) return;
+
+    try {
+      // React Native's URL parser needs a valid base for custom schemes
+      const accountId = url.split('accountId=')[1]?.split('&')[0] ?? '';
+
+      if (url.includes('stripe-connect-success')) {
+        handleSuccess(accountId);
+      } else if (url.includes('stripe-connect-refresh')) {
+        handleRefresh(accountId);
+      }
+    } catch (err) {
+      console.warn('[DeepLink] Failed to parse URL:', url, err);
+    }
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
@@ -245,6 +281,7 @@ export default function App() {
         <MainNavigation />
         <Toast config={toastConfig} />
         <FlashMessage position="top" />
+         <StripeConnectModal />
       </SafeAreaProvider>
     </QueryClientProvider>
   );
