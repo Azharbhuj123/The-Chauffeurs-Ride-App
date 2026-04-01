@@ -208,7 +208,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
           let iconName = '';
           if (route.name === 'Home') iconName = 'home';
           else if (route.name === 'Bookings') iconName = 'calendar';
-          else if (route.name === 'Loyalty') iconName = 'gift';
+          else if (route.name === "Notification") iconName = 'gift';
           else if (route.name === 'Profile') iconName = 'person';
 
           return (
@@ -253,7 +253,7 @@ const CustomDriverTabBar = ({ state, descriptors, navigation }) => {
 
   return (
     <View style={[styles.tabBarContainer, { paddingBottom: insets.bottom }]}>
-      <View style={[styles.tabBar, { minWidth: wp('50%') }]}>
+      <View style={[styles.tabBar, { minWidth: wp('60%') }]}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const isFocused = state.index === index;
@@ -280,10 +280,10 @@ const CustomDriverTabBar = ({ state, descriptors, navigation }) => {
             iconSource = isFocused
               ? require('../assets/images/money-focus.png')
               : require('../assets/images/money.png');
-          } else if (route.name === 'Loyalty') {
+          } else if (route.name === "Notification") {
             iconSource = isFocused
-              ? require('../assets/images/people-focus.png')
-              : require('../assets/images/people.png');
+              ? require('../assets/images/Noti-focus.png')
+              : require('../assets/images/Noti.png');
           } else if (route.name === 'Profile') {
             iconSource = isFocused
               ? require('../assets/images/setting-focus.png')
@@ -325,7 +325,7 @@ export default function BottomTabs() {
             component={BookingStack}
             options={{ unmountOnBlur: true }}
           />
-          {/* <Tab.Screen name="Loyalty" component={LoyaltyRewardsScreen} /> */}
+          {/* <Tab.Screen name="Notification" component={LoyaltyRewardsScreen} /> */}
           <Tab.Screen name="Profile" component={ProfileStack} />
         </Tab.Navigator>
       ) : role === 'Driver' ? (
@@ -344,7 +344,7 @@ export default function BottomTabs() {
             options={{ unmountOnBlur: true }}
           />
 
-          {/* <Tab.Screen name="Loyalty" component={OwnershipStack} /> */}
+          <Tab.Screen name="Notification" component={NotificationsScreen} />
 
           {/* <Tab.Screen name="Profile" component={OperationsStack} /> */}
         </Tab.Navigator>

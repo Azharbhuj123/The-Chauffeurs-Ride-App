@@ -7,7 +7,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
- 
   StatusBar,
 } from 'react-native';
 import {
@@ -21,10 +20,30 @@ import { COLORS } from '../../utils/Enums';
 
 export const HelpSupportScreen = ({ navigation }) => {
   const helpTopics = [
-    'Issues with a Trip',
-    'Payment, Billing, or Receipts',
-    'Account, Login, or Profile Updates',
+    {
+      main_route: 'Profile',
+      child_route: 'ReportIssue',
+      title: 'Issues with a Trip',
+    },
+    {
+      main_route: '',
+      child_route: '',
+      title: 'Payment, Billing, or Receipts',
+    },
+    {
+      main_route: '',
+      child_route: '',
+      title: 'Account, Login, or Profile Updates',
+    },
   ];
+
+  const handlePress = (main, child) => {
+    if (main && child) {
+      navigation.navigate(main, {
+        screen: child,
+      });
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -37,9 +56,16 @@ export const HelpSupportScreen = ({ navigation }) => {
           <Text style={styles.cardTitle}>Quick Help Topics</Text>
           {helpTopics.map((topic, index) => (
             <React.Fragment key={index}>
-              <TouchableOpacity style={styles.row} activeOpacity={0.6}>
-                <Text style={styles.rowText}>{topic}</Text>
-                <Ionicons name="chevron-forward-outline" style={styles.chevron} />
+              <TouchableOpacity
+                style={styles.row}
+                activeOpacity={0.6}
+                onPress={() => handlePress(topic.main_route, topic.child_route)}
+              >
+                <Text style={styles.rowText}>{topic.title}</Text>
+                <Ionicons
+                  name="chevron-forward-outline"
+                  style={styles.chevron}
+                />
               </TouchableOpacity>
               {index < helpTopics.length - 1 && <View style={styles.divider} />}
             </React.Fragment>
@@ -65,7 +91,9 @@ export const HelpSupportScreen = ({ navigation }) => {
             </View>
             <View style={styles.contactTextContainer}>
               <Text style={styles.contactTitle}>Call Support</Text>
-              <Text style={styles.contactSubtitle}>Mon - Fri, 9:00 AM - 5:00 PM</Text>
+              <Text style={styles.contactSubtitle}>
+                Mon - Fri, 9:00 AM - 5:00 PM
+              </Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -99,7 +127,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: wp('4.5%'),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     paddingHorizontal: wp('4%'),
     paddingTop: hp('1.5%'),
@@ -150,7 +178,7 @@ const styles = StyleSheet.create({
     fontSize: wp('4%'),
     color: '#000',
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
   contactSubtitle: {
     fontSize: wp('3.5%'),

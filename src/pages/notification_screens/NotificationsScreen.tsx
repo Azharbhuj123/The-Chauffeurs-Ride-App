@@ -21,6 +21,7 @@ import TopHeader from '../../components/TopHeader';
 import { fetchData } from '../../queryFunctions/queryFunctions';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import AppLoader from '../../components/AppLoader';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Enable LayoutAnimation for Android
 if (
@@ -537,7 +538,7 @@ export default function NotificationsScreen({ navigation }: any) {
   if (isLoading) return <AppLoader />;
 
   return (
-    <View style={styles.screen}>
+    <SafeAreaView style={styles.screen}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
       <TopHeader title="Notifications" navigation={navigation} />
 
@@ -617,7 +618,7 @@ export default function NotificationsScreen({ navigation }: any) {
         windowSize={10}
         initialNumToRender={6}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 

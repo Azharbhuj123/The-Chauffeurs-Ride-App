@@ -12,7 +12,20 @@
           "package_name": "com.drivo"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "154507490664-h0qrstjv1t5f48qgmda6ua165dclk7jl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.drivo",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "154507490664-v4krl6un7ocgl5ta3or4gci6hu0uv1qs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCuNP7eAiB9NgAxOmyo06ENRzOtKoH2y50"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "154507490664-v4krl6un7ocgl5ta3or4gci6hu0uv1qs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

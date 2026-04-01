@@ -15,8 +15,8 @@ const StripeWarningBox = () => {
 
   const handleConnect = useCallback(() => {
     if (!authToken) return;
-    console.log(authToken,"authToken","startConnect");
-    
+    console.log(authToken, 'authToken', 'startConnect');
+
     startConnect(authToken);
   }, [authToken, startConnect]);
   return (
@@ -56,6 +56,7 @@ const styles = StyleSheet.create({
   container: {
     // paddingHorizontal: wp('5%'),
     marginTop: hp('1%'),
+    marginBottom: hp('3%'),
   },
   card: {
     backgroundColor: '#FFFFFF',

@@ -10,6 +10,8 @@ import {
   Dimensions,
   Image,
   Alert,
+  Modal,
+  Linking,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
@@ -46,9 +48,6 @@ import { fetchData } from '../../queryFunctions/queryFunctions';
 import DateTimePicker, {
   DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
-// Import your existing components
-// import TopHeader from './TopHeader';
-// import Button from './Button';
 
 // Validation schemas for each step
 const step1Schema = yup.object().shape({
@@ -74,7 +73,6 @@ const step1Schema = yup.object().shape({
     .required('License plate number is required')
     .min(3, 'License plate must be at least 3 characters'),
   vehicleClass: yup.string().required('Vehicle class is required'),
-  categoryClass: yup.string().required('Category class is required'),
   vehicle_description: yup.string().required('Vehicle description is required'),
 });
 
@@ -126,6 +124,18 @@ export default function UploadVehicle({ route, navigation }) {
   const [currentStep, setCurrentStep] = useState(activeStep ? activeStep : 1);
   const { vehicleData, setVehicleData, resetVehicleData } = useStore();
   const { userData } = useUserStore();
+
+  // ── NEW: Preview state ──────────────────────────────────────────────────────
+  const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewUri, setPreviewUri] = useState(null);
+  const [previewTitle, setPreviewTitle] = useState('');
+
+  const openPreview = (file, title) => {
+    setPreviewTitle(title);
+    setPreviewUri(file?.uri ?? null);
+    setPreviewVisible(true);
+  };
+  // ───────────────────────────────────────────────────────────────────────────
 
   // Form for Step 1
   const {
@@ -234,8 +244,8 @@ export default function UploadVehicle({ route, navigation }) {
         'vehicle_description',
         vehicleData.vehicle_description || '',
       );
-      formData.append('vehicle_type', vehicleData.vehicleClass); // matches vehicle_class enum
-      formData.append('contact', vehicleData.contact); // matches vehicle_class enum
+      formData.append('vehicle_type', vehicleData.vehicleClass);
+      formData.append('contact', vehicleData.contact);
 
       // Step 3: Chauffeur / Self Drive logic
       const vehicleFor =
@@ -252,19 +262,18 @@ export default function UploadVehicle({ route, navigation }) {
         });
       };
 
-
       const dayMapper = {
-      'Mon': 'Monday',
-      'Tue': 'Tuesday',
-      'Wed': 'Wednesday',
-      'Thu': 'Thursday',
-      'Fri': 'Friday',
-      'Sat': 'Saturday',
-      'Sun': 'Sunday'
-    };
+        Mon: 'Monday',
+        Tue: 'Tuesday',
+        Wed: 'Wednesday',
+        Thu: 'Thursday',
+        Fri: 'Friday',
+        Sat: 'Saturday',
+        Sun: 'Sunday',
+      };
 
       const availability = vehicleData.selectedDays.map(day => ({
-        day: dayMapper[day], // e.g., "Mon"
+        day: dayMapper[day],
         slots: [
           {
             from: formatToHHMM(vehicleData.fromTime),
@@ -273,15 +282,9 @@ export default function UploadVehicle({ route, navigation }) {
         ],
       }));
 
-      // Append availability as a JSON string
       formData.append('availability', JSON.stringify(availability));
-
-      // Append the rate as duration_rate
       formData.append('duration_rate', Number(vehicleData.rate));
 
-      // Vehicle driver
-
-      // Step 2: Upload documents (binary)
       const documents = {
         vehicle_registration: vehicleData.vehicleRegistration,
         insurance_papers: vehicleData.vehicleInsurance,
@@ -298,14 +301,12 @@ export default function UploadVehicle({ route, navigation }) {
       Object.entries(documents).forEach(([key, file]) => {
         if (file) {
           formData.append(key, {
-            uri: file.uri, // React Native image picker uri
-            name: file.fileName || `${key}.jpg`, // fallback filename
-            type: file.type || 'image/jpeg', // fallback type
+            uri: file.uri,
+            name: file.fileName || `${key}.jpg`,
+            type: file.type || 'image/jpeg',
           });
         }
       });
-
-      
 
       triggerMutation({
         endPoint: '/auth/upload-documents',
@@ -377,6 +378,28 @@ export default function UploadVehicle({ route, navigation }) {
       <Text style={styles.stepTitle}>Step 1: Vehicle Info Form</Text>
 
       {renderProgressBar()}
+
+      <View style={styles.inputGroup}>
+        <Text style={styles.label}>Vehicle Class</Text>
+        <Controller
+          control={control1}
+          name="vehicleClass"
+          render={({ field: { onChange, value } }) => (
+            <View style={[errors1.vehicleClass && styles.inputError]}>
+              <CustomDropdown
+                data={vehicle_class}
+                value={value}
+                onChange={(selectedItem: { label: string, value: string }) => {
+                  onChange(selectedItem.value);
+                }}
+              />
+            </View>
+          )}
+        />
+        {errors1.vehicleClass && (
+          <Text style={styles.errorText}>{errors1.vehicleClass.message}</Text>
+        )}
+      </View>
 
       <View style={styles.inputGroup}>
         <Text style={styles.label}>Vehicle Make</Text>
@@ -498,49 +521,6 @@ export default function UploadVehicle({ route, navigation }) {
           </Text>
         )}
       </View>
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Vehicle Class</Text>
-        <Controller
-          control={control1}
-          name="vehicleClass"
-          render={({ field: { onChange, value } }) => (
-            <View style={[errors1.vehicleClass && styles.inputError]}>
-              <CustomDropdown
-                data={vehicle_class}
-                value={value}
-                onChange={(selectedItem: { label: string, value: string }) => {
-                  onChange(selectedItem.value); // pass only the string to RHF
-                }}
-              />
-            </View>
-          )}
-        />
-        {errors1.vehicleClass && (
-          <Text style={styles.errorText}>{errors1.vehicleClass.message}</Text>
-        )}
-      </View>
-
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Category Class</Text>
-        <Controller
-          control={control1}
-          name="categoryClass"
-          render={({ field: { onChange, value } }) => (
-            <View style={[errors1.categoryClass && styles.inputError]}>
-              <CustomDropdown
-                data={category_class}
-                value={value}
-                onChange={(selectedItem: { label: string, value: string }) => {
-                  onChange(selectedItem.value); // pass only the string to RHF
-                }}
-              />
-            </View>
-          )}
-        />
-        {errors1.categoryClass && (
-          <Text style={styles.errorText}>{errors1.categoryClass.message}</Text>
-        )}
-      </View>
     </View>
   );
 
@@ -587,9 +567,7 @@ export default function UploadVehicle({ route, navigation }) {
         options.push({
           text: 'Upload File (PDF, DOC, etc.)',
           onPress: async () => {
-            // Implement file picker here
             const file = await pickFile();
-
             if (file) {
               setValue2(fieldName, file);
               trigger2(fieldName);
@@ -686,29 +664,6 @@ export default function UploadVehicle({ route, navigation }) {
             </>
           )}
         />
-
-        {/* <Controller
-          control={control2}
-          name="roadworthiness"
-          render={({ field: { value } }) => (
-            <>
-              <DocumentUploadItem
-                title="Roadworthiness/Permit Plate"
-                uploaded={value}
-                onUpload={() =>
-                  handleImageSelection('roadworthiness', 'roadworthiness')
-                }
-                onRemove={() => handleRemoveDocument('roadworthiness')}
-                hasError={!!errors2.roadworthiness}
-              />
-              {errors2.roadworthiness && (
-                <Text style={styles.errorText}>
-                  {errors2.roadworthiness.message}
-                </Text>
-              )}
-            </>
-          )}
-        /> */}
 
         <View style={[styles.sectionHeader, { marginTop: hp(3) }]}>
           <Text style={styles.sectionTitle}>Vehicle Photos</Text>
@@ -837,10 +792,8 @@ export default function UploadVehicle({ route, navigation }) {
       <View style={{ height: hp('65%') }}>
         <Text style={styles.stepTitle}>Step 3: Availability</Text>
 
-        {/* Progress Bar matching image */}
         {renderProgressBar()}
 
-        {/* Days Selection */}
         <Text style={styles.imgLabel}>Select Available Days</Text>
         <View style={styles.daysRow}>
           {DAYS.map(day => {
@@ -866,7 +819,6 @@ export default function UploadVehicle({ route, navigation }) {
           </Text>
         )}
 
-        {/* Hours Selection */}
         <Text style={styles.imgLabel}>Available Hours</Text>
         <View style={styles.timeRow}>
           <View style={styles.timeInputCol}>
@@ -893,7 +845,6 @@ export default function UploadVehicle({ route, navigation }) {
           </View>
         </View>
 
-        {/* Rate Selection */}
         <Text style={styles.imgLabel}>Set Your Rate</Text>
         <Controller
           control={control3}
@@ -908,7 +859,7 @@ export default function UploadVehicle({ route, navigation }) {
                   value={value}
                   onChangeText={onChange}
                 />
-                <Text style={styles.rateUnit}>/hrs</Text>
+                <Text style={styles.rateUnit}>/hr</Text>
               </View>
               {errors3.rate && (
                 <Text style={[styles.imgErrorText, { marginBottom: hp(2) }]}>
@@ -939,10 +890,26 @@ export default function UploadVehicle({ route, navigation }) {
     );
   };
 
-  const renderStep4 = () => (
-    <View style={{ height: hp('59%') }}>
-      <Text style={styles.stepTitle}>Step 4: Review & Submit</Text>
-      <View>
+  // ── UPDATED renderStep4 with preview functionality ──────────────────────────
+  const renderStep4 = () => {
+    const docs = [
+      { label: 'Vehicle Registration', file: vehicleData?.vehicleRegistration },
+      { label: 'Insurance Papers', file: vehicleData?.vehicleInsurance },
+    ];
+
+    const photos = [
+      { label: 'Front View', file: vehicleData?.frontView },
+      { label: 'Back View', file: vehicleData?.backView },
+      { label: 'Side View', file: vehicleData?.sideView },
+      { label: 'Interior View', file: vehicleData?.interiorView },
+    ];
+
+    return (
+      <View style={{ paddingBottom: hp(2) }}>
+        <Text style={styles.stepTitle}>Step 4: Review & Submit</Text>
+        {renderProgressBar()}
+
+        {/* Vehicle Info Card */}
         <View style={styles.card}>
           <Text style={styles.vehicleName}>{vehicleData?.vehicleMake}</Text>
           <Text style={styles.vehicleInfo}>
@@ -951,36 +918,56 @@ export default function UploadVehicle({ route, navigation }) {
           <Text style={styles.vehicleInfo}>
             Class: {vehicleData?.vehicleClass}
           </Text>
+          <Text style={styles.vehicleInfo}>Model: {vehicleData?.model}</Text>
+          <Text style={styles.vehicleInfo}>
+            Year: {vehicleData?.manufacturingYear}
+          </Text>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Documents & Photos</Text>
-
-          <View style={styles.row}>
-            <Icon
-              name="document-text-outline"
-              size={18}
-              color="#10B981"
-              style={{ marginRight: 6 }}
+        {/* Documents Preview Card */}
+        <View style={[styles.card, { marginTop: hp(1.5) }]}>
+          <Text style={[styles.sectionTitle, { marginBottom: hp(1.5) }]}>
+            Documents
+          </Text>
+          {docs.map(({ label, file }) => (
+            <DocumentPreviewItem
+              key={label}
+              title={label}
+              file={file}
+              onPreview={() => openPreview(file, label)}
             />
-            <Text style={styles.successText}>Documents: All Uploaded</Text>
-          </View>
+          ))}
+        </View>
 
-          <View style={[styles.row, { marginTop: 4 }]}>
-            <Icon
-              name="images-outline"
-              size={18}
-              color="#10B981"
-              style={{ marginRight: 6 }}
-            />
-            <Text style={styles.successText}>
-              Photos: All Required Uploaded
-            </Text>
+        {/* Photos Preview Card */}
+        <View style={[styles.card, { marginTop: hp(1.5) }]}>
+          <Text style={[styles.sectionTitle, { marginBottom: hp(1.5) }]}>
+            Vehicle Photos
+          </Text>
+          <View style={reviewStyles.photoGrid}>
+            {photos.map(({ label, file }) => (
+              <PhotoPreviewThumb
+                key={label}
+                label={label}
+                file={file}
+                onPress={() => openPreview(file, label)}
+              />
+            ))}
           </View>
         </View>
+
+        {/* Full-screen preview modal */}
+        <ImagePreviewModal
+          visible={previewVisible}
+          uri={previewUri}
+          title={previewTitle}
+          onClose={() => setPreviewVisible(false)}
+        />
       </View>
-    </View>
-  );
+    );
+  };
+  // ───────────────────────────────────────────────────────────────────────────
+
   const renderStep5 = () => (
     <View style={styles.successContainer}>
       <View style={styles.successIcon}>
@@ -1000,13 +987,6 @@ export default function UploadVehicle({ route, navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* <TopHeader
-        title="Register New Vehicle"
-        navigation={navigation}
-        any_navigation={currentStep == 5 ? true : false}
-        navigate_to={currentStep == 5 ? 'DriverHome' : ''}
-      /> */}
-
       <ScrollView
         contentContainerStyle={[styles.scrollContent]}
         showsVerticalScrollIndicator={false}
@@ -1042,6 +1022,8 @@ export default function UploadVehicle({ route, navigation }) {
     </SafeAreaView>
   );
 }
+
+// ── EXISTING COMPONENTS (unchanged) ──────────────────────────────────────────
 
 const DocumentUploadItem = ({
   title,
@@ -1094,6 +1076,122 @@ const PhotoUploadBox = ({ label, uploaded, onUpload, onRemove, hasError }) => (
   </TouchableOpacity>
 );
 
+// ── NEW COMPONENTS ────────────────────────────────────────────────────────────
+
+const DocumentPreviewItem = ({ title, file, onPreview }) => {
+  const isImage = file?.type?.startsWith('image/');
+  return (
+    <View style={reviewStyles.docRow}>
+      <View style={reviewStyles.docLeft}>
+        {isImage ? (
+          <Image
+            source={{ uri: file.uri }}
+            style={reviewStyles.docThumb}
+            resizeMode="cover"
+          />
+        ) : (
+          <View style={reviewStyles.docIconBox}>
+            <Icon name="document-text-outline" size={wp(5)} color="#F1B13B" />
+          </View>
+        )}
+        <View style={{ flex: 1, marginLeft: wp(2.5) }}>
+          <Text style={reviewStyles.docTitle} numberOfLines={1}>
+            {title}
+          </Text>
+          <Text style={reviewStyles.docMeta} numberOfLines={1}>
+            {file?.fileName ?? file?.name ?? 'Uploaded'}
+          </Text>
+        </View>
+      </View>
+      <View style={reviewStyles.docRight}>
+        <View style={reviewStyles.badge}>
+          <Icon name="checkmark-circle" size={wp(3.5)} color="#10B981" />
+          <Text style={reviewStyles.badgeText}>Uploaded</Text>
+        </View>
+        <TouchableOpacity onPress={onPreview} style={reviewStyles.viewBtn}>
+          <Text style={reviewStyles.viewBtnText}>View</Text>
+          <Icon name="eye-outline" size={wp(3.5)} color="#F1B13B" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+const PhotoPreviewThumb = ({ label, file, onPress }) => (
+  <TouchableOpacity
+    style={reviewStyles.thumbWrapper}
+    onPress={onPress}
+    activeOpacity={0.8}
+  >
+    {file?.uri ? (
+      <>
+        <Image
+          source={{ uri: file.uri }}
+          style={reviewStyles.thumbImage}
+          resizeMode="cover"
+        />
+        <View style={reviewStyles.thumbOverlay}>
+          <Icon name="expand-outline" size={wp(5)} color="#FFF" />
+        </View>
+      </>
+    ) : (
+      <View style={[reviewStyles.thumbImage, reviewStyles.thumbPlaceholder]}>
+        <Icon name="image-outline" size={wp(7)} color="#CCC" />
+      </View>
+    )}
+    <Text style={reviewStyles.thumbLabel}>{label}</Text>
+  </TouchableOpacity>
+);
+
+const ImagePreviewModal = ({ visible, uri, title, onClose }) => (
+  <Modal
+    visible={visible}
+    transparent
+    animationType="fade"
+    onRequestClose={onClose}
+    statusBarTranslucent
+  >
+    <View style={reviewStyles.modalBackdrop}>
+      <View style={reviewStyles.modalHeader}>
+        <Text style={reviewStyles.modalTitle} numberOfLines={1}>
+          {title}
+        </Text>
+        <TouchableOpacity
+          onPress={onClose}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
+          <Icon name="close-circle" size={wp(7)} color="#FFF" />
+        </TouchableOpacity>
+      </View>
+      <View style={reviewStyles.modalContent}>
+        {uri ? (
+          <Image
+            source={{ uri }}
+            style={reviewStyles.modalImage}
+            resizeMode="contain"
+          />
+        ) : (
+          <View style={reviewStyles.pdfFallback}>
+            <Icon name="document-text-outline" size={wp(16)} color="#F1B13B" />
+            <Text style={reviewStyles.pdfFallbackText}>
+              Preview not available for this file type.
+            </Text>
+            <TouchableOpacity
+              style={reviewStyles.openFileBtn}
+              onPress={() => uri && Linking.openURL(uri)}
+            >
+              <Icon name="open-outline" size={wp(4)} color="#000" />
+              <Text style={reviewStyles.openFileBtnText}>Open File</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    </View>
+  </Modal>
+);
+
+// ── EXISTING STYLES (unchanged) ───────────────────────────────────────────────
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -1102,7 +1200,7 @@ const styles = StyleSheet.create({
   header: {
     height: hp(25),
     backgroundColor: '#0D1831',
-    paddingTop: Platform.OS === 'ios' ? hp(6) : hp(4), // iOS: Account for notch/Dynamic Island
+    paddingTop: Platform.OS === 'ios' ? hp(6) : hp(4),
     paddingHorizontal: wp(4),
   },
   logoContainer: {
@@ -1113,7 +1211,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: wp(4.5),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
   },
   progressContainer: {
@@ -1131,17 +1229,15 @@ const styles = StyleSheet.create({
   progressBarActive: {
     backgroundColor: COLORS.warning,
   },
-
   formContainer: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: wp(8), // iOS: Matches native sheet corners (16-20px)
+    borderTopLeftRadius: wp(8),
     borderTopRightRadius: wp(8),
     paddingHorizontal: wp(6),
     paddingTop: hp(4),
     paddingBottom: hp(3),
     heigh: '100%',
-    // Android: Material elevation for card depth
     ...Platform.select({
       android: {
         elevation: 8,
@@ -1157,7 +1253,7 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: wp(4.2),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     marginBottom: hp(2),
   },
@@ -1175,7 +1271,7 @@ const styles = StyleSheet.create({
     color: '#000',
     marginBottom: hp(1),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
   input: {
     borderWidth: 1,
@@ -1185,6 +1281,7 @@ const styles = StyleSheet.create({
     paddingVertical: hp(1.5),
     fontSize: wp(3.8),
     backgroundColor: '#FFF',
+    color: '#000',
   },
   pickerContainer: {
     flexDirection: 'row',
@@ -1206,7 +1303,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: wp(3.8),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
   },
   documentItem: {
@@ -1244,14 +1341,28 @@ const styles = StyleSheet.create({
   },
   photoGrid: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     gap: wp(3),
     marginBottom: hp(2),
+    width: '100%',
+  },
+  photoContainer: {
+    flex: 1,
+    minHeight: hp(15),
+  },
+  errorContainer: {
+    height: hp(2.5),
+    justifyContent: 'center',
+  },
+  errorTextSmall: {
+    fontSize: wp(3),
+    color: 'red',
+    fontFamily: 'Poppins-Regular',
   },
   photoBox: {
     flex: 1,
     aspectRatio: 1.2,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
     borderRadius: wp(2),
     alignItems: 'center',
     justifyContent: 'center',
@@ -1307,10 +1418,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   successContainer: {
-    // flex: 1,
     height: '100%',
-    // alignItems: 'center',
-    // justifyContent: 'center',
   },
   successIcon: {
     marginBottom: hp(3),
@@ -1322,14 +1430,14 @@ const styles = StyleSheet.create({
     marginBottom: hp(1),
   },
   successSubtitle: {
-    fontSize: wp(3.5), // responsive text (~16px)
+    fontSize: wp(3.5),
     color: '#947C00',
     paddingHorizontal: wp(2),
     paddingVertical: hp(0.7),
     borderRadius: wp(3.5),
-    borderWidth: 1, // ✅ you need this for borderColor to show
+    borderWidth: 1,
     borderColor: 'rgba(248, 216, 51, 0.20)',
-    backgroundColor: 'rgba(248, 216, 51, 0.20)', // ✅ corrected property name
+    backgroundColor: 'rgba(248, 216, 51, 0.20)',
     width: '100%',
     textAlign: 'center',
     marginTop: wp(3.5),
@@ -1346,16 +1454,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     width: '100%',
   },
-
   buttonText: {
     backgroundColor: COLORS.warning,
-    paddingHorizontal: wp(5), // responsive horizontal padding
-    paddingVertical: hp(2), // responsive vertical padding
-    borderRadius: wp(10), // smooth rounded edges on all screens
+    paddingHorizontal: wp(5),
+    paddingVertical: hp(2),
+    borderRadius: wp(10),
     alignItems: 'center',
     justifyContent: 'center',
     textAlign: 'center',
-    fontSize: wp(4), // responsive text size (~16px on medium screen)
+    fontSize: wp(4),
     fontWeight: '400',
     marginTop: hp(2),
   },
@@ -1373,10 +1480,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
   card: {
     backgroundColor: '#fff',
-    borderRadius: wp(4), // responsive rounded corners
+    borderRadius: wp(4),
     paddingHorizontal: wp(4),
     paddingVertical: hp(2),
     marginBottom: hp(1.5),
@@ -1386,57 +1492,37 @@ const styles = StyleSheet.create({
     shadowRadius: wp(1),
     elevation: 2,
   },
-
   vehicleName: {
-    fontSize: wp(4.3), // around 16px on medium screen
+    fontSize: wp(4.3),
     fontWeight: '700',
     color: '#047857',
     marginBottom: hp(0.5),
   },
-
   vehicleInfo: {
     fontSize: wp(3.6),
     color: '#374151',
     marginBottom: hp(0.3),
   },
-
-  sectionTitle: {
-    fontSize: wp(4),
-    fontWeight: '0',
-        fontFamily:"Poppins-Regular",
-    color: '#111827',
-    marginBottom: hp(0.8),
-  },
-
   row: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-
   statusText: {
     fontSize: wp(3.6),
     color: '#4B5563',
   },
-
   successText: {
     fontSize: wp(3.6),
     color: '#047857',
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
-
   errorText: {
     ...error_msg,
-  },
-  errorTextSmall: {
-    ...error_msg,
-    fontSize: wp(2.8),
-    marginTop: hp(0.3),
   },
   inputError: {
     borderColor: COLORS.error,
   },
-
   stepContainer: {
     paddingVertical: 10,
   },
@@ -1471,8 +1557,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     marginBottom: 15,
+    marginTop: 15,
   },
   imgSubLabel: {
     fontSize: 14,
@@ -1551,5 +1638,160 @@ const styles = StyleSheet.create({
   },
   imgErrorText: {
     ...error_msg,
+  },
+});
+
+// ── NEW STYLES for preview components ─────────────────────────────────────────
+
+const reviewStyles = StyleSheet.create({
+  docRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: hp(1.2),
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  docLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: wp(2),
+  },
+  docThumb: {
+    width: wp(11),
+    height: wp(11),
+    borderRadius: wp(2),
+    backgroundColor: '#F3F4F6',
+  },
+  docIconBox: {
+    width: wp(11),
+    height: wp(11),
+    borderRadius: wp(2),
+    backgroundColor: 'rgba(241,177,59,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  docTitle: {
+    fontSize: wp(3.5),
+    color: '#111827',
+    fontFamily: 'Poppins-Regular',
+  },
+  docMeta: {
+    fontSize: wp(2.8),
+    color: '#9CA3AF',
+    marginTop: 2,
+  },
+  docRight: {
+    alignItems: 'flex-end',
+    gap: hp(0.5),
+  },
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  badgeText: {
+    fontSize: wp(2.8),
+    color: '#10B981',
+    fontFamily: 'Poppins-Regular',
+  },
+  viewBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  viewBtnText: {
+    fontSize: wp(3),
+    color: '#F1B13B',
+    fontFamily: 'Poppins-Regular',
+  },
+  photoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: wp(2.5),
+  },
+  thumbWrapper: {
+    width: '47%',
+  },
+  thumbImage: {
+    width: '100%',
+    aspectRatio: 1.4,
+    borderRadius: wp(2),
+    backgroundColor: '#F3F4F6',
+  },
+  thumbPlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  thumbOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    borderRadius: wp(2),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  thumbLabel: {
+    fontSize: wp(3),
+    color: '#6B7280',
+    marginTop: hp(0.6),
+    paddingLeft: wp(2),
+    fontFamily: 'Poppins-Regular',
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.92)',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: wp(5),
+    paddingTop: hp(6),
+    paddingBottom: hp(2),
+  },
+  modalTitle: {
+    flex: 1,
+    fontSize: wp(4),
+    color: '#FFF',
+    fontFamily: 'Poppins-Regular',
+    marginRight: wp(3),
+  },
+  modalContent: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: wp(4),
+    paddingBottom: hp(6),
+  },
+  modalImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: wp(2),
+  },
+  pdfFallback: {
+    alignItems: 'center',
+    gap: hp(2),
+  },
+  pdfFallbackText: {
+    color: '#9CA3AF',
+    fontSize: wp(3.8),
+    textAlign: 'center',
+    fontFamily: 'Poppins-Regular',
+  },
+  openFileBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: wp(2),
+    backgroundColor: '#F1B13B',
+    paddingHorizontal: wp(6),
+    paddingVertical: hp(1.2),
+    borderRadius: wp(8),
+    marginTop: hp(1),
+  },
+  openFileBtnText: {
+    fontSize: wp(3.8),
+    color: '#000',
+    fontFamily: 'Poppins-Regular',
   },
 });

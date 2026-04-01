@@ -524,6 +524,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0D1831',
+    marginBottom:hp(5)
+
   },
   scrollContent: {
     flexGrow: 1,

@@ -71,7 +71,6 @@ function Signup({ navigation }) {
       if (data?.codeSend) {
         reset();
         navigation.navigate('Verify', {
-          
           contact: data?.contact,
         });
       }
@@ -105,14 +104,14 @@ function Signup({ navigation }) {
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* LOGO */}
           <View style={styles.header}>
-                      <View style={styles.logoContainer}>
-                        <Image
-                          source={require('../../assets/images/headLogo.png')}
-                          style={styles.logo}
-                          resizeMode="contain"
-                        />
-                      </View>
-                    </View>
+            <View style={styles.logoContainer}>
+              <Image
+                source={require('../../assets/images/headLogo.png')}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+            </View>
+          </View>
 
           <View style={styles.formContainer}>
             <Text style={styles.title}>Sign Up</Text>
@@ -241,7 +240,7 @@ function Signup({ navigation }) {
               onPress={handleSubmit(onSubmit)}
             />
 
-            <SocialBtns />
+            <SocialBtns role={selectedRole} navigation={navigation} />
 
             <View style={styles.signInContainer}>
               <Text style={styles.signInText}>Already have an account? </Text>
@@ -285,6 +284,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: wp(8),
     paddingHorizontal: wp(6),
     paddingTop: hp(4),
+    paddingBottom: hp(4),
   },
   title: {
     fontSize: fs(20),
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   toggleTextActive: {
     color: '#FFF',
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
   signUpButtonText: {
     fontSize: fs(16),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
   },
   divider: {
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
     fontSize: fs(14),
     color: '#000',
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     marginLeft: wp(2),
   },
   signInContainer: {
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
     fontSize: fs(14),
     color: '#000',
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     textDecorationLine: 'underline',
   },
 

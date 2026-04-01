@@ -37,7 +37,6 @@ export const TripReceiptScreen = ({ navigation, route }) => {
 
   const ride_detail = data?.data;
   const ride_detail_payment = data?.data?.payment_breakdown;
-  console.log(ride_detail, 'ajajajajajajajaj');
 
   // Helper component for Fare Breakdown and Trip Summary rows
   const DetailRow = ({ label, value, valueStyle }) => (
@@ -52,11 +51,8 @@ export const TripReceiptScreen = ({ navigation, route }) => {
     Number(ride_detail_payment?.driver_tip || 0)
   ).toFixed(2);
 
-
-
-  
-  if(isLoading) {
-    return <AppLoader/>
+  if (isLoading) {
+    return <AppLoader />;
   }
 
   return (
@@ -75,14 +71,22 @@ export const TripReceiptScreen = ({ navigation, route }) => {
         <View style={styles.paymentCard}>
           <Text style={styles.totalPaidLabel}>Total Paid</Text>
           <Text style={styles.totalPaidAmount}>${final_amount}</Text>
-          <Text style={styles.paymentMethod}>Paid via {ride_detail?.payment_method}</Text>
+          <Text style={styles.paymentMethod}>
+            Paid via {ride_detail?.payment_method}
+          </Text>
         </View>
 
         {/* Details Card */}
         <View style={styles.detailsCard}>
           <Text style={styles.sectionTitle}>Trip Summary</Text>
-          <DetailRow label="Date & Time" value={formatReadableDate(ride_detail?.ride_complete_at)} />
-          <DetailRow label="Vehicle Class" value={`${ride_detail?.vehicle?.vehicle_make} (${ride_detail?.vehicle?.vehicle_model})`} />
+          <DetailRow
+            label="Date & Time"
+            value={formatReadableDate(ride_detail?.ride_complete_at)||"---"}
+          />
+          <DetailRow
+            label="Vehicle Class"
+            value={`${ride_detail?.vehicle?.vehicle_make} (${ride_detail?.vehicle?.vehicle_model})`}
+          />
           {/* <DetailRow label="Distance" value={`${ride_detail?.distance}`} /> */}
 
           {/* Itinerary */}
@@ -108,11 +112,23 @@ export const TripReceiptScreen = ({ navigation, route }) => {
           </View>
 
           <Text style={styles.sectionTitle}>Fare Breakdown</Text>
-          <DetailRow label="Base Fare" value={ride_detail_payment?.driver_earning} />
-          <DetailRow label="Platform Fee" value={ride_detail_payment?.platform_fee} />
-          <DetailRow label="Taxes & Tolls" value={ride_detail_payment?.service_tax} />
+          <DetailRow
+            label="Base Fare"
+            value={`$${ride_detail_payment?.driver_earning}`}
+          />
+          <DetailRow
+            label="Platform Fee"
+            value={`$${ride_detail_payment?.platform_fee}`}
+          />
+          <DetailRow
+            label="Taxes & Tolls"
+            value={`$${ride_detail_payment?.service_tax}`}
+          />
           {ride_detail_payment?.driver_tip > 0 && (
-            <DetailRow label="Driver Tip" value={ride_detail_payment?.driver_tip} />
+            <DetailRow
+              label="Driver Tip"
+              value={`$${ride_detail_payment?.driver_tip}`}
+            />
           )}
 
           <View style={styles.dashedLine} />
@@ -134,17 +150,22 @@ export const TripReceiptScreen = ({ navigation, route }) => {
             />
             <View style={styles.driverTextContainer}>
               <Text style={styles.driverName}>Driver Name</Text>
-              <Text style={styles.driverPlate}>{ride_detail?.driver?.name} (Plate: {ride_detail?.vehicle?.vehicle_plate_number})</Text>
+              <Text style={styles.driverPlate}>
+                {ride_detail?.driver?.name} (Plate:{' '}
+                {ride_detail?.vehicle?.vehicle_plate_number})
+              </Text>
               <View style={styles.ratingContainer}>
                 <Ionicons name="star" size={wp(4)} color="#FDD835" />
-                <Text style={styles.ratingText}>{ride_detail?.driver?.rating?.toFixed(1)}</Text>
+                <Text style={styles.ratingText}>
+                  {ride_detail?.driver?.rating?.toFixed(1)}
+                </Text>
               </View>
             </View>
           </View>
-          <View style={styles.downloadButton} activeOpacity={0.8}>
+          {/* <View style={styles.downloadButton} activeOpacity={0.8}>
             <Button title="Download Receipt" />
             <Text style={styles.downloadButtonText}></Text>
-          </View>
+          </View> */}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -194,7 +215,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: wp(4.5),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     marginBottom: hp(2),
   },
@@ -226,7 +247,7 @@ const styles = StyleSheet.create({
     fontSize: wp(3.8),
     color: '#000',
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
   finalAmountValue: {
     fontWeight: 'bold',
@@ -267,7 +288,7 @@ const styles = StyleSheet.create({
     fontSize: wp(3.8),
     color: '#000',
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
   locationValue: {
     fontSize: wp(3.5),
@@ -298,7 +319,7 @@ const styles = StyleSheet.create({
   driverName: {
     fontSize: wp(4.2),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
   },
   driverPlate: {
@@ -323,6 +344,6 @@ const styles = StyleSheet.create({
     fontSize: wp(4.2),
     color: '#000',
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
 });

@@ -1,5 +1,6 @@
 import { showMessage, MessageType } from 'react-native-flash-message';
 import { COLORS } from './Enums';
+import { Platform, StatusBar } from 'react-native';
 
 export type FlashMessageOptions = {
   type?: MessageType;
@@ -11,6 +12,8 @@ export type FlashMessageOptions = {
   onPress?: () => void; // ✅ add this
 };
 
+const STATUS_BAR_HEIGHT = StatusBar.currentHeight || 0;
+
 export const showFlash = ({
   type = 'success',
   title = '',
@@ -20,10 +23,7 @@ export const showFlash = ({
   icon = 'auto',
   onPress,
 }: FlashMessageOptions) => {
-  // Custom Styling Logic for "Info" type
   const isInfo = type === 'info';
-
-  // If type is info, use Black background, otherwise use the passed color or default
   const finalBackgroundColor = isInfo
     ? '#1A1A1A'
     : backgroundColor || undefined;
@@ -34,13 +34,31 @@ export const showFlash = ({
     description: message,
     type,
     backgroundColor: finalBackgroundColor,
-    icon: isInfo ? 'info' : icon, // Force info icon for info type
+    icon: isInfo ? 'info' : icon,
     duration,
     floating: true,
     onPress,
-    // Style adjustments for the "Stylish" Info look
+    // 1. Tell the library to account for the status bar
+    statusBarHeight: STATUS_BAR_HEIGHT,
+
+    style: {
+      // 2. Force a top margin equal to the status bar height
+      // This pushes the "floating" bubble below the clock/battery
+      marginTop: Platform.OS === 'android' ? STATUS_BAR_HEIGHT : 0,
+
+      // Keep your existing styles
+      ...(isInfo
+        ? {
+            borderLeftWidth: 5,
+            borderLeftColor: brandYellow,
+            borderRadius: 10,
+          }
+        : {
+            borderRadius: 10, // Good to have for all floating messages
+          }),
+    },
     titleStyle: {
-      fontFamily: 'Poppins-Bold', // Bold for better readability
+      fontFamily: 'Poppins-Bold',
       fontSize: 16,
       color: isInfo ? brandYellow : '#fff',
     },
@@ -49,14 +67,6 @@ export const showFlash = ({
       fontSize: 14,
       color: isInfo ? '#f2f2f2' : '#fff',
     },
-    // Adding a subtle border/shadow effect for that "stylish" feel
-    style: isInfo
-      ? {
-          borderLeftWidth: 5,
-          borderLeftColor: brandYellow,
-          borderRadius: 10,
-        }
-      : {},
   });
 };
 /*

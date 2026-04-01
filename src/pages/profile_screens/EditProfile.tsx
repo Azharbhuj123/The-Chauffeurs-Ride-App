@@ -70,14 +70,15 @@ export const EditProfileScreen = ({ navigation }) => {
     ]);
   };
 
-  const { triggerMutation, loading ,error} = useActionMutation({
+  const { triggerMutation, loading, error } = useActionMutation({
     onSuccessCallback: async data => {
       if (data?.delete) {
         resetAll();
         navigation.navigate('Login');
         return;
       }
-
+      console.log(data,"data");
+      
       setUserData(data?.user, data?.token);
       showToast({
         type: 'success',
@@ -94,30 +95,27 @@ export const EditProfileScreen = ({ navigation }) => {
     },
   });
 
-  console.log(error,"error");
-  
+  console.log(error, 'error');
 
   const hanldeUpdate = async () => {
     const form_data = new FormData();
     if (profileImageurl && profileImageurl.uri) {
       form_data.append('file', {
-  uri:
-    Platform.OS === 'android'
-      ? profileImageurl.uri
-      : profileImageurl.uri.replace('file://', ''),
-  type: profileImageurl.type || 'image/jpeg',
-  name: profileImageurl.name || `image_${Date.now()}.jpg`,
-});
-
+        uri:
+          Platform.OS === 'android'
+            ? profileImageurl.uri
+            : profileImageurl.uri.replace('file://', ''),
+        type: profileImageurl.type || 'image/jpeg',
+        name: profileImageurl.name || `image_${Date.now()}.jpg`,
+      });
     }
 
     form_data.append('name', name);
 
     for (let pair of form_data._parts) {
-  console.log(pair[0], pair[1]);
-  console.log(pair[0], pair[1]);
-}
-
+      console.log(pair[0], pair[1]);
+      console.log(pair[0], pair[1]);
+    }
 
     triggerMutation({
       endPoint: '/auth/update-profile',
@@ -133,35 +131,32 @@ export const EditProfileScreen = ({ navigation }) => {
     });
   };
 
-
-  const hanldeUpdate2 = () =>{
-const form_data = new FormData();
+  const hanldeUpdate2 = () => {
+    const form_data = new FormData();
     if (profileImageurl && profileImageurl.uri) {
       form_data.append('file', {
-  uri:
-    Platform.OS === 'android'
-      ? profileImageurl.uri
-      : profileImageurl.uri.replace('file://', ''),
-  type: profileImageurl.type || 'image/jpeg',
-  name: profileImageurl.name || `image_${Date.now()}.jpg`,
-});
-
+        uri:
+          Platform.OS === 'android'
+            ? profileImageurl.uri
+            : profileImageurl.uri.replace('file://', ''),
+        type: profileImageurl.type || 'image/jpeg',
+        name: profileImageurl.name || `image_${Date.now()}.jpg`,
+      });
     }
 
     form_data.append('name', name);
 
     for (let pair of form_data._parts) {
-  console.log(pair[0], pair[1]);
-  console.log(pair[0], pair[1]);
-}
-
+      console.log(pair[0], pair[1]);
+      console.log(pair[0], pair[1]);
+    }
 
     triggerMutation({
       endPoint: '/auth/update-profile',
       body: form_data,
       method: 'post',
     });
-  }
+  };
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
@@ -258,7 +253,7 @@ const form_data = new FormData();
               <Button
                 isLoading={loading}
                 title="Save Changes"
-                onPress={()=>hanldeUpdate2()}
+                onPress={() => hanldeUpdate2()}
               />
               <Button
                 title="Delete Account"
@@ -326,7 +321,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: wp(4.5),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
   },
   scrollView: {
@@ -364,7 +359,7 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: wp(5),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     marginBottom: hp(0.5),
   },
@@ -377,7 +372,7 @@ const styles = StyleSheet.create({
     fontSize: wp(4),
     color: '#000',
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
   logoutButton: {
     flexDirection: 'row',
@@ -389,7 +384,7 @@ const styles = StyleSheet.create({
     fontSize: wp(4),
     color: '#FF3B30',
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
   // Edit Profile Screen Styles
   editProfileImageSection: {
@@ -438,7 +433,7 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: wp(4.5),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
   },
   deleteButton: {
@@ -451,7 +446,7 @@ const styles = StyleSheet.create({
   deleteButtonText: {
     fontSize: wp(4.5),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#fff',
   },
   // Add Address Screen Styles
@@ -468,7 +463,7 @@ const styles = StyleSheet.create({
     color: '#666',
     marginLeft: wp(2),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
   addressListContainer: {
     backgroundColor: '#fff',
@@ -502,7 +497,7 @@ const styles = StyleSheet.create({
   addressType: {
     fontSize: wp(4),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     marginBottom: hp(0.5),
   },
@@ -570,7 +565,7 @@ const styles = StyleSheet.create({
     color: '#1F2937',
     fontSize: 16,
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     fontFamily: 'Poppins-Regular',
   },
   btnContainer2: {

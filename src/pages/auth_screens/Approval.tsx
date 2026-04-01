@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -27,11 +27,16 @@ import {
 import { Checkbox } from 'react-native-paper';
 import { useTabBarHeightHelper } from '../../utils/TabBarHeight';
 import { COLORS } from '../../utils/Enums';
+import { useUserStore } from '../../stores/useUserStore';
 
 export default function Approval({ route, navigation, headerTitle }) {
   const { contact, reason, status } = route.params || {};
 
-  console.log(contact, reason, status, 'contact,reason,status');
+  const { resetAll } = useUserStore();
+
+  useEffect(() => {
+    resetAll();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -44,7 +49,9 @@ export default function Approval({ route, navigation, headerTitle }) {
             <View style={styles.successIcon}>
               <Image source={require('../../assets/images/submit.png')} />
             </View>
+
             <Text style={styles.successTitle}>Submission Complete!</Text>
+
             <Text
               style={[
                 styles.successSubtitle,
@@ -57,18 +64,17 @@ export default function Approval({ route, navigation, headerTitle }) {
                 },
               ]}
             >
-              Status : {status || 'Pending'}
+              Status: {status || 'Pending'}
             </Text>
+
             {status === 'Rejected' && reason ? (
               <Text style={styles.successMessage}>
-                Your account has been rejected for the following reason:{' '}
-                {reason}
+                Account rejected: {reason}
               </Text>
             ) : (
+              /* Updated short and punchy message */
               <Text style={styles.successMessage}>
-                Your account has been successfully created. It is currently
-                under review and awaiting admin approval. You will be notified
-                once your account is activated.
+                Documents Submitted Successfully! We'll review them shortly.
               </Text>
             )}
           </View>

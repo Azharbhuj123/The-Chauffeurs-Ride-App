@@ -68,9 +68,8 @@ export const vehicle_class = [
   { label: 'Prestige Sedan', value: 'Prestige Sedan' },
   { label: 'Luxury SUV', value: 'Luxury SUV' },
   { label: 'Electric (EV)', value: 'Electric (EV)' },
-  { label: 'Motorbike', value: 'Motorbike' },
-  { label: 'Auto Rickshaw', value: 'Auto Rickshaw' },
-  { label: 'Chauffeur Class', value: 'Chauffeur Class' },
+  { label: 'Executive SUV', value: 'Executive SUV' },
+  { label: 'Limousine', value: 'Limousine' },
 ];
 
 export const category_class = [
@@ -86,39 +85,35 @@ export const monthly_filter = [
 ];
 
 export const GOOGLE_MAP_API_KEY = 'AIzaSyAO096xo1HoduYAuLsAwrHkNUNRedReQkQ';
+export const STRIPE_PUBLISH_KEY =
+  'pk_test_51Sv0nYCpeX6CbJY29WLaEBNODUyiR842lT4TdGBAkieasxf3mt05aOuBh394K4eOUkUASeKZTMoRXbSvGu7uYZgx00aS4iOEMe';
 
-export const formatAPIDate = (date: Date) => {
+export const formatAPIDate = (date: Date | string | null) => {
   if (!date) return '';
-
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-
+  const d = typeof date === 'string' ? new Date(date) : date;
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
 
-export const formatAPITime = (date: Date) => {
-  if (!date) return '';
-  return date.toLocaleTimeString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
+export const formatAPITime = (time: Date | string | null) => {
+  if (!time) return '';
+  // if already "HH:mm" or "HH:mm:ss" string, just slice it
+  if (typeof time === 'string') return time.split('T')[1]?.slice(0, 5) || time;
+  const hours = String(time.getHours()).padStart(2, '0');
+  const minutes = String(time.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+ 
+export const formatDate = (dateStr) => {
+  if (!dateStr) return 'Select date';
+  return dateStr.split('T')[0]; // "2025-08-20"
 };
 
-// Helper for 24h formatting
-// 24h Formatter: Returns "HH:mm" or placeholder
-export const format24h = (date: Date) => {
-  if (!date) return 'Select time';
-  return date.toLocaleTimeString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
-};
-export const formatDate = (date: Date) => {
-  if (!date) return 'Select date';
-  return date.toLocaleDateString('en-US'); // MM/DD/YYYY
+export const format24h = (timeStr) => {
+  if (!timeStr) return '--:--';
+  return timeStr.split('T')[1].slice(0, 5); // "22:00"
 };
 
 export const formatDate2 = (date: Date) => {
@@ -129,7 +124,7 @@ export const formatDate2 = (date: Date) => {
       )}-${String(date.getDate()).padStart(2, '0')}`
     : '';
 };
-  
+
 export const formatTime = (time: any) => {
   return time
     ? `${String(time.getHours()).padStart(2, '0')}:${String(

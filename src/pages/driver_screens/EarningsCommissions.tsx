@@ -246,7 +246,7 @@ const EarningsCommissions = ({ navigation }) => {
                 </Text>
               </View>
 
-              <View style={styles.statItem}>
+              {/* <View style={styles.statItem}>
                 <View style={styles.TotalBalanceiconbox}>
                   <Image
                     source={require('../../assets/images/doller.png')}
@@ -257,7 +257,7 @@ const EarningsCommissions = ({ navigation }) => {
                 <Text style={styles.statValue}>
                   ${Number(driver_state?.total_pending_payout)?.toFixed(2)}
                 </Text>
-              </View>
+              </View> */}
 
               <View style={styles.statItem}>
                 <View style={styles.TotalBalanceiconbox}>
@@ -331,7 +331,7 @@ const EarningsCommissions = ({ navigation }) => {
                           Client: {client?.user?.name}
                         </Text>
                         <Text style={styles.clientAmount}>
-                          ${client?.payment_breakdown?.driver_earning} NET
+                          ${client?.payment_breakdown?.driver_earning}
                         </Text>
                       </View>
                       <Text style={styles.clientDetail}>
@@ -511,13 +511,13 @@ const EarningsCommissions = ({ navigation }) => {
           ))} */}
 
         {/* Reports Section */}
-        <View style={styles.reportsCard}>
+        {/* <View style={styles.reportsCard}>
           
           <Button
             title="Request Payout"
             onPress={() => setShowPayoutModal(true)}
           />
-        </View>
+        </View> */}
         {/* 💲 Confirm Payout Modal */}
         <PayoutRequest
           setShowPayoutModal={setShowPayoutModal}
@@ -557,8 +557,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  totalBalanceLabel: { fontSize: 14, color: '#000', fontWeight: '600',        fontFamily:"Poppins-Regular",
- },
+  totalBalanceLabel: {
+    fontSize: 14,
+    color: '#000',
+    fontWeight: '600',
+    fontFamily: 'Poppins-Regular',
+  },
   dropdown: {
     width: width * 0.3,
   },
@@ -581,10 +585,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F4F4F4',
     padding: 16,
   },
-  statTitle: { fontSize: 14, color: '#000' ,        fontFamily:"Poppins-Regular",
-},
-  statValue: { fontSize: 12, color: '#000',        fontFamily:"Poppins-Regular",
- },
+  statTitle: { fontSize: 14, color: '#000', fontFamily: 'Poppins-Regular' },
+  statValue: { fontSize: 12, color: '#000', fontFamily: 'Poppins-Regular' },
 
   tabsContainer: {
     flexDirection: 'row',

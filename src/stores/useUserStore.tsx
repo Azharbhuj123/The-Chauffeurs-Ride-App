@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { useStripeStore } from './stripeStore';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import auth from '@react-native-firebase/auth';
 
 type Role = 'User' | 'Driver' | 'Admin' | '';
 
@@ -36,6 +38,8 @@ export const useUserStore = create<CounterState>(set => ({
   // ✅ Save to async storage + state
   setUserData: async (user, token) => {
     try {
+      console.log(user, token,"user, token");
+      
       // Always store user data
       await AsyncStorage.setItem('userData', JSON.stringify(user));
 
@@ -67,7 +71,8 @@ export const useUserStore = create<CounterState>(set => ({
     try {
       await AsyncStorage.multiRemove(['userData', 'token']); // clear both keys
       useStripeStore.getState().clearStore();
-
+      await auth().signOut();
+      await GoogleSignin.signOut();
       set({
         isForgot: false,
         role: '',
@@ -77,7 +82,7 @@ export const useUserStore = create<CounterState>(set => ({
         fcmToken: undefined,
       });
     } catch (err) {
-      console.error('Error resetting store:', err);
+      console.log('Error resetting store:', err);
     }
   },
 }));

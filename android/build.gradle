@@ -36,26 +36,26 @@
 
 buildscript {
     ext {
-        buildToolsVersion = "36.0.0"
-        minSdkVersion = 24
-        compileSdkVersion = 36
-        targetSdkVersion = 36
-        ndkVersion = "29.0.14033849"
-        kotlinVersion = "2.1.20"
-    }
+    buildToolsVersion = "36.0.0"
+    minSdkVersion = 24
+    compileSdkVersion = 36
+    targetSdkVersion = 36
+    ndkVersion = "29.0.14033849"
+    kotlinVersion = "2.3.10"  // ✅ was "2.0.21" — must match Stripe's compiled version
+}
     repositories {
         google()
         mavenCentral()
         maven { url "https://www.jitpack.io" }
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:8.6.0")
-        classpath("com.facebook.react:react-native-gradle-plugin")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
-
-        // ✅ Updated Google Services plugin
-        classpath("com.google.gms:google-services:4.4.4")
-    }
+    classpath("com.android.tools.build:gradle:8.6.0")
+    classpath("com.facebook.react:react-native-gradle-plugin")
+    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    classpath("com.google.gms:google-services:4.4.4")
+    classpath("org.jetbrains.kotlin:compose-compiler-gradle-plugin:$kotlinVersion") // ✅ stays in sync
+}
 }
 
+// ✅ ONLY this plugin belongs at root level
 apply plugin: "com.facebook.react.rootproject"

@@ -53,7 +53,7 @@ export const AboutUsScreen = ({ navigation }) => {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Our Mission</Text>
           <Text style={styles.missionText}>
-            At **PrimeRide**, we believe in providing safe, reliable, and
+            At **Drivo**, we believe in providing safe, reliable, and
             luxurious transportation experiences across the city. Our commitment
             is to punctuality, professional service, and ensuring every ride is
             a journey in comfort. We are constantly innovating to make mobility

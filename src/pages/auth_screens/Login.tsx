@@ -221,7 +221,7 @@ function Login({ navigation }) {
               onPress={handleSubmit(handleSignIn)}
             />
 
-            <SocialBtns />
+            <SocialBtns role={null} navigation={navigation} />
 
             <View style={styles.signInContainer}>
               <Text style={styles.signInText}>Don’t have an account? </Text>

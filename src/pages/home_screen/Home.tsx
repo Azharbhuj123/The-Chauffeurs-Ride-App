@@ -29,9 +29,17 @@ import AppLoader from '../../components/AppLoader';
 import { useStore } from '../../stores/useStore';
 import { socket, joinUserRoom } from '../../utils/socket';
 import { useRideStore } from '../../stores/rideStore';
+import CancellationModal from '../../components/CancellationModal';
+import axios from 'axios';
+import useActionMutation from '../../queryFunctions/useActionMutation';
+import { showToast } from '../../utils/toastHelper';
 
 export default function Home({ navigation }) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isModalVisible, setModalVisible] = useState({
+    status: false,
+    rideId: null,
+  });
   const flatListRef = useRef(null);
   const tabBarHeight = useTabBarHeightHelper();
   const { token, userData } = useUserStore();
@@ -53,6 +61,8 @@ export default function Home({ navigation }) {
 
   useFocusEffect(
     useCallback(() => {
+      refetch();
+
       if (!userLastRide) return; // wait until userLastRide is defined
 
       if (!userLastRide.IsPaid) {
@@ -61,8 +71,6 @@ export default function Home({ navigation }) {
           params: { rideId: userLastRide.ride_id },
         });
       }
-
-      refetch();
     }, [userLastRide, navigation, refetch]),
   );
 
@@ -210,6 +218,30 @@ export default function Home({ navigation }) {
     });
   };
 
+  const { triggerMutation, loading } = useActionMutation({
+    onSuccessCallback: async data => {
+      setModalVisible({ status: false, rideId: null });
+      refetch();
+    },
+    onErrorCallback: errmsg => {
+      showToast({
+        type: 'error',
+        title: 'Action Failed',
+        message: errmsg || 'Please Try again!',
+      });
+    },
+  });
+
+  const handleCancelPress = async () => {
+    triggerMutation({
+      endPoint: '/ride/cancel-ride',
+      method: 'post',
+      body: {
+        ride_id: isModalVisible.rideId,
+      },
+    });
+  };
+
   if (isLoading) {
     return <AppLoader />;
   }
@@ -314,17 +346,21 @@ export default function Home({ navigation }) {
                       </Text>
                     </View>
                     {/* <Icon name="chevron-forward" size={wp('5%')} color="#666" /> */}
-                    {/* <TouchableOpacity onPress={() => handleBookAgain(des)}>
+                    <TouchableOpacity
+                      onPress={() =>
+                        setModalVisible({ status: true, rideId: des?._id })
+                      }
+                    >
                       <Text
                         style={{
                           fontSize: 12,
-                          color: COLORS.warning,
+                          color: COLORS.error,
                           fontFamily: 'Poppins-Regular',
                         }}
                       >
-                        Book Again
+                        Cancel Ride
                       </Text>
-                    </TouchableOpacity> */}
+                    </TouchableOpacity>
                   </View>
                 ))}
               </View>
@@ -364,6 +400,11 @@ export default function Home({ navigation }) {
             )}
 
           {/* Bottom spacing to prevent content hiding behind tab bar */}
+          <CancellationModal
+            isVisible={isModalVisible.status}
+            onClose={() => setModalVisible({ status: false, rideId: '' })}
+            onConfirm={handleCancelPress}
+          />
         </ScrollView>
       </View>
     </SafeAreaView>

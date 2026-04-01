@@ -726,7 +726,14 @@ export default function BookingMain({ navigation, route }) {
       !!schedule.toTime,
   });
 
-  console.log(data, 'get-drivers');
+  console.log('query enabled check:', {
+  selectedClass,
+  lat: fromLocation?.latitude,
+  lng: fromLocation?.longitude,
+  date: schedule.date,
+  fromTime: schedule.fromTime,
+  toTime: schedule.toTime,
+});
 
   // ride fare
   const {
@@ -804,52 +811,42 @@ export default function BookingMain({ navigation, route }) {
     setToLocation(prev => fromLocation);
   }, [fromLocation, toLocation]);
 
-  const onChange = (event, selectedTime) => {
-    if (event.type === 'dismissed') {
+  const onChange = (event, selectedValue) => {
+    if (Platform.OS === 'android') {
       setShow(false);
-      return;
     }
 
-    // Get the current date or selected date
-    const baseDate = schedule.date || new Date();
+    // User cancelled — do nothing
+    if (event.type === 'dismissed' || !selectedValue) return;
 
-    // Merge the selected time into the base date
-    const mergedDateTime = new Date(baseDate);
-    mergedDateTime.setHours(selectedTime.getHours());
-    mergedDateTime.setMinutes(selectedTime.getMinutes());
-    mergedDateTime.setSeconds(0);
-    mergedDateTime.setMilliseconds(0);
+    if (activeField === 'date') {
+      // ✅ Extract ONLY the date part from selected value
+      const year = selectedValue.getFullYear();
+      const month = String(selectedValue.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedValue.getDate()).padStart(2, '0');
+      const dateOnly = `${year}-${month}-${day}T00:00:00`;
 
-    if (Platform.OS === 'android') setShow(false);
+      setSchedule(prev => ({
+        ...prev,
+        date: dateOnly,
+      }));
+    } else if (activeField === 'fromTime' || activeField === 'toTime') {
+      // ✅ Extract ONLY hours & minutes, combine with selected date
+      const hours = String(selectedValue.getHours()).padStart(2, '0');
+      const minutes = String(selectedValue.getMinutes()).padStart(2, '0');
 
-    // --- VALIDATION LOGIC ---
-    if (activeField === 'fromTime' && schedule.toTime) {
-      if (mergedDateTime >= schedule.toTime) {
-        Alert.alert(
-          'Invalid Time',
-          "The 'From' time must be earlier than the 'To' time.",
-        );
-        return;
-      }
+      // Use stored date or today as base
+      const baseDate = schedule.date
+        ? schedule.date.split('T')[0]
+        : new Date().toISOString().split('T')[0];
+
+      const dateTime = `${baseDate}T${hours}:${minutes}:00`;
+
+      setSchedule(prev => ({
+        ...prev,
+        [activeField]: dateTime,
+      }));
     }
-
-    if (activeField === 'toTime' && schedule.fromTime) {
-      if (mergedDateTime <= schedule.fromTime) {
-        Alert.alert(
-          'Invalid Time',
-          "The 'To' time must be later than the 'From' time.",
-        );
-        return;
-      }
-    }
-    // ------------------------
-
-    console.log(mergedDateTime, 'selectedDateTime');
-
-    setSchedule(prev => ({
-      ...prev,
-      [activeField]: mergedDateTime,
-    }));
   };
 
   const showDatepicker = () => {
@@ -1078,17 +1075,20 @@ export default function BookingMain({ navigation, route }) {
                 </TouchableOpacity>
               </View>
 
-              {show && (
-                <DateTimePicker
-                  // Pass new Date() if null so the picker opens at current time
-                  value={schedule[activeField] || new Date()}
-                  mode={mode}
-                  is24Hour={true}
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  onChange={onChange}
-                  minimumDate={new Date()} // 👈 Past dates block
-                />
-              )}
+             {show && (
+  <DateTimePicker
+    value={
+      schedule[activeField]
+        ? new Date(schedule[activeField])  // ✅ convert string → Date
+        : new Date()
+    }
+    mode={mode}
+    is24Hour={true}
+    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+    onChange={onChange}
+    minimumDate={new Date()}
+  />
+)}
             </View>
 
             {/* --- Vehicle Class Selector --- */}
@@ -1244,7 +1244,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: wp(5),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     position: 'absolute',
     alignSelf: 'center',
     left: PADDING_HORIZONTAL,
@@ -1298,8 +1298,7 @@ const styles = StyleSheet.create({
     color: '#333',
     paddingTop: hp(0.4),
     marginLeft: wp(2),
-    fontFamily:"Poppins-Regular",
-
+    fontFamily: 'Poppins-Regular',
   },
   swapButton: { position: 'absolute', right: 0, zIndex: 10 },
   swapper: { position: 'relative', top: hp(1.4), zIndex: 50000, right: hp(-2) },
@@ -1325,7 +1324,7 @@ const styles = StyleSheet.create({
   toggleText: {
     fontSize: wp(3.8),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#333',
     fontFamily: 'Poppins-Regular',
   },
@@ -1344,7 +1343,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: wp(4),
     // fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#333',
     marginBottom: hp(1.5),
     fontFamily: 'Poppins-Regular',
@@ -1395,8 +1394,7 @@ const styles = StyleSheet.create({
   pickerText: {
     fontSize: 14,
     color: '#1A1A1A',
-        fontFamily:"Poppins-Regular",
-
+    fontFamily: 'Poppins-Regular',
   },
   dateTimeRow: {
     flexDirection: 'row',
@@ -1424,7 +1422,7 @@ const styles = StyleSheet.create({
     fontSize: wp(4),
     color: '#333',
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
 
   classSelectorContainer: {
@@ -1457,14 +1455,13 @@ const styles = StyleSheet.create({
   classButtonText: {
     fontSize: wp(4),
     // fontWeight: '0',
-        fontFamily:"Poppins-Regular",
-    fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
+    fontFamily: 'Poppins-Regular',
 
     color: '#333',
   },
   classButtonTextActive: {
-        fontFamily:"Poppins-Regular",
-
+    fontFamily: 'Poppins-Regular',
   },
 
   carCardsRow: {
@@ -1535,7 +1532,7 @@ const styles = StyleSheet.create({
     marginLeft: wp(2),
     fontSize: wp(3.8),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#333',
     fontFamily: 'Poppins-Regular',
   },
@@ -1543,7 +1540,7 @@ const styles = StyleSheet.create({
     color: PRIMARY_YELLOW,
     fontSize: wp(3.5),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
 
   fareContainer: {
@@ -1564,7 +1561,7 @@ const styles = StyleSheet.create({
     fontSize: wp(5.5),
     color: '#111',
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
   fareAmount: {
     fontSize: wp(5.5),
@@ -1646,7 +1643,7 @@ const styles = StyleSheet.create({
   suggestionsTitle: {
     fontSize: 18,
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#333',
   },
   closeButton: {
@@ -1680,7 +1677,7 @@ const styles = StyleSheet.create({
   currentLocationText: {
     fontSize: 16,
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: COLORS.success,
   },
   suggestionsList: {
@@ -1709,7 +1706,7 @@ const styles = StyleSheet.create({
   suggestionMain: {
     fontSize: 15,
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#333',
     marginBottom: 4,
   },
@@ -1736,7 +1733,7 @@ const styles = StyleSheet.create({
     color: '#999',
     marginTop: 12,
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
   emptySubtext: {
     fontSize: 14,
@@ -1770,8 +1767,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     fontSize: 14,
     height: hp(6.5),
-    fontFamily:"Poppins-Regular",
-textAlign: 'left',
+    fontFamily: 'Poppins-Regular',
+    textAlign: 'left',
     color: '#333',
   },
   halfInput: {

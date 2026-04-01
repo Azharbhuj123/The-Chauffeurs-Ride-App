@@ -25,7 +25,9 @@ import { COLORS, error_msg, GOOGLE_MAP_API_KEY } from '../../utils/Enums';
 import useActionMutation from '../../queryFunctions/useActionMutation';
 import { showToast } from '../../utils/toastHelper';
 
-export const AddAddressInp = ({ navigation }) => {
+export const AddAddressInp = ({ navigation, route }) => {
+  const existingAddress = route.params?.address || null;
+  const isEditing = !!existingAddress;
   const {
     control,
     handleSubmit,
@@ -34,17 +36,19 @@ export const AddAddressInp = ({ navigation }) => {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      where: '',
-      address: '',
-      latitude: null,
-      longitude: null,
-      isDefault: false,
+      where: existingAddress?.where || '',
+      address: existingAddress?.address || '',
+      latitude: existingAddress?.latitude || null,
+      longitude: existingAddress?.longitude || null,
+      isDefault: existingAddress?.set_default || false,
     },
   });
 
   const [predictions, setPredictions] = useState([]);
   const [showPredictions, setShowPredictions] = useState(false);
-  const [addressInput, setAddressInput] = useState('');
+  const [addressInput, setAddressInput] = useState(
+    existingAddress?.address || '',
+  );
   const [isSelectingPrediction, setIsSelectingPrediction] = useState(false); // NEW FLAG
 
   // Debounce for address search
@@ -79,14 +83,13 @@ export const AddAddressInp = ({ navigation }) => {
   };
 
   const handleSelectPrediction = async (placeId, description) => {
-    setAddressInput(description);
-    setValue('address', description);
-
-    // 👇 Immediately close dropdown
+    // ✅ Close FIRST before anything else runs
     setShowPredictions(false);
     setPredictions([]);
+    Keyboard.dismiss();
 
-    Keyboard.dismiss(); // optional but clean UX
+    setAddressInput(description);
+    setValue('address', description);
 
     try {
       const response = await fetch(
@@ -105,159 +108,145 @@ export const AddAddressInp = ({ navigation }) => {
   };
 
   const { triggerMutation, loading } = useActionMutation({
-    onSuccessCallback: async data => {
+    onSuccessCallback: async () => {
       reset();
       navigation.replace('Address');
       showToast({
         type: 'success',
-        title: 'Address Added Successfully',
+        title: isEditing ? 'Address Updated' : 'Address Added Successfully',
         message: '',
       });
     },
     onErrorCallback: errmsg => {
       showToast({
         type: 'error',
-        title: 'Login Failed',
-        message: errmsg || 'Please Try again!',
+        title: 'Failed',
+        message: errmsg || 'Please try again!',
       });
     },
   });
 
   const onSubmit = async data => {
     if (!data.latitude || !data.longitude) {
-      Alert.alert('Error', 'Please select an address from suggestions.');
+      Alert.alert('Error', 'Please select an address from the suggestions.');
       return;
     }
 
     triggerMutation({
-      endPoint: '/address/',
+      endPoint: isEditing ? `/address/${existingAddress._id}` : '/address/',
       body: data,
-      method: 'post',
+      method: isEditing ? 'put' : 'post',
     });
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-        <TopHeader title="Add New Address" navigation={navigation} />
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <TopHeader title="Add New Address" navigation={navigation} />
 
-        <View style={styles.formContainer}>
-          {/* Address Label (Where) */}
-          <Controller
-            control={control}
-            name="where"
-            rules={{ required: 'Label is required' }}
-            render={({ field: { onChange, value } }) => (
-              <View>
-                <View style={styles.inputWrapper}>
-                  <Ionicons name="pricetag-outline" style={styles.icon} />
-                  <TextInput
-                    placeholder="Label (e.g., Home, Work, Other)"
-                    placeholderTextColor="#9E9E9E"
-                    style={styles.input}
-                    value={value}
-                    onChangeText={onChange}
-                  />
-                </View>
-                {errors.where && (
-                  <Text style={styles.errorText}>{errors.where.message}</Text>
-                )}
+      <View style={styles.formContainer}>
+        {/* Address Label (Where) */}
+        <Controller
+          control={control}
+          name="where"
+          rules={{ required: 'Label is required' }}
+          render={({ field: { onChange, value } }) => (
+            <View>
+              <View style={styles.inputWrapper}>
+                <Ionicons name="pricetag-outline" style={styles.icon} />
+                <TextInput
+                  placeholder="Label (e.g., Home, Work, Other)"
+                  placeholderTextColor="#9E9E9E"
+                  style={styles.input}
+                  value={value}
+                  onChangeText={onChange}
+                />
               </View>
-            )}
-          />
-
-          {/* Address Input with Autocomplete */}
-          <Controller
-            control={control}
-            name="address"
-            rules={{ required: 'Address is required' }}
-            render={({ field: { value } }) => (
-              <View>
-                <View style={styles.inputWrapper}>
-                  <Ionicons name="location-outline" style={styles.icon} />
-                  <TextInput
-                    placeholder="Search Address"
-                    placeholderTextColor="#9E9E9E"
-                    style={styles.input}
-                    value={addressInput}
-                    onChangeText={text => {
-                      setAddressInput(text);
-                      setValue('address', text);
-                      setValue('latitude', null);
-                      setValue('longitude', null);
-                    }}
-                  />
-                </View>
-                {errors.address && (
-                  <Text style={styles.errorText}>{errors.address.message}</Text>
-                )}
-              </View>
-            )}
-          />
-
-          {/* Predictions Dropdown */}
-          {showPredictions && predictions.length > 0 && (
-            <View style={styles.predictionsContainer}>
-              <FlatList
-                data={predictions}
-                keyExtractor={item => item.place_id}
-                renderItem={({ item }) => (
-                  <TouchableOpacity
-                    style={styles.predictionItem}
-                    onPress={() =>
-                      handleSelectPrediction(item.place_id, item.description)
-                    }
-                  >
-                    <Ionicons
-                      name="location-outline"
-                      size={wp(4)}
-                      color="#666"
-                    />
-                    <Text style={styles.predictionText}>
-                      {item.description}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-                style={styles.predictionsList}
-                keyboardShouldPersistTaps="handled"
-              />
+              {errors.where && (
+                <Text style={styles.errorText}>{errors.where.message}</Text>
+              )}
             </View>
           )}
+        />
 
-          {/* Set as Default Checkbox */}
-          <Controller
-            control={control}
-            name="isDefault"
-            render={({ field: { onChange, value } }) => (
+        {/* Address Input with Autocomplete */}
+        <Controller
+          control={control}
+          name="address"
+          rules={{ required: 'Address is required' }}
+          render={({ field: { value } }) => (
+            <View>
+              <View style={styles.inputWrapper}>
+                <Ionicons name="location-outline" style={styles.icon} />
+                <TextInput
+                  placeholder="Search Address"
+                  placeholderTextColor="#9E9E9E"
+                  style={styles.input}
+                  value={addressInput}
+                  onChangeText={text => {
+                    setAddressInput(text);
+                    setValue('address', text);
+                    setValue('latitude', null);
+                    setValue('longitude', null);
+                  }}
+                />
+              </View>
+              {errors.address && (
+                <Text style={styles.errorText}>{errors.address.message}</Text>
+              )}
+            </View>
+          )}
+        />
+
+        {/* Predictions Dropdown */}
+        {showPredictions && predictions.length > 0 && (
+          <View style={styles.predictionsContainer}>
+            {predictions.map(item => (
               <TouchableOpacity
-                style={styles.checkboxContainer}
-                onPress={() => onChange(!value)}
+                key={item.place_id}
+                style={styles.predictionItem}
                 activeOpacity={0.7}
+                onPress={() =>
+                  handleSelectPrediction(item.place_id, item.description)
+                }
               >
-                <View
-                  style={[styles.checkbox, value && styles.checkboxChecked]}
-                >
-                  {value && (
-                    <Ionicons name="checkmark" size={wp(4)} color="#fff" />
-                  )}
-                </View>
-                <Text style={styles.checkboxLabel}>Set as default address</Text>
+                <Ionicons name="location-outline" size={wp(4)} color="#666" />
+                <Text style={styles.predictionText}>{item.description}</Text>
               </TouchableOpacity>
-            )}
-          />
-
-          {/* Save Address Button */}
-          <View style={styles.buttonContainer}>
-            <Button
-              loading={loading}
-              title="Save Address"
-              onPress={handleSubmit(onSubmit)}
-            />
+            ))}
           </View>
+        )}
+
+        {/* Set as Default Checkbox */}
+        <Controller
+          control={control}
+          name="isDefault"
+          render={({ field: { onChange, value } }) => (
+            <TouchableOpacity
+              style={styles.checkboxContainer}
+              onPress={() => onChange(!value)}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.checkbox, value && styles.checkboxChecked]}>
+                {value && (
+                  <Ionicons name="checkmark" size={wp(4)} color="#fff" />
+                )}
+              </View>
+              <Text style={styles.checkboxLabel}>Set as default address</Text>
+            </TouchableOpacity>
+          )}
+        />
+
+        {/* Save Address Button */}
+        <View style={styles.buttonContainer}>
+          <Button
+            loading={loading}
+            title="Save Address"
+            onPress={handleSubmit(onSubmit)}
+          />
         </View>
-      </SafeAreaView>
-    </TouchableWithoutFeedback>
+      </View>
+    </SafeAreaView>
   );
 };
 
@@ -335,13 +324,13 @@ const styles = StyleSheet.create({
   },
   checkboxChecked: {
     backgroundColor: COLORS.warning,
-    borderWidth:0
+    borderWidth: 0,
   },
   checkboxLabel: {
     fontSize: wp(4),
     color: '#333',
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
   buttonContainer: {
     marginTop: hp(3),

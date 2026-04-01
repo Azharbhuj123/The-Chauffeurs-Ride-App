@@ -37,7 +37,7 @@ export const ProfileMainScreen = ({ navigation }) => {
     { id: 2, icon: 'map-pin', label: 'Address', screen: 'Address' },
     { id: 3, icon: 'clock', label: 'Trip History', screen: 'TripHistory' },
     { id: 4, icon: 'alert-circle', label: 'Complain', screen: 'ReportIssue' },
-    { id: 5, icon: 'credit-card', label: 'Payment Options', screen: 'Payment' },
+    // { id: 5, icon: 'credit-card', label: 'Payment Options', screen: 'Payment' },
     { id: 6, icon: 'info', label: 'About Us', screen: 'About' },
     // { id: 7, icon: 'settings', label: 'Settings', screen: 'Settings' },
     {
@@ -77,8 +77,8 @@ export const ProfileMainScreen = ({ navigation }) => {
               <Ionicons name="camera-outline" size={wp(4.5)} color="#000" />
             </View>
           </View>
-          <Text style={styles.profileName}>John Doe</Text>
-          <Text style={styles.profileEmail}>note@email.com</Text>
+          <Text style={styles.profileName}>{userData?.name||""}</Text>
+          <Text style={styles.profileEmail}>{userData?.contact||""}</Text>
         </TouchableOpacity>
 
         {/* Menu Items */}

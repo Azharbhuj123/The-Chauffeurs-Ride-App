@@ -83,9 +83,9 @@ const ConfirmBooking = ({ navigation, route }) => {
   const [show, setShow] = useState(false);
   const [mode, setMode] = useState('date');
   const [schedule, setSchedule] = useState({
-    date: rideData?.schedule.date,
-    fromTime: rideData?.schedule.fromTime,
-    toTime: rideData?.schedule.toTime,
+    date: rideData?.schedule?.date,
+    fromTime: rideData?.schedule?.fromTime,
+    toTime: rideData?.schedule?.toTime,
   });
 
   const searchInputRef = useRef(null);
@@ -383,9 +383,9 @@ const ConfirmBooking = ({ navigation, route }) => {
       duration: rideData?.duration_min_value,
       distance: rideData?.distance,
       voucher_ids: final_voucher_ids,
-      postalCode:rideData?.postalCode,
-      city:rideData?.city,
-      state:rideData?.state,
+      postalCode: rideData?.postalCode,
+      city: rideData?.city,
+      state: rideData?.state,
       schedule: {
         date: schedule?.date,
         from: schedule?.fromTime,
@@ -535,7 +535,7 @@ const ConfirmBooking = ({ navigation, route }) => {
     }));
   };
 
-  console.log(rideData, 'schedule');
+  console.log(data?.driver?.profile_image, 'schedule');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -691,16 +691,18 @@ const ConfirmBooking = ({ navigation, route }) => {
               <View style={styles.driverHeader}>
                 <View style={styles.driverInfo}>
                   <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>
-                      <Image
-                        source={{ uri: data?.driver?.profile_image }}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          borderRadius: 50,
-                        }}
-                      />
-                    </Text>
+                      {/* <View style={{ width: 100, height: 100 }}> */}
+                        {/* Ensure parent has size */}
+                        <Image
+                          source={{ uri: data?.driver?.profile_image }}
+                          style={{
+                            width: 50, // Change '100%' to a fixed number for testing
+                            height: 50,
+                            borderRadius: 50,
+                            backgroundColor: '#ccc', // If you see a gray circle, the image is just failing to load
+                          }}
+                        />
+                      {/* </View> */}
                   </View>
                   <View>
                     <Text style={styles.driverName}>{data?.driver?.name}</Text>
@@ -939,7 +941,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     fontFamily: 'Poppins-Regular',
   },
@@ -973,7 +975,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     marginBottom: 12,
     borderBottomWidth: 1,
@@ -995,8 +997,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   avatar: {
-    width: 40,
-    height: 40,
+    width: 50,
+    height: 50,
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1004,7 +1006,7 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 14,
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     fontFamily: 'Poppins-Regular',
     borderRadius: 50,
@@ -1012,7 +1014,7 @@ const styles = StyleSheet.create({
   driverName: {
     fontSize: 16,
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     fontFamily: 'Poppins-Regular',
   },
@@ -1025,7 +1027,7 @@ const styles = StyleSheet.create({
   rating: {
     fontSize: 12,
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: COLORS.warning,
   },
   trips: {
@@ -1136,7 +1138,7 @@ const styles = StyleSheet.create({
   pickerCloseButtonText: {
     fontSize: 16,
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     fontFamily: 'Poppins-Regular',
   },
@@ -1164,7 +1166,7 @@ const styles = StyleSheet.create({
   paymentText: {
     fontSize: 14,
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     fontFamily: 'Poppins-Regular',
   },
@@ -1196,7 +1198,7 @@ const styles = StyleSheet.create({
   fareClass: {
     fontSize: 14,
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
   },
   fareDistance: {
@@ -1220,7 +1222,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     fontFamily: 'Poppins-Regular',
   },
@@ -1235,7 +1237,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: fs(16),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     fontFamily: 'Poppins-Regular',
   },
@@ -1287,8 +1289,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
   },
-  suggestionsTitle: { fontSize: 18, fontWeight: '0',
-        fontFamily:"Poppins-Regular", color: '#333' },
+  suggestionsTitle: {
+    fontSize: 18,
+    fontWeight: '0',
+    fontFamily: 'Poppins-Regular',
+    color: '#333',
+  },
   closeButton: { padding: 4 },
   closeButtonText: {
     fontSize: 32,
@@ -1318,7 +1324,7 @@ const styles = StyleSheet.create({
   currentLocationText: {
     fontSize: 16,
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: COLORS.success,
   },
   suggestionsList: { paddingTop: 4 },
@@ -1343,7 +1349,7 @@ const styles = StyleSheet.create({
   suggestionMain: {
     fontSize: 15,
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#333',
     marginBottom: 4,
   },
@@ -1401,7 +1407,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#1A1A1A',
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
   dateTimeRow: {
     flexDirection: 'row',
@@ -1429,7 +1435,7 @@ const styles = StyleSheet.create({
     fontSize: wp(4),
     color: '#333',
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
 });
 

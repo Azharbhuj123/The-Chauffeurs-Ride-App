@@ -15,9 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+ 
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -153,7 +151,7 @@ triggerMutation({
             <View style={styles.summaryCard}>
               <Text style={styles.sectionTitle}>Final Trip Summary</Text>
 
-              <View style={styles.summaryRow}>
+              {/* <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Duration:</Text>
                 <Text style={styles.summaryValue}> {data?.data?.duration}</Text>
               </View>
@@ -161,7 +159,7 @@ triggerMutation({
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Distance:</Text>
                 <Text style={styles.summaryValue}>{data?.data?.distance}</Text>
-              </View>
+              </View> */}
 
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Base Fare:</Text>

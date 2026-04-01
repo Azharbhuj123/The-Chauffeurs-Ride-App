@@ -2,6 +2,7 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 apply plugin: 'com.google.gms.google-services'
+
 // ✅ Add this block
 project.ext.vectoricons = [
     iconFontNames: [
@@ -22,7 +23,9 @@ project.ext.vectoricons = [
         'Zocial.ttf'
     ]
 ]
-
+project.ext.react = [
+    enableHermes: true
+]
 // ✅ Add this line to apply the fonts.gradle script
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 

@@ -111,6 +111,7 @@ export default function App() {
   }, [rideId]);
   // Socket & user room initialization
   useEffect(() => {
+    console.log('Hermes:', !!global.HermesInternal);
     if (userData?._id) {
       joinUserRoom(userData._id);
       initSocketListeners(role);
