@@ -44,7 +44,7 @@ export const showFlash = ({
     style: {
       // 2. Force a top margin equal to the status bar height
       // This pushes the "floating" bubble below the clock/battery
-      marginTop: Platform.OS === 'android' ? STATUS_BAR_HEIGHT : 0,
+      marginTop: Platform.OS === 'android' ? STATUS_BAR_HEIGHT + 2 : 0,
 
       // Keep your existing styles
       ...(isInfo

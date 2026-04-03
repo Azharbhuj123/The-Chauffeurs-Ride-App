@@ -696,7 +696,13 @@ export default function BookingMain({ navigation, route }) {
   });
   const resetDone = useRef(false);
 
-  const { data, isLoading, refetch } = useQuery({
+  const {
+    data,
+    isLoading,
+    refetch,
+    isError: isDriversError,
+    error: driversError,
+  } = useQuery({
     queryKey: [
       'get-drivers',
       selectedClass,
@@ -727,13 +733,13 @@ export default function BookingMain({ navigation, route }) {
   });
 
   console.log('query enabled check:', {
-  selectedClass,
-  lat: fromLocation?.latitude,
-  lng: fromLocation?.longitude,
-  date: schedule.date,
-  fromTime: schedule.fromTime,
-  toTime: schedule.toTime,
-});
+    selectedClass,
+    lat: fromLocation?.latitude,
+    lng: fromLocation?.longitude,
+    date: schedule.date,
+    fromTime: schedule.fromTime,
+    toTime: schedule.toTime,
+  });
 
   // ride fare
   const {
@@ -816,11 +822,9 @@ export default function BookingMain({ navigation, route }) {
       setShow(false);
     }
 
-    // User cancelled — do nothing
     if (event.type === 'dismissed' || !selectedValue) return;
 
     if (activeField === 'date') {
-      // ✅ Extract ONLY the date part from selected value
       const year = selectedValue.getFullYear();
       const month = String(selectedValue.getMonth() + 1).padStart(2, '0');
       const day = String(selectedValue.getDate()).padStart(2, '0');
@@ -831,20 +835,47 @@ export default function BookingMain({ navigation, route }) {
         date: dateOnly,
       }));
     } else if (activeField === 'fromTime' || activeField === 'toTime') {
-      // ✅ Extract ONLY hours & minutes, combine with selected date
       const hours = String(selectedValue.getHours()).padStart(2, '0');
       const minutes = String(selectedValue.getMinutes()).padStart(2, '0');
 
-      // Use stored date or today as base
       const baseDate = schedule.date
         ? schedule.date.split('T')[0]
         : new Date().toISOString().split('T')[0];
 
-      const dateTime = `${baseDate}T${hours}:${minutes}:00`;
+      const newDateTimeStr = `${baseDate}T${hours}:${minutes}:00`;
+      const newDateTime = new Date(newDateTimeStr);
 
+      // 🔥 Get existing times
+      const fromTime = schedule.fromTime ? new Date(schedule.fromTime) : null;
+      const toTime = schedule.toTime ? new Date(schedule.toTime) : null;
+
+      // 🔴 VALIDATION
+      if (activeField === 'fromTime' && toTime) {
+        if (newDateTime >= toTime) {
+          showToast({
+            type: 'error',
+            title: 'Invalid Time',
+            message: 'Start time must be before end time',
+          });
+          return; // ❌ STOP
+        }
+      }
+
+      if (activeField === 'toTime' && fromTime) {
+        if (newDateTime <= fromTime) {
+          showToast({
+            type: 'error',
+            title: 'Invalid Time',
+            message: 'End time must be after start time',
+          });
+          return; // ❌ STOP
+        }
+      }
+
+      // ✅ SAFE UPDATE
       setSchedule(prev => ({
         ...prev,
-        [activeField]: dateTime,
+        [activeField]: newDateTimeStr,
       }));
     }
   };
@@ -912,9 +943,11 @@ export default function BookingMain({ navigation, route }) {
   };
 
   useEffect(() => {
-    if (isError) {
+    if (isError || isDriversError) {
       const backendMessage =
-        rideFareErr?.response?.data?.message || 'Something went wrong';
+        rideFareErr?.response?.data?.message ||
+        driversError?.response?.data?.message ||
+        'Something went wrong';
 
       showToast({
         title: 'Error',
@@ -922,14 +955,12 @@ export default function BookingMain({ navigation, route }) {
         type: 'error',
       });
     }
-  }, [isError]);
+  }, [isError, isDriversError]);
   const showPicker = (field, pickerMode) => {
     setActiveField(field);
     setMode(pickerMode);
     setShow(true);
   };
-
-  console.log(schedule, 'schedule');
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -1075,20 +1106,20 @@ export default function BookingMain({ navigation, route }) {
                 </TouchableOpacity>
               </View>
 
-             {show && (
-  <DateTimePicker
-    value={
-      schedule[activeField]
-        ? new Date(schedule[activeField])  // ✅ convert string → Date
-        : new Date()
-    }
-    mode={mode}
-    is24Hour={true}
-    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-    onChange={onChange}
-    minimumDate={new Date()}
-  />
-)}
+              {show && (
+                <DateTimePicker
+                  value={
+                    schedule[activeField]
+                      ? new Date(schedule[activeField]) // ✅ convert string → Date
+                      : new Date()
+                  }
+                  mode={mode}
+                  is24Hour={true}
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={onChange}
+                  minimumDate={new Date()}
+                />
+              )}
             </View>
 
             {/* --- Vehicle Class Selector --- */}

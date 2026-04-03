@@ -116,6 +116,7 @@ export default function SocialBtns({ role, navigation }) {
         },
       });
     } catch (error) {
+      setGoogleLoading(false)
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         // user dismissed — no toast needed
       } else if (error.code === statusCodes.IN_PROGRESS) {

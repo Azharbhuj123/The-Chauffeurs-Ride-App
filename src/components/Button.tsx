@@ -89,8 +89,7 @@ const styles = StyleSheet.create({
     // fontFamily: 'Poppins-Regular',
   },
   signUpButtonText: {
-    fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     fontSize: fs(16),
-
   },
 });

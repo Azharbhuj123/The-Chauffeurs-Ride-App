@@ -11,6 +11,7 @@ import {
   Text,
   TouchableWithoutFeedback,
   Keyboard,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -53,6 +54,8 @@ export const AddAddressInp = ({ navigation, route }) => {
 
   // Debounce for address search
   useEffect(() => {
+    if (isSelectingPrediction) return; // ✅ STOP HERE
+
     if (addressInput.length > 2) {
       const timer = setTimeout(() => {
         fetchPlacePredictions(addressInput);
@@ -83,7 +86,8 @@ export const AddAddressInp = ({ navigation, route }) => {
   };
 
   const handleSelectPrediction = async (placeId, description) => {
-    // ✅ Close FIRST before anything else runs
+    setIsSelectingPrediction(true); // ✅ START BLOCKING
+
     setShowPredictions(false);
     setPredictions([]);
     Keyboard.dismiss();
@@ -105,6 +109,11 @@ export const AddAddressInp = ({ navigation, route }) => {
       console.error('Error fetching place details:', error);
       Alert.alert('Error', 'Could not fetch location details');
     }
+
+    // ✅ IMPORTANT: small delay ke baad allow karo again
+    setTimeout(() => {
+      setIsSelectingPrediction(false);
+    }, 500);
   };
 
   const { triggerMutation, loading } = useActionMutation({
@@ -200,12 +209,13 @@ export const AddAddressInp = ({ navigation, route }) => {
 
         {/* Predictions Dropdown */}
         {showPredictions && predictions.length > 0 && (
-          <View style={styles.predictionsContainer}>
-            {predictions.map(item => (
+          <FlatList
+            data={predictions}
+            keyExtractor={item => item.place_id}
+            keyboardShouldPersistTaps="handled" // ✅ IMPORTANT FIX
+            renderItem={({ item }) => (
               <TouchableOpacity
-                key={item.place_id}
                 style={styles.predictionItem}
-                activeOpacity={0.7}
                 onPress={() =>
                   handleSelectPrediction(item.place_id, item.description)
                 }
@@ -213,8 +223,8 @@ export const AddAddressInp = ({ navigation, route }) => {
                 <Ionicons name="location-outline" size={wp(4)} color="#666" />
                 <Text style={styles.predictionText}>{item.description}</Text>
               </TouchableOpacity>
-            ))}
-          </View>
+            )}
+          />
         )}
 
         {/* Set as Default Checkbox */}

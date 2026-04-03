@@ -270,11 +270,11 @@ const styles = StyleSheet.create({
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: hp(Platform.OS === 'ios' ? 2 : 0),
+    paddingTop: hp(Platform.OS === 'ios' ? 2 : 3),
   },
   backText: {
     fontSize: fs(16),
-    color: '#000',
+    color: '#fff',
     marginLeft: wp(1),
   },
   logoContainer: {

@@ -452,7 +452,7 @@ export default function UploadDoc({ route, navigation }) {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
       {/* iOS: light-content for dark header, Android: matches system theme */}

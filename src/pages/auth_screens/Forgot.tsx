@@ -89,7 +89,7 @@ export default function Forgot({ navigation }) {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
       <StatusBar barStyle="light-content" backgroundColor={'#0D1831'} />
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: hp(Platform.OS === 'ios' ? 2 : 0),
+    paddingTop: hp(Platform.OS === 'ios' ? 2 : 3),
   },
   backText: {
     fontSize: fs(16),

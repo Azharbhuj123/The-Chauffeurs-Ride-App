@@ -120,7 +120,7 @@ function Login({ navigation }) {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.container}
       >
         {/* <StatusBar barStyle="light-content" backgroundColor="#0D1831" /> */}
@@ -433,6 +433,7 @@ const styles = StyleSheet.create({
   forgotText: {
     textAlign: 'right',
     fontFamily: 'Poppins-Regular',
+    color:'#000'
   },
 });
 export default Login;

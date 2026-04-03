@@ -12,6 +12,7 @@ import {
   Alert,
   Modal,
   Linking,
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
@@ -49,6 +50,15 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
 
+// ── Fixed photo box size constants ────────────────────────────────────────────
+const SCREEN_WIDTH = Dimensions.get('window').width;
+// formContainer has paddingHorizontal wp(6) on each side = 2 * 6% of screen
+// photoGrid has gap wp(3) between boxes
+// So each box width = (SCREEN_WIDTH - 2*wp(6) - wp(3)) / 2
+const PHOTO_BOX_WIDTH = (SCREEN_WIDTH - wp(12) * 2 - wp(3)) / 2;
+const PHOTO_BOX_HEIGHT = PHOTO_BOX_WIDTH / 1.2; // same aspectRatio 1.2 but now FIXED px value
+// ─────────────────────────────────────────────────────────────────────────────
+
 // Validation schemas for each step
 const step1Schema = yup.object().shape({
   vehicleMake: yup
@@ -85,7 +95,6 @@ const step2Schema = yup.object().shape({
     .mixed()
     .required('Insurance papers are required')
     .test('fileSize', 'File is required', value => value !== null),
-
   frontView: yup
     .mixed()
     .required('Front view photo is required')
@@ -125,7 +134,7 @@ export default function UploadVehicle({ route, navigation }) {
   const { vehicleData, setVehicleData, resetVehicleData } = useStore();
   const { userData } = useUserStore();
 
-  // ── NEW: Preview state ──────────────────────────────────────────────────────
+  // Preview state
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewUri, setPreviewUri] = useState(null);
   const [previewTitle, setPreviewTitle] = useState('');
@@ -135,7 +144,6 @@ export default function UploadVehicle({ route, navigation }) {
     setPreviewUri(file?.uri ?? null);
     setPreviewVisible(true);
   };
-  // ───────────────────────────────────────────────────────────────────────────
 
   // Form for Step 1
   const {
@@ -148,12 +156,13 @@ export default function UploadVehicle({ route, navigation }) {
     resolver: yupResolver(step1Schema),
     mode: 'onChange',
     defaultValues: {
-      vehicleMake: '',
-      model: '',
-      manufacturingYear: '',
-      licensePlateNumber: '',
-      vehicleClass: 'Sedan',
-      categoryClass: 'Economy',
+      vehicleMake: vehicleData?.vehicleMake || '',
+      model: vehicleData?.model || '',
+      manufacturingYear: vehicleData?.manufacturingYear || '',
+      licensePlateNumber: vehicleData?.licensePlateNumber || '',
+      vehicleClass: vehicleData?.vehicleClass || 'Sedan',
+      categoryClass: vehicleData?.categoryClass || 'Economy',
+      vehicle_description: vehicleData?.vehicle_description || '',
     },
   });
 
@@ -170,13 +179,13 @@ export default function UploadVehicle({ route, navigation }) {
     resolver: yupResolver(step2Schema),
     mode: 'onChange',
     defaultValues: {
-      vehicleRegistration: null,
-      vehicleInsurance: null,
-      roadworthiness: null,
-      frontView: null,
-      backView: null,
-      sideView: null,
-      interiorView: null,
+      vehicleRegistration: vehicleData?.vehicleRegistration || null,
+      vehicleInsurance: vehicleData?.vehicleInsurance || null,
+      roadworthiness: vehicleData?.roadworthiness || null,
+      frontView: vehicleData?.frontView || null,
+      backView: vehicleData?.backView || null,
+      sideView: vehicleData?.sideView || null,
+      interiorView: vehicleData?.interiorView || null,
     },
   });
 
@@ -192,16 +201,18 @@ export default function UploadVehicle({ route, navigation }) {
     resolver: yupResolver(step3Schema),
     mode: 'onChange',
     defaultValues: {
-      selectedDays: ['Mon'],
-      fromTime: new Date(),
-      toTime: new Date(),
-      rate: '0.50',
+      selectedDays: vehicleData?.selectedDays || ['Mon'],
+      fromTime: vehicleData?.fromTime
+        ? new Date(vehicleData.fromTime)
+        : new Date(),
+      toTime: vehicleData?.toTime ? new Date(vehicleData.toTime) : new Date(),
+      rate: vehicleData?.rate || '0.50',
     },
   });
-  const [showPicker, setShowPicker] = useState(null); // 'from' | 'to' | null
+
+  const [showPicker, setShowPicker] = useState(null);
 
   const permanentOption = { label: 'For Self Drive', value: 'Self Drive' };
-
   const inviteDriver = watch3('inviteDriver');
   const chauffeurType = watch3('chauffeurType');
 
@@ -235,7 +246,6 @@ export default function UploadVehicle({ route, navigation }) {
     if (currentStep === 4) {
       const formData = new FormData();
 
-      // Step 1 fields
       formData.append('vehicle_make', vehicleData.vehicleMake);
       formData.append('vehicle_model', vehicleData.model);
       formData.append('vehicle_year', vehicleData.manufacturingYear);
@@ -247,7 +257,6 @@ export default function UploadVehicle({ route, navigation }) {
       formData.append('vehicle_type', vehicleData.vehicleClass);
       formData.append('contact', vehicleData.contact);
 
-      // Step 3: Chauffeur / Self Drive logic
       const vehicleFor =
         vehicleData.chauffeurType === 'Self Drive'
           ? 'Self Drive'
@@ -318,45 +327,38 @@ export default function UploadVehicle({ route, navigation }) {
 
     if (currentStep === 1) {
       isValid = await trigger1();
-      console.log(isValid, 'isValid 1');
-
       if (isValid) {
         handleSubmit1(data => {
-          console.log('Step 1 Data:', data);
           setVehicleData(data);
           setCurrentStep(2);
         })();
       }
     } else if (currentStep === 2) {
       isValid = await trigger2();
-
-      console.log(isValid, 'isValid 2');
-
       if (isValid) {
         handleSubmit2(data => {
-          console.log('Step 2 Data:', data);
           setVehicleData(data);
           setCurrentStep(3);
         })();
       }
     } else if (currentStep === 3) {
-      console.log(true, 'true');
-
       isValid = await trigger3();
-
-      console.log(errors3, 'isValid');
       if (isValid) {
         handleSubmit3(data => {
           setVehicleData(data);
-          console.log('Step 3 Data:', data);
           setCurrentStep(4);
         })();
       }
     }
   };
 
+  // Goes back one step; on step 1 exits the screen
   const prevStep = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1);
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    } else {
+      navigation.navigate('UploadDoc');
+    }
   };
 
   const renderProgressBar = () => (
@@ -373,10 +375,25 @@ export default function UploadVehicle({ route, navigation }) {
     </View>
   );
 
+  // Shared header row: back arrow on left, step title on right
+  const renderStepHeader = stepLabel => (
+    <View style={styles.stepHeaderRow}>
+      <TouchableOpacity
+        onPress={prevStep}
+        style={styles.backBtn}
+        activeOpacity={0.7}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      >
+        <Icon name="chevron-back" size={wp(5)} color="#000" />
+        <Text style={styles.backBtnText}>Back</Text>
+      </TouchableOpacity>
+      <Text style={styles.stepTitle}>{stepLabel}</Text>
+    </View>
+  );
+
   const renderStep1 = () => (
     <View>
-      <Text style={styles.stepTitle}>Step 1: Vehicle Info Form</Text>
-
+      {renderStepHeader('Step 1: Vehicle Info Form')}
       {renderProgressBar()}
 
       <View style={styles.inputGroup}>
@@ -496,6 +513,7 @@ export default function UploadVehicle({ route, navigation }) {
           </Text>
         )}
       </View>
+
       <View style={styles.inputGroup}>
         <Text style={styles.label}>Vehicle Description</Text>
         <Controller
@@ -576,10 +594,7 @@ export default function UploadVehicle({ route, navigation }) {
         });
       }
 
-      options.push({
-        text: 'Cancel',
-        style: 'cancel',
-      });
+      options.push({ text: 'Cancel', style: 'cancel' });
 
       Alert.alert('Upload Document', 'Choose an option', options, {
         cancelable: true,
@@ -591,10 +606,7 @@ export default function UploadVehicle({ route, navigation }) {
         'Remove Document',
         'Are you sure you want to remove this document?',
         [
-          {
-            text: 'Cancel',
-            style: 'cancel',
-          },
+          { text: 'Cancel', style: 'cancel' },
           {
             text: 'Remove',
             onPress: () => {
@@ -609,7 +621,7 @@ export default function UploadVehicle({ route, navigation }) {
 
     return (
       <View>
-        <Text style={styles.stepTitle}>Step 2: Upload Documents</Text>
+        {renderStepHeader('Step 2: Upload Documents')}
         {renderProgressBar()}
 
         <View style={styles.sectionHeader}>
@@ -669,12 +681,13 @@ export default function UploadVehicle({ route, navigation }) {
           <Text style={styles.sectionTitle}>Vehicle Photos</Text>
         </View>
 
+        {/* Row 1: Front + Back */}
         <View style={styles.photoGrid}>
           <Controller
             control={control2}
             name="frontView"
             render={({ field: { value } }) => (
-              <View style={{ flex: 1 }}>
+              <View style={styles.photoBoxWrapper}>
                 <PhotoUploadBox
                   label="Front View"
                   uploaded={value}
@@ -684,10 +697,12 @@ export default function UploadVehicle({ route, navigation }) {
                   onRemove={() => handleRemoveDocument('frontView')}
                   hasError={!!errors2.frontView}
                 />
-                {errors2.frontView && (
+                {errors2.frontView ? (
                   <Text style={styles.errorTextSmall}>
                     {errors2.frontView.message}
                   </Text>
+                ) : (
+                  <View style={styles.errorTextSmallPlaceholder} />
                 )}
               </View>
             )}
@@ -697,7 +712,7 @@ export default function UploadVehicle({ route, navigation }) {
             control={control2}
             name="backView"
             render={({ field: { value } }) => (
-              <View style={{ flex: 1 }}>
+              <View style={styles.photoBoxWrapper}>
                 <PhotoUploadBox
                   label="Back View"
                   uploaded={value}
@@ -705,22 +720,25 @@ export default function UploadVehicle({ route, navigation }) {
                   onRemove={() => handleRemoveDocument('backView')}
                   hasError={!!errors2.backView}
                 />
-                {errors2.backView && (
+                {errors2.backView ? (
                   <Text style={styles.errorTextSmall}>
                     {errors2.backView.message}
                   </Text>
+                ) : (
+                  <View style={styles.errorTextSmallPlaceholder} />
                 )}
               </View>
             )}
           />
         </View>
 
+        {/* Row 2: Side + Interior */}
         <View style={styles.photoGrid}>
           <Controller
             control={control2}
             name="sideView"
             render={({ field: { value } }) => (
-              <View style={{ flex: 1 }}>
+              <View style={styles.photoBoxWrapper}>
                 <PhotoUploadBox
                   label="Side View"
                   uploaded={value}
@@ -728,10 +746,12 @@ export default function UploadVehicle({ route, navigation }) {
                   onRemove={() => handleRemoveDocument('sideView')}
                   hasError={!!errors2.sideView}
                 />
-                {errors2.sideView && (
+                {errors2.sideView ? (
                   <Text style={styles.errorTextSmall}>
                     {errors2.sideView.message}
                   </Text>
+                ) : (
+                  <View style={styles.errorTextSmallPlaceholder} />
                 )}
               </View>
             )}
@@ -741,7 +761,7 @@ export default function UploadVehicle({ route, navigation }) {
             control={control2}
             name="interiorView"
             render={({ field: { value } }) => (
-              <View style={{ flex: 1 }}>
+              <View style={styles.photoBoxWrapper}>
                 <PhotoUploadBox
                   label="Interior View"
                   uploaded={value}
@@ -751,10 +771,12 @@ export default function UploadVehicle({ route, navigation }) {
                   onRemove={() => handleRemoveDocument('interiorView')}
                   hasError={!!errors2.interiorView}
                 />
-                {errors2.interiorView && (
+                {errors2.interiorView ? (
                   <Text style={styles.errorTextSmall}>
                     {errors2.interiorView.message}
                   </Text>
+                ) : (
+                  <View style={styles.errorTextSmallPlaceholder} />
                 )}
               </View>
             )}
@@ -789,9 +811,8 @@ export default function UploadVehicle({ route, navigation }) {
     };
 
     return (
-      <View style={{ height: hp('65%') }}>
-        <Text style={styles.stepTitle}>Step 3: Availability</Text>
-
+      <View style={{ flex: 1, minHeight: hp('70%') }}>
+        {renderStepHeader('Step 3: Availability')}
         {renderProgressBar()}
 
         <Text style={styles.imgLabel}>Select Available Days</Text>
@@ -869,7 +890,7 @@ export default function UploadVehicle({ route, navigation }) {
             </>
           )}
         />
-
+        <View style={{ flex: 1 }} />
         {showPicker && (
           <DateTimePicker
             value={showPicker === 'from' ? fromTime : toTime}
@@ -890,7 +911,6 @@ export default function UploadVehicle({ route, navigation }) {
     );
   };
 
-  // ── UPDATED renderStep4 with preview functionality ──────────────────────────
   const renderStep4 = () => {
     const docs = [
       { label: 'Vehicle Registration', file: vehicleData?.vehicleRegistration },
@@ -906,7 +926,7 @@ export default function UploadVehicle({ route, navigation }) {
 
     return (
       <View style={{ paddingBottom: hp(2) }}>
-        <Text style={styles.stepTitle}>Step 4: Review & Submit</Text>
+        {renderStepHeader('Step 4: Review & Submit')}
         {renderProgressBar()}
 
         {/* Vehicle Info Card */}
@@ -966,7 +986,6 @@ export default function UploadVehicle({ route, navigation }) {
       </View>
     );
   };
-  // ───────────────────────────────────────────────────────────────────────────
 
   const renderStep5 = () => (
     <View style={styles.successContainer}>
@@ -1039,7 +1058,7 @@ const DocumentUploadItem = ({
     </View>
     {uploaded ? (
       <View style={{ flexDirection: 'row', gap: wp(2) }}>
-        <Icon name="checkmark-circle" size={wp(6)} color="#10B981" />
+        {/* <Icon name="checkmark-circle" size={wp(6)} color="#10B981" /> */}
         <TouchableOpacity onPress={onRemove}>
           <Icon name="close-circle" size={wp(6)} color="#EF4444" />
         </TouchableOpacity>
@@ -1052,26 +1071,24 @@ const DocumentUploadItem = ({
   </View>
 );
 
+// ── FIXED PhotoUploadBox: uses absolute pixel dimensions, never changes size ──
 const PhotoUploadBox = ({ label, uploaded, onUpload, onRemove, hasError }) => (
   <TouchableOpacity
     style={[styles.photoBox, hasError && styles.photoBoxError]}
     onPress={uploaded ? onRemove : onUpload}
+    activeOpacity={0.8}
   >
     {uploaded ? (
-      <View style={{ alignItems: 'center' }}>
-        <Icon name="checkmark-circle" size={wp(10)} color="#10B981" />
+      <View style={styles.photoBoxInner}>
+        <Icon name="checkmark-circle" size={wp(9)} color="#10B981" />
         <Text style={[styles.photoLabel, { color: '#10B981' }]}>Uploaded</Text>
-        <Text
-          style={[styles.photoLabel, { fontSize: wp(2.5), marginTop: hp(0.5) }]}
-        >
-          Tap to remove
-        </Text>
+        <Text style={styles.photoLabelSub}>Tap to remove</Text>
       </View>
     ) : (
-      <>
-        <Icon name="camera-outline" size={wp(10)} color="#999" />
+      <View style={styles.photoBoxInner}>
+        <Icon name="camera-outline" size={wp(9)} color="#999" />
         <Text style={styles.photoLabel}>{label}</Text>
-      </>
+      </View>
     )}
   </TouchableOpacity>
 );
@@ -1190,7 +1207,7 @@ const ImagePreviewModal = ({ visible, uri, title, onClose }) => (
   </Modal>
 );
 
-// ── EXISTING STYLES (unchanged) ───────────────────────────────────────────────
+// ── STYLES ────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   container: {
@@ -1237,11 +1254,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp(6),
     paddingTop: hp(4),
     paddingBottom: hp(3),
-    heigh: '100%',
     ...Platform.select({
-      android: {
-        elevation: 8,
-      },
+      android: { elevation: 8 },
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: -2 },
@@ -1250,12 +1264,30 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  // Step header with back button
+  stepHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: hp(2),
+  },
+  backBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingRight: wp(3),
+    marginRight: wp(1),
+  },
+  backBtnText: {
+    fontSize: wp(3.8),
+    color: '#000',
+    fontFamily: 'Poppins-Regular',
+    marginLeft: wp(0.5),
+  },
   stepTitle: {
     fontSize: wp(4.2),
     fontWeight: '0',
     fontFamily: 'Poppins-Regular',
     color: '#000',
-    marginBottom: hp(2),
+    flex: 1,
   },
   subtitle: {
     fontSize: wp(3.5),
@@ -1339,17 +1371,52 @@ const styles = StyleSheet.create({
     fontSize: wp(3.5),
     color: '#000',
   },
+
+  // ── Photo grid: two equal columns, fixed gap ──────────────────────────────
   photoGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: wp(3),
-    marginBottom: hp(2),
+    marginBottom: hp(1), // reduced: error text sits just below
     width: '100%',
   },
-  photoContainer: {
-    flex: 1,
-    minHeight: hp(15),
+  // Wrapper that holds the box + its error text; width is exactly half
+  photoBoxWrapper: {
+    width: PHOTO_BOX_WIDTH, // hard pixel value — never changes
   },
+  // The actual tappable box — fixed width AND height in pixels
+  photoBox: {
+    width: PHOTO_BOX_WIDTH,
+    height: PHOTO_BOX_HEIGHT, // replaces aspectRatio — no more layout shifts
+    borderWidth: 1,
+    borderRadius: wp(2),
+    borderStyle: 'dashed',
+    borderColor: 'rgba(17, 17, 17, 0.50)',
+    overflow: 'hidden', // clips content to the fixed bounds
+  },
+  photoBoxError: {
+    borderColor: COLORS.error,
+  },
+  // Inner centred content — fills the fixed box, never pushes outside it
+  photoBoxInner: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  photoLabel: {
+    fontSize: wp(3.2),
+    color: '#999',
+    marginTop: hp(0.8),
+    textAlign: 'center',
+  },
+  photoLabelSub: {
+    fontSize: wp(2.5),
+    color: '#999',
+    marginTop: hp(0.3),
+    textAlign: 'center',
+  },
+  // ─────────────────────────────────────────────────────────────────────────
+
   errorContainer: {
     height: hp(2.5),
     justifyContent: 'center',
@@ -1358,22 +1425,14 @@ const styles = StyleSheet.create({
     fontSize: wp(3),
     color: 'red',
     fontFamily: 'Poppins-Regular',
+    marginTop: hp(0.4),
   },
-  photoBox: {
-    flex: 1,
-    aspectRatio: 1.2,
-    borderWidth: 1,
-    borderRadius: wp(2),
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderStyle: 'dashed',
-    borderColor: 'rgba(17, 17, 17, 0.50)',
+  // Invisible placeholder keeps layout consistent when there is no error
+  errorTextSmallPlaceholder: {
+    height: hp(2.2),
+    marginTop: hp(0.4),
   },
-  photoLabel: {
-    fontSize: wp(3.2),
-    color: '#999',
-    marginTop: hp(1),
-  },
+
   linkContainer: {
     flexDirection: 'row',
     alignItems: 'center',

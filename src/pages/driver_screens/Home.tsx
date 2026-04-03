@@ -11,6 +11,7 @@ import {
   Platform,
   Image,
   Modal,
+  RefreshControl,
 } from 'react-native';
 import {
   heightPercentageToDP as hp,
@@ -70,6 +71,7 @@ const fakeScheduleData = [
 
 export default function HomeScreen({ navigation }) {
   const [showRejectPopup, setShowRejectPopup] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [rideId, setRideId] = useState(null);
   const [driverId, setDriverId] = useState(null);
   const [selectedRide, setSelectedRide] = useState(null);
@@ -86,13 +88,6 @@ export default function HomeScreen({ navigation }) {
 
   const showStripeWarning = role === 'Driver' && !chargesEnabled;
 
-  const { data: ridePartner } = useQuery({
-    queryKey: ['get-ride-partner'],
-    queryFn: () => fetchData(`/ride/get-ride-partner?ride_id=${rideId}`),
-    keepPreviousData: true,
-    enabled: !!showRejectPopup,
-  });
-
   const { data: scheduleRides, refetch } = useQuery({
     queryKey: ['driver-schdeule-ride'],
     queryFn: async () => {
@@ -103,20 +98,13 @@ export default function HomeScreen({ navigation }) {
     keepPreviousData: true,
   });
 
-  const partner_data = Array.isArray(ridePartner?.data)
-    ? ridePartner.data
-        .filter(item => item?.vehicle_driver?._id) // only valid drivers
-        .map(item => {
-          const driver_data = item.vehicle_driver;
+  const partner_data = [];
 
-          return {
-            label: driver_data?.name ?? 'Unknown Driver',
-            value: driver_data?._id ?? '',
-          };
-        })
-    : [];
-
-  const { data, isLoading: isLoadingRide } = useQuery({
+  const {
+    data,
+    isLoading: isLoadingRide,
+    refetch: refetchRide,
+  } = useQuery({
     queryKey: ['driver-latest-ride', userData],
     queryFn: () => fetchData('/ride/driver-latest-ride'),
     keepPreviousData: true,
@@ -132,6 +120,21 @@ export default function HomeScreen({ navigation }) {
       }
     }, [data?.in_progress]),
   );
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+
+    try {
+      await refetch(); // refresh scheduled rides
+      await refetchRide(); // refresh latest ride data
+      fetchStatus(accountId, token);
+
+      // optionally refresh other queries too
+    } catch (e) {
+      console.log('Refresh error:', e);
+    }
+
+    setRefreshing(false);
+  }, [refetch]);
   const handleAddVehicle = () => {
     console.log('Add Vehicle pressed');
     navigation.navigate('AddVehicle');
@@ -260,6 +263,14 @@ export default function HomeScreen({ navigation }) {
           styles.scrollContent,
           { paddingBottom: tabBarHeight + 40, flexGrow: 1 },
         ]}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={COLORS.warning}
+            colors={[COLORS.warning]}
+          />
+        }
       >
         <UserHeader navigation={navigation} />
 

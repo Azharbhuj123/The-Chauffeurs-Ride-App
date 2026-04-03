@@ -1,305 +1,270 @@
 //@ts-nocheck
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import React, { useRef, useState } from 'react'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useRef, useState } from 'react';
+import { set } from 'react-hook-form';
 import {
   View,
   Text,
   StyleSheet,
   Dimensions,
   StatusBar,
-  SafeAreaView,
   FlatList,
   TouchableOpacity,
   Image,
-} from 'react-native'
-import Icon from 'react-native-vector-icons/Feather' 
-// NOTE: Ensure 'react-native-vector-icons' is installed and linked.
+  SafeAreaView,
+  Platform,
+} from 'react-native';
+import { heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import Icon from 'react-native-vector-icons/Feather';
 
-// --- Dimensions and Constants ---
-const { width, height } = Dimensions.get('window')
-// Adjusting the card height to better match the visual ratio (it looks slightly less than 45%)
-const CARD_HEIGHT_RATIO = 0.40 
-const CARD_HEIGHT = height * CARD_HEIGHT_RATIO
-const TEXT_PADDING = width * 0.06 
+const { width, height } = Dimensions.get('window');
 
-// --- Data for the Splash_Screen Screens (Use local requires for images) ---
 const slides = [
   {
     key: '1',
     title: 'Ride in Style with Info Assurance',
-    description: 'Luxury rides, trusted drivers, and seamless bookings anytime, anywhere.',
-    // NOTE: Replace this placeholder path with your actual image path
-    imageSource: require('../../assets/images/splash1.png'), 
-    // Assuming you have images saved in '../../assets/images/slide1.png'
+    description:
+      'Luxury rides, trusted drivers, and seamless bookings anytime, anywhere.',
+    imageSource: require('../../assets/images/splash1.png'),
   },
   {
     key: '2',
     title: 'Seamless Booking Experience',
-    description: 'Book your ride instantly, track in real-time, and manage all trips with ease.',
-    // NOTE: Replace this placeholder path with your actual image path
+    description:
+      'Book your ride instantly, track in real-time, and manage all trips with ease.',
     imageSource: require('../../assets/images/splash2.png'),
-    // Assuming you have images saved in '../../assets/images/slide2.png'
   },
-]
+];
 
-// --- Individual Slide Component ---
-const Splash_ScreenSlide = ({ item, isLast, onNext, onSkip }) => {
-  return (
-    <View style={onboardingStyles.slide}>
-      {/* --- 1. Top Illustration Area --- */}
-      <View style={onboardingStyles.illustrationArea}>
-        <Image 
-          source={item.imageSource} 
-          style={onboardingStyles.illustrationImage} 
-          // The image needs to be scaled down and positioned to fit the layout
-          resizeMode="contain" 
-        />
-      </View>
+const Splash_Screen = ({ navigation }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const flatListRef = useRef(null);
 
-      {/* --- 2. Bottom Content Card --- */}
-      <View style={onboardingStyles.card}>
-        <Text style={onboardingStyles.title}>{item.title}</Text>
-        <Text style={onboardingStyles.description}>{item.description}</Text>
+  const scrollToNext = async () => {
+    // Use the current state to check if we are on the last slide
+    const isLastSlide = currentIndex === slides.length - 1;
 
-        {/* Buttons (Skip/Next) */}
-        <View style={onboardingStyles.buttonRow}>
-          {/* Skip Button */}
-          <TouchableOpacity 
-            style={onboardingStyles.skipButton}
-            onPress={onSkip}
-          >
-            <Text style={onboardingStyles.skipText}>Skip</Text>
-          </TouchableOpacity>
+    if (!isLastSlide) {
+      const nextIndex = currentIndex + 1;
+      flatListRef.current?.scrollToIndex({
+        index: nextIndex,
+        animated: true,
+      });
+      // Manually update index here for immediate response
+      setCurrentIndex(nextIndex);
+    } else {
+      // Logic for the last slide
+      try {
+        await AsyncStorage.setItem('splash_bypass', 'true');
+        console.log('Navigating to Signup...');
+        navigation.replace('Signup'); // Use replace to prevent going back to splash
+      } catch (e) {
+        console.log('Error saving bypass', e);
+      }
+    }
+  };
+  const handleSkip = async () => {
+    await AsyncStorage.setItem('splash_bypass', 'true');
+    navigation.navigate('Signup');
+  };
 
-          {/* Next/Done Button */}
-          <TouchableOpacity
-            style={onboardingStyles.nextButton}
-            onPress={onNext}
-          >
-            <Icon 
-              // Use 'chevron-right' for next, 'check' for done
-              name={isLast ? 'check' : 'chevron-right'} 
-              size={width * 0.07} 
-              color="#000"
-            />
-          </TouchableOpacity>
+  const onViewableItemsChanged = useRef(({ viewableItems }) => {
+    if (viewableItems && viewableItems.length > 0) {
+      // Access the index of the first visible item correctly
+      const index = viewableItems.index;
+      if (index !== null && index !== undefined) {
+        setCurrentIndex(index);
+      }
+    }
+  }).current;
+
+  const renderSlide = ({ item, index }) => {
+    const isLast = index === slides.length - 1;
+    return (
+      <View style={styles.slide}>
+        <View style={styles.illustrationArea}>
+          <Image
+            source={item.imageSource}
+            style={styles.illustrationImage}
+            resizeMode="contain"
+          />
+        </View>
+
+        <View style={styles.card}>
+          {/* Top Text Section */}
+          <View style={styles.textContainer}>
+            <Text style={styles.title}>{item.title}</Text>
+            <Text style={styles.description}>{item.description}</Text>
+
+            {/* Moving Pagination inside the card for better control */}
+            <View style={styles.paginationContainer}>
+              {slides.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.dot,
+                    {
+                      width: index === currentIndex ? 30 : 8,
+                      backgroundColor:
+                        index === currentIndex ? '#FFC107' : '#454545',
+                    },
+                  ]}
+                />
+              ))}
+            </View>
+          </View>
+
+          {/* Bottom Button Section */}
+          <View style={styles.buttonRow}>
+            <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+              <Text style={styles.skipText}>Skip</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.nextButton} onPress={scrollToNext}>
+              <Icon
+                name={isLast ? 'check' : 'chevron-right'}
+                size={28}
+                color="#000"
+              />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
-    </View>
-  )
-}
-
-// --- Main Onboarding Component ---
-function Splash_Screen({navigation}) {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const flatListRef = useRef(null)
-
-  // Function to scroll to the next slide
-  const scrollToNext = async() => {
-    
-    if (currentIndex < slides.length - 1) {
-      flatListRef.current.scrollToIndex({ index: currentIndex + 1, animated: true })
-    } else {
-      console.log('Finished Onboarding! Navigate to Signup.')
-      await AsyncStorage.setItem('splash_bypass', 'true');
-      navigation.navigate('Signup')
-    }
+    );
   };
-
-  // Function to handle Skip (Jumps to main app flow)
-  const handleSkip = async() => {
-    console.log('Skipped Onboarding! Navigate to Signup.')
-    await AsyncStorage.setItem('splash_bypass', 'true');
-
-    navigation.navigate('Signup')
-  };
-
-  // Update current index when the user swipes
-  const onViewableItemsChanged = useRef(({ viewableItems }) => {
-    if (viewableItems.length > 0) {
-      setCurrentIndex(viewableItems[0].index || 0)
-    }
-  }).current
-
-  const viewabilityConfig = useRef({
-    itemVisiblePercentThreshold: 50,
-  }).current
-
-  // --- Slide Indicator Dots Component ---
-  const Pagination = () => {
-    return (
-      <View style={onboardingStyles.paginationContainer}>
-        {slides.map((_, index) => (
-          <View
-            key={index.toString()}
-            style={[
-              onboardingStyles.dot,
-              {
-                // Active dot is longer (width * 0.06), Inactive is smaller (width * 0.02)
-                width: index === currentIndex ? width * 0.08 : width * 0.02, 
-                // Active dot is yellow, Inactive is dark grey
-                backgroundColor: index === currentIndex ? '#ffc700' : '#454545', 
-              },
-            ]}
-          />
-        ))}
-      </View>
-    )
-  }
 
   return (
-    <View style={onboardingStyles.container}>
-      {/* Dark content status bar for the white background */}
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-      
-      {/* FlatList for Horizontal Sliding */}
       <FlatList
         ref={flatListRef}
         data={slides}
-        
-        renderItem={({ item, index }) => (
-          <Splash_ScreenSlide
-            item={item}
-            isLast={index === slides.length - 1}
-            onNext={scrollToNext}
-            onSkip={handleSkip}
-          />
-        )}
+        renderItem={renderSlide}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         bounces={false}
-                scrollEnabled={false} // <-- disable user swipe
-
-        keyExtractor={(item) => item.key}
+        scrollEnabled={false}
+        keyExtractor={item => item.key}
         onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={viewabilityConfig}
+        viewabilityConfig={{ itemVisiblePercentThreshold: 50 }}
       />
-      
-      {/* Pagination is rendered outside the FlatList to keep it fixed */}
-      <Pagination />
     </View>
-  )
-}
+  );
+};
 
-// --- Onboarding Styles ---
-const onboardingStyles = StyleSheet.create({
+const styles = StyleSheet.create({
+  // --- Updated Onboarding Styles ---
   container: {
     flex: 1,
-    backgroundColor: '#ffffff', // White background
+    backgroundColor: '#ffffff',
   },
   slide: {
-    width, 
-    height: '100%',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
+    width,
+    flex: 1, // Use flex instead of height: 100%
   },
   illustrationArea: {
-    // The space above the black card
-         height: height * 0.75,
-
+    flex: 1.2, // Let the top area take more space dynamically
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    // No padding here, we'll let the image handle its margins
+    paddingTop: 40, // Space from status bar
   },
   illustrationImage: {
-    // Image container fills the top area and scales the image inside
-    width: '90%', 
-    height: '80%', 
-    // Positioned near the bottom of the white space for visual balance
-    marginBottom: CARD_HEIGHT * 0.1, 
+    width: '85%',
+    height: '80%',
   },
-  
-  // --- Bottom Card Styles ---
+
+  // --- Bottom Card ---
   card: {
-    // Occupies the bottom of the screen
-    position: 'absolute', 
-    bottom: 0,
-    width: width, // Full width
-    height: CARD_HEIGHT + 35 , // Added 35 to extend into the safe area/notched bottom 
-    backgroundColor: '#0D1831', // Dark background
-    borderTopLeftRadius: 40, // Large radius
-    borderTopRightRadius: 40,
-    paddingHorizontal: TEXT_PADDING * 1.5,
-    paddingTop: TEXT_PADDING * 1.5,
-    paddingBottom: TEXT_PADDING * 2,
+    flex: 0.8, // Yeh card ko bachi hui jagah dega
+    width: width,
+    backgroundColor: '#0D1831',
+    borderTopLeftRadius: 50,
+    borderTopRightRadius: 50,
+    paddingHorizontal: 30,
+    paddingTop: 35,
+
+    // Pixel-Perfect Bottom Spacing
+    // iOS ke liye 40 (notch) aur Android ke liye 30 safety margin
+    paddingBottom: Platform.OS === 'ios' ? 40 : 30,
+
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
-  title: {
-    fontSize: width * 0.07, 
-    fontWeight: 'bold',
-    color: '#ffffff',
-    lineHeight: width * 0.08,
-    textAlign:"center",
-    fontFamily:"Poppins-Regular"
 
-  },
-  description: {
-    fontSize: width * 0.038, 
-    color: '#aaaaaa',
-    lineHeight: width * 0.055,
-    textAlign:"center",
-    paddingBottom: TEXT_PADDING * 1.2,
-    fontFamily:"Poppins-Regular"
-
-  },
-  
-  // --- Button Styles ---
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    // Align with the bottom padding of the card
-    marginTop: TEXT_PADDING, 
     alignItems: 'center',
-  },
-  skipButton: {
-    width: width * 0.28, // Slightly wider to match the image
-    height: width * 0.12,
-    backgroundColor: '#353535', 
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontFamily:"Poppins-Regular"
+    // Fixed height ki jagah padding use karein taake content squeeze na ho
+    paddingVertical: 20,
 
+    // Android navigation bar se bachne ke liye safe margin
+    // Agar aapko 80 padding pasand aa rahi thi, toh yahan adjust karein
+    marginBottom: Platform.OS === 'android' ? 20 : 10,
   },
-  skipText: {
-    color: '#ffffff',
-    fontWeight: '0',
-        fontFamily:"Poppins-Regular",
-    fontSize: width * 0.04,
-  },
-  nextButton: {
-    width: width * 0.28, // Matches the skip button width
-    height: width * 0.12,
-    backgroundColor: '#ffc700', // Yellow
-    borderRadius: 12,
-    justifyContent: 'center',
+
+  // Wrap title and description in a view to keep them grouped at the top
+  textContainer: {
     alignItems: 'center',
-  },
-  
-  // --- Pagination Styles (Dots) ---
-  paginationContainer: {
-    // Positioned absolutely to sit right above the card's curve
-    position: 'absolute',
-    // Position calculated to be just above the card's border
-    bottom: height * 0.15, 
     width: '100%',
+  },
+
+  title: {
+    fontSize: 28, // Matches figma scale
+    fontWeight: '700',
+    color: '#ffffff',
+    textAlign: 'center',
+    lineHeight: 34,
+    fontFamily: 'Poppins-Bold', // Ensure this is linked
+    marginBottom: 15,
+  },
+  description: {
+    fontSize: 15,
+    color: '#B0B0B0', // Slightly lighter grey
+    textAlign: 'center',
+    lineHeight: 22,
+    fontFamily: 'Poppins-Regular',
+    paddingHorizontal: 10,
+  },
+
+  // --- Pagination inside the card ---
+  paginationContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 10, 
+    marginTop: 25, // Space between description and dots
   },
   dot: {
-    height: width * 0.02,
-    position:"relative",
-   
-    bottom:0,
-    borderRadius: width * 0.01,
+    height: 6,
+    borderRadius: 3,
     marginHorizontal: 4,
   },
-})
 
-export default Splash_Screen
+  skipButton: {
+    width: width * 0.4, // Matches the figma button width ratio
+    height: 54,
+    backgroundColor: '#ffffff', // White button like figma
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  skipText: {
+    color: '#000000',
+    fontWeight: '600',
+    fontSize: 16,
+    fontFamily: 'Poppins-Medium',
+  },
+  nextButton: {
+    width: width * 0.4,
+    height: 54,
+    backgroundColor: '#FFC107', // Brighter taxi yellow
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
+
+export default Splash_Screen;

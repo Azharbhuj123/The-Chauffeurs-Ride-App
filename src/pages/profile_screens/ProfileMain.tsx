@@ -129,7 +129,7 @@ export const ProfileMainScreen = ({ navigation }) => {
             <Image source={require('../../assets/images/logout.png')} />
             <Text style={styles.modalTitle}>Confirm Logout</Text>
             <Text style={styles.modalSubtitle}>
-              Are you sure you want to log out of your PrimeRide account? You
+              Are you sure you want to log out of your Drivo account? You
               will need to sign in again to book a ride.{' '}
             </Text>
 

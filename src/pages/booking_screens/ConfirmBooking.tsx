@@ -103,7 +103,11 @@ const ConfirmBooking = ({ navigation, route }) => {
     keepPreviousData: true,
   });
 
-  const { data: rideFare } = useQuery({
+  const {
+    data: rideFare,
+    error: rideFareErr,
+    isError,
+  } = useQuery({
     queryKey: ['ride-Fare', schedule],
     queryFn: () => {
       const params = new URLSearchParams({
@@ -125,8 +129,6 @@ const ConfirmBooking = ({ navigation, route }) => {
       !!rideData?.selectedCar,
   });
 
-  console.log(rideFare, 'rideFare');
-
   const { data: voucherData } = useQuery({
     queryKey: ['check-voucher'],
     queryFn: () => {
@@ -146,6 +148,19 @@ const ConfirmBooking = ({ navigation, route }) => {
   }, [rideFare]);
 
   const driver_own_vehicle = data?.driver_own_vehicle;
+
+  useEffect(() => {
+    if (isError) {
+      const backendMessage =
+        rideFareErr?.response?.data?.message || 'Something went wrong';
+
+      showToast({
+        title: 'Error',
+        message: backendMessage,
+        type: 'error',
+      });
+    }
+  }, [isError]);
 
   // Initialize pickup and dropoff from rideData if available
   useEffect(() => {
@@ -496,43 +511,67 @@ const ConfirmBooking = ({ navigation, route }) => {
     setShow(true);
   };
 
-  const onChange = (event, selectedDate) => {
-    if (event.type === 'dismissed') {
+  const onChange = (event, selectedValue) => {
+    if (Platform.OS === 'android') {
       setShow(false);
-      return;
     }
 
-    const selectedValue = selectedDate || new Date();
-    if (Platform.OS === 'android') setShow(false);
+    if (event.type === 'dismissed' || !selectedValue) return;
 
-    // --- VALIDATION LOGIC ---
-    if (activeField === 'fromTime' && schedule.toTime) {
-      // If setting 'From', check if it's after the existing 'To'
-      if (selectedValue >= schedule.toTime) {
-        Alert.alert(
-          'Invalid Time',
-          "The 'From' time must be earlier than the 'To' time.",
-        );
-        return; // Stop execution
+    if (activeField === 'date') {
+      const year = selectedValue.getFullYear();
+      const month = String(selectedValue.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedValue.getDate()).padStart(2, '0');
+      const dateOnly = `${year}-${month}-${day}T00:00:00`;
+
+      setSchedule(prev => ({
+        ...prev,
+        date: dateOnly,
+      }));
+    } else if (activeField === 'fromTime' || activeField === 'toTime') {
+      const hours = String(selectedValue.getHours()).padStart(2, '0');
+      const minutes = String(selectedValue.getMinutes()).padStart(2, '0');
+
+      const baseDate = schedule.date
+        ? schedule.date.split('T')[0]
+        : new Date().toISOString().split('T')[0];
+
+      const newDateTimeStr = `${baseDate}T${hours}:${minutes}:00`;
+      const newDateTime = new Date(newDateTimeStr);
+
+      // 🔥 Get existing times
+      const fromTime = schedule.fromTime ? new Date(schedule.fromTime) : null;
+      const toTime = schedule.toTime ? new Date(schedule.toTime) : null;
+
+      // 🔴 VALIDATION
+      if (activeField === 'fromTime' && toTime) {
+        if (newDateTime >= toTime) {
+          showToast({
+            type: 'error',
+            title: 'Invalid Time',
+            message: 'Start time must be before end time',
+          });
+          return; // ❌ STOP
+        }
       }
-    }
 
-    if (activeField === 'toTime' && schedule.fromTime) {
-      // If setting 'To', check if it's before the existing 'From'
-      if (selectedValue <= schedule.fromTime) {
-        Alert.alert(
-          'Invalid Time',
-          "The 'To' time must be later than the 'From' time.",
-        );
-        return; // Stop execution
+      if (activeField === 'toTime' && fromTime) {
+        if (newDateTime <= fromTime) {
+          showToast({
+            type: 'error',
+            title: 'Invalid Time',
+            message: 'End time must be after start time',
+          });
+          return; // ❌ STOP
+        }
       }
-    }
-    // ------------------------
 
-    setSchedule(prev => ({
-      ...prev,
-      [activeField]: selectedValue,
-    }));
+      // ✅ SAFE UPDATE
+      setSchedule(prev => ({
+        ...prev,
+        [activeField]: newDateTimeStr,
+      }));
+    }
   };
 
   console.log(data?.driver?.profile_image, 'schedule');
@@ -691,18 +730,18 @@ const ConfirmBooking = ({ navigation, route }) => {
               <View style={styles.driverHeader}>
                 <View style={styles.driverInfo}>
                   <View style={styles.avatar}>
-                      {/* <View style={{ width: 100, height: 100 }}> */}
-                        {/* Ensure parent has size */}
-                        <Image
-                          source={{ uri: data?.driver?.profile_image }}
-                          style={{
-                            width: 50, // Change '100%' to a fixed number for testing
-                            height: 50,
-                            borderRadius: 50,
-                            backgroundColor: '#ccc', // If you see a gray circle, the image is just failing to load
-                          }}
-                        />
-                      {/* </View> */}
+                    {/* <View style={{ width: 100, height: 100 }}> */}
+                    {/* Ensure parent has size */}
+                    <Image
+                      source={{ uri: data?.driver?.profile_image }}
+                      style={{
+                        width: 50, // Change '100%' to a fixed number for testing
+                        height: 50,
+                        borderRadius: 50,
+                        backgroundColor: '#ccc', // If you see a gray circle, the image is just failing to load
+                      }}
+                    />
+                    {/* </View> */}
                   </View>
                   <View>
                     <Text style={styles.driverName}>{data?.driver?.name}</Text>
@@ -825,12 +864,16 @@ const ConfirmBooking = ({ navigation, route }) => {
 
           {show && (
             <DateTimePicker
-              // Pass new Date() if null so the picker opens at current time
-              value={schedule[activeField] || new Date()}
+              value={
+                schedule[activeField]
+                  ? new Date(schedule[activeField]) // ✅ convert string → Date
+                  : new Date()
+              }
               mode={mode}
               is24Hour={true}
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
               onChange={onChange}
+              minimumDate={new Date()}
             />
           )}
         </View>

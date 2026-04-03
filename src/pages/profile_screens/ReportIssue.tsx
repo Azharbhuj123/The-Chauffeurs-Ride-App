@@ -56,14 +56,20 @@ export default function ReportIssue({ navigation }) {
 
   console.log(data, 'data');
 
-  const options = Array.isArray(data)
-    ? data.map(ride => ({
-        label: `${ride.pickup_location?.famous_location || 'Pickup'} → ${
-          ride.drop_location?.famous_location || 'Dropoff'
-        } (${new Date(ride.ride_complete_at).toLocaleDateString()})`,
-        value: ride._id, // or whatever unique id the ride has
-      }))
-    : [];
+  const options =
+    Array.isArray(data) && data?.length > 0
+      ? data.map(ride => ({
+          label: `${ride.pickup_location?.famous_location || 'Pickup'} → ${
+            ride.drop_location?.famous_location || 'Dropoff'
+          } (${new Date(ride.ride_complete_at).toLocaleDateString()})`,
+          value: ride._id, // or whatever unique id the ride has
+        }))
+      : [
+          {
+            label: 'No rides available',
+            value: null,
+          },
+        ];
 
   const { triggerMutation, loading } = useActionMutation({
     onSuccessCallback: async data => {
@@ -74,11 +80,11 @@ export default function ReportIssue({ navigation }) {
           message: 'Your complain has been sent successfully',
         });
         setSelected(null),
-        setIssueDescription(''),
-        setSelectedReason({
-          index: null,
-          reason: '',
-        })
+          setIssueDescription(''),
+          setSelectedReason({
+            index: null,
+            reason: '',
+          });
       }
     },
     onErrorCallback: errmsg => {
@@ -91,7 +97,14 @@ export default function ReportIssue({ navigation }) {
   });
 
   const handleSubmit = () => {
-    if(!selectedReason.reason || !issueDescription){
+    if (!selected) {
+      return showToast({
+        type: 'error',
+        title: 'Complain Failed',
+        message: 'Please select a ride',
+      });
+    }
+    if (!selectedReason.reason || !issueDescription) {
       showToast({
         type: 'error',
         title: 'Complain Failed',
@@ -130,13 +143,14 @@ export default function ReportIssue({ navigation }) {
       >
         <View style={styles.forContainer}>
           {/* Top Payment Card */}
-
-          <CustomDropdown
-            data={options}
-            placeholder="Select the ride you want to report"
-            value={selected}
-            onChange={item => setSelected(item.value)}
-          />
+          <View style={{ marginBottom: hp(2) }}>
+            <CustomDropdown
+              data={options}
+              placeholder="Select the ride you want to report"
+              value={selected}
+              onChange={item => setSelected(item.value)}
+            />
+          </View>
           {rideData?.data?._id && (
             <View style={styles.paymentCard}>
               <Text style={styles.issueLabel}>Issue for Trip</Text>
@@ -204,7 +218,11 @@ export default function ReportIssue({ navigation }) {
             </View>
             <View style={styles.btnContainer}>
               {/* 3. Add onPress to trigger the modal */}
-              <Button isLoading={loading} onPress={handleSubmit} title={'Submit Complain'} />
+              <Button
+                isLoading={loading}
+                onPress={handleSubmit}
+                title={'Submit Complain'}
+              />
             </View>
           </View>
         </View>
@@ -233,7 +251,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: wp(5),
     marginBottom: hp(Platform.OS === 'ios' ? 0 : 3),
-
   },
 
   issueLabel: {
@@ -271,14 +288,14 @@ const styles = StyleSheet.create({
     padding: wp('5%'),
     paddingTop: hp(3),
     borderRadius: wp('4%'),
-                elevation: 1,
+    elevation: 1,
 
     // marginTop: hp(3),
   },
   sectionTitle: {
     fontSize: wp('4%'),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     marginBottom: hp('2%'),
     fontFamily: 'Poppins-Regular',
@@ -305,7 +322,7 @@ const styles = StyleSheet.create({
     width: wp('3%'),
     height: wp('3%'),
     borderRadius: wp('1.5%'),
-    backgroundColor:COLORS.warning ,
+    backgroundColor: COLORS.warning,
   },
   radioLabel: {
     fontSize: wp('3.8%'),
@@ -386,6 +403,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
 
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
   },
 });

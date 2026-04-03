@@ -98,10 +98,13 @@ function Signup({ navigation }) {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.container}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
           {/* LOGO */}
           <View style={styles.header}>
             <View style={styles.logoContainer}>
@@ -114,7 +117,7 @@ function Signup({ navigation }) {
           </View>
 
           <View style={styles.formContainer}>
-            <Text style={styles.title}>Sign Up</Text>
+            <Text style={styles.title}>Sigsn Up</Text>
 
             {/* ✅ ROLE TOGGLE */}
             <View style={styles.toggleContainer}>

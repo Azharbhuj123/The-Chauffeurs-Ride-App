@@ -51,8 +51,7 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
         // --- SCREEN OVERLAP FIXES ---
         dropdownPosition="auto"      // Automatic top/bottom adjustment
         maxHeight={220}             // List ki height kam rakhi hai taake buttons tak na pohnche
-        statusBarTranslucent={true} // Status bar ke overlap ko handle karta hai
-        
+
         flatListProps={{
           contentContainerStyle: {
             paddingBottom: 10,      // List ke andar niche thori jagah
