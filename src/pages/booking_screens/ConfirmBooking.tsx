@@ -38,6 +38,8 @@ import {
   formatAPIDate,
   formatAPITime,
   formatDate,
+  getUserTimezone,
+  localToUTC,
   GOOGLE_MAP_API_KEY,
 } from '../../utils/Enums';
 import { useStore } from '../../stores/useStore';
@@ -115,8 +117,8 @@ const ConfirmBooking = ({ navigation, route }) => {
         day: formatAPIDate(schedule.date),
         fromTime: formatAPITime(schedule.fromTime),
         toTime: formatAPITime(schedule.toTime),
-
         vehicle_id: rideData?.selectedCar || '',
+        timezone: getUserTimezone(),
       }).toString();
 
       return fetchData(`/ride/ride-estimation?${params}`);
@@ -386,6 +388,13 @@ const ConfirmBooking = ({ navigation, route }) => {
       final_voucher_ids.push(voucherData?.voucher?._id);
     }
 
+    // ✅ Convert local schedule times → proper UTC ISO strings for MongoDB
+    const scheduleUTC = {
+      date: localToUTC(schedule?.date, '00:00') || schedule?.date,
+      from: localToUTC(schedule?.date, schedule?.fromTime) || schedule?.fromTime,
+      to: localToUTC(schedule?.date, schedule?.toTime) || schedule?.toTime,
+    };
+
     let body = {
       vehicle: rideData?.selectedCar,
       payment_method: paymentMethod,
@@ -401,11 +410,8 @@ const ConfirmBooking = ({ navigation, route }) => {
       postalCode: rideData?.postalCode,
       city: rideData?.city,
       state: rideData?.state,
-      schedule: {
-        date: schedule?.date,
-        from: schedule?.fromTime,
-        to: schedule?.toTime,
-      },
+      timezone: getUserTimezone(),
+      schedule: scheduleUTC,
     };
 
     const pickup_location = {
@@ -534,7 +540,7 @@ const ConfirmBooking = ({ navigation, route }) => {
 
       const baseDate = schedule.date
         ? schedule.date.split('T')[0]
-        : new Date().toISOString().split('T')[0];
+        : formatAPIDate(new Date());
 
       const newDateTimeStr = `${baseDate}T${hours}:${minutes}:00`;
       const newDateTime = new Date(newDateTimeStr);
@@ -549,7 +555,7 @@ const ConfirmBooking = ({ navigation, route }) => {
           showToast({
             type: 'error',
             title: 'Invalid Time',
-            message: 'Start time must be before end time',
+            message: 'Start time must be before the end time.',
           });
           return; // ❌ STOP
         }
@@ -560,7 +566,7 @@ const ConfirmBooking = ({ navigation, route }) => {
           showToast({
             type: 'error',
             title: 'Invalid Time',
-            message: 'End time must be after start time',
+            message: 'End time must be after the start time.',
           });
           return; // ❌ STOP
         }

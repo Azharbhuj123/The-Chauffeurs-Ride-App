@@ -34,7 +34,12 @@ import { fetchData } from '../../queryFunctions/queryFunctions';
 import { useRideStore } from '../../stores/rideStore';
 import AppLoader from '../../components/AppLoader';
 import CustomDropdown from '../../components/CustomDropdown';
-import { COLORS, formatDate2, formatTime } from '../../utils/Enums';
+import {
+  COLORS,
+  formatDate2,
+  formatTime,
+  formatTimeUTC,
+} from '../../utils/Enums';
 import StripeWarningBox from '../../components/StripeWarningBox';
 import { useStripeStore } from '../../stores/stripeStore';
 
@@ -134,7 +139,8 @@ export default function HomeScreen({ navigation }) {
     }
 
     setRefreshing(false);
-  }, [refetch]);
+  }, [refetch, refetchRide]);
+
   const handleAddVehicle = () => {
     console.log('Add Vehicle pressed');
     navigation.navigate('AddVehicle');
@@ -374,8 +380,8 @@ export default function HomeScreen({ navigation }) {
                       Schedule At: {formatDate2(
                         new Date(ride?.schedule?.date),
                       )}{' '}
-                      {formatTime(new Date(ride?.schedule?.from))} -{' '}
-                      {formatTime(new Date(ride?.schedule?.to))}
+                      {formatTimeUTC(new Date(ride?.schedule?.from))} -{' '}
+                      {formatTimeUTC(new Date(ride?.schedule?.to))}
                     </Text>
                   </View>
 

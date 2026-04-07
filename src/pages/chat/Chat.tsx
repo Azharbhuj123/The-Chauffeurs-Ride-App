@@ -273,13 +273,13 @@ export default function ChatScreen({ navigation, route }) {
 
         {/* Input Box */}
         <View style={styles.inputContainer}>
-          <TouchableOpacity style={styles.iconButton}>
+          {/* <TouchableOpacity style={styles.iconButton}>
             <Ionicons
               name="add-circle-outline"
               size={wp('6.5%')}
               color="#888"
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <TextInput
             style={styles.input}
@@ -290,9 +290,9 @@ export default function ChatScreen({ navigation, route }) {
             multiline
           />
 
-          <TouchableOpacity style={styles.iconButton}>
+          {/* <TouchableOpacity style={styles.iconButton}>
             <Ionicons name="happy-outline" size={wp('6%')} color="#888" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
             <Ionicons name="send" size={wp('5%')} color="#FFD700" />

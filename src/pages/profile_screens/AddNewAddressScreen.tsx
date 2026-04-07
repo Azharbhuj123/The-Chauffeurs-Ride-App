@@ -99,7 +99,7 @@ export const AddNewAddressScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      <TopHeader title="My Addresses" navigation={navigation} />
+      <TopHeader title="My Addresses" navigation={navigation} any_navigation={true}  navigate_to="Profile" />
 
       <ScrollView
         style={styles.scrollView}

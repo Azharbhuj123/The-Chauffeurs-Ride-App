@@ -1,163 +1,237 @@
 // @ts-nocheck
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   StyleSheet,
   TouchableOpacity,
   Image,
-  Platform,
   useWindowDimensions,
-  Animated,
 } from 'react-native';
-import MapView, { Marker, AnimatedRegion } from 'react-native-maps';
-import MapViewDirections from 'react-native-maps-directions';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import Octicons from 'react-native-vector-icons/Octicons';
 import Feather from 'react-native-vector-icons/Feather';
 import { COLORS, GOOGLE_MAP_API_KEY } from '../utils/Enums';
 
-const MapScreen = ({ driverLocation = { latitude: 0, longitude: 0 }, userLoc = { lat: 0, long: 0 }, rideId }) => {
-  const mapRef = useRef(null);
-  const driverMarkerRef = useRef(null);
+const decodePolyline = (encoded: string) => {
+  const points: { latitude: number; longitude: number }[] = [];
+  let index = 0,
+    lat = 0,
+    lng = 0;
+
+  while (index < encoded.length) {
+    let shift = 0,
+      result = 0,
+      byte: number;
+    do {
+      byte = encoded.charCodeAt(index++) - 63;
+      result |= (byte & 0x1f) << shift;
+      shift += 5;
+    } while (byte >= 0x20);
+    lat += result & 1 ? ~(result >> 1) : result >> 1;
+
+    shift = 0;
+    result = 0;
+    do {
+      byte = encoded.charCodeAt(index++) - 63;
+      result |= (byte & 0x1f) << shift;
+      shift += 5;
+    } while (byte >= 0x20);
+    lng += result & 1 ? ~(result >> 1) : result >> 1;
+
+    points.push({ latitude: lat / 1e5, longitude: lng / 1e5 });
+  }
+  console.log('Decoded points:', points.length);
+  return points;
+};
+
+const calculateBearing = (start: any, end: any) => {
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const startLat = toRad(start.latitude);
+  const startLng = toRad(start.longitude);
+  const endLat = toRad(end.latitude);
+  const endLng = toRad(end.longitude);
+  const dLng = endLng - startLng;
+  const y = Math.sin(dLng) * Math.cos(endLat);
+  const x =
+    Math.cos(startLat) * Math.sin(endLat) -
+    Math.sin(startLat) * Math.cos(endLat) * Math.cos(dLng);
+  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+};
+
+interface Props {
+  driverLocation?: { latitude: number; longitude: number };
+  userLoc?: { lat: number; long: number };
+  rideId?: string | number;
+}
+
+const MapScreen = ({ driverLocation, userLoc, rideId }: Props) => {
+  const mapRef = useRef<MapView>(null);
   const { height } = useWindowDimensions();
 
-  const [userLocation, setUserLocation] = useState({ latitude: userLoc.lat, longitude: userLoc.long });
+  const [routeCoords, setRouteCoords] = useState<
+    { latitude: number; longitude: number }[]
+  >([]);
   const [driverHeading, setDriverHeading] = useState(0);
-  const [routeOrigin, setRouteOrigin] = useState(driverLocation);
-  const [routeDestination, setRouteDestination] = useState(userLocation);
 
-  const driverAnim = useRef(
-    new AnimatedRegion({
-      latitude: driverLocation.latitude,
-      longitude: driverLocation.longitude,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
-    })
-  ).current;
-
-  // Calculate heading/rotation
-  const calculateBearing = (start, end) => {
-    const startLat = (start.latitude * Math.PI) / 180;
-    const startLng = (start.longitude * Math.PI) / 180;
-    const endLat = (end.latitude * Math.PI) / 180;
-    const endLng = (end.longitude * Math.PI) / 180;
-    const dLng = endLng - startLng;
-    const y = Math.sin(dLng) * Math.cos(endLat);
-    const x = Math.cos(startLat) * Math.sin(endLat) - Math.sin(startLat) * Math.cos(endLat) * Math.cos(dLng);
-    let bearing = (Math.atan2(y, x) * 180) / Math.PI;
-    return (bearing + 360) % 360;
+  const origin = {
+    latitude: driverLocation?.latitude ?? 0,
+    longitude: driverLocation?.longitude ?? 0,
   };
 
-  // Animate driver marker and update heading
+  const destination = {
+    latitude: userLoc?.lat ?? 24.8754,
+    longitude: userLoc?.long ?? 67.041,
+  };
+
+  const hasValidRoute = origin.latitude !== 0 && destination.latitude !== 0;
+
+  console.log(
+    'hasValidRoute:',
+    hasValidRoute,
+    'Route points:',
+    routeCoords.length,
+  );
+
+  // Fetch route
   useEffect(() => {
-    if (driverLocation.latitude && driverLocation.longitude) {
-      const currentPos = { latitude: driverAnim.latitude._value, longitude: driverAnim.longitude._value };
-      const heading = calculateBearing(currentPos, driverLocation);
-      setDriverHeading(heading);
+    if (!hasValidRoute) return;
 
-      driverAnim.timing({
-        latitude: driverLocation.latitude,
-        longitude: driverLocation.longitude,
-        duration: 2000,
-        useNativeDriver: false,
-      }).start();
+    const fetchRoute = async () => {
+      try {
+        const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&key=${GOOGLE_MAP_API_KEY}`;
+        const res = await fetch(url);
+        const json = await res.json();
 
-      // Only update route origin if driver has moved significantly
-      if (
-        Math.abs(routeOrigin.latitude - driverLocation.latitude) > 0.0001 ||
-        Math.abs(routeOrigin.longitude - driverLocation.longitude) > 0.0001
-      ) {
-        setRouteOrigin(driverLocation);
+        if (json.routes?.length > 0) {
+          const decoded = decodePolyline(
+            json.routes[0].overview_polyline.points,
+          );
+          setRouteCoords(decoded);
+          console.log('Route set with', decoded.length, 'points');
+        }
+      } catch (err) {
+        console.error('Route error:', err);
       }
+    };
+
+    fetchRoute();
+  }, [
+    origin.latitude,
+    origin.longitude,
+    destination.latitude,
+    destination.longitude,
+    rideId,
+  ]);
+
+  // Update driver heading when location changes
+  useEffect(() => {
+    if (hasValidRoute && driverLocation) {
+      const newHeading = calculateBearing(origin, driverLocation);
+      setDriverHeading(newHeading);
+      console.log('Driver heading updated to:', newHeading);
     }
   }, [driverLocation]);
 
-  const goToMyLocation = () => {
-    if (!userLocation.latitude || !userLocation.longitude) return;
-    mapRef.current?.animateToRegion({ ...userLocation, latitudeDelta: 0.01, longitudeDelta: 0.01 }, 1000);
-  };
+  const fitToRoute = useCallback(() => {
+    if (!hasValidRoute || !mapRef.current) return;
+    const points = [origin, destination, ...routeCoords];
+    mapRef.current.fitToCoordinates(points, {
+      edgePadding: { top: 120, right: 80, bottom: 120, left: 80 },
+      animated: true,
+    });
+  }, [hasValidRoute, origin, destination, routeCoords]);
 
-  const fitToRoute = () => {
-    if (routeOrigin.latitude && routeDestination.latitude) {
-      mapRef.current?.fitToCoordinates([routeOrigin, routeDestination], {
-        edgePadding: { top: 100, right: 50, bottom: 100, left: 50 },
-        animated: true,
-      });
+  useEffect(() => {
+    if (hasValidRoute) {
+      setTimeout(fitToRoute, 800);
     }
-  };
-
-  console.log(driverLocation,"driverLocation");
-  console.log(userLoc,"userLoc");
-  
+  }, [hasValidRoute, routeCoords.length]);
 
   return (
     <View style={styles.container}>
       <MapView
         ref={mapRef}
+        provider={PROVIDER_GOOGLE}
         style={{ width: '100%', height: height * 0.55 }}
-        initialRegion={{ ...userLocation, latitudeDelta: 0.02, longitudeDelta: 0.02 }}
-        scrollEnabled
-        zoomEnabled
-        rotateEnabled
-        pitchEnabled
-        showsUserLocation={false}
-        followsUserLocation={false}
-        loadingEnabled
+        initialRegion={{
+          latitude: 24.86,
+          longitude: 67.05,
+          latitudeDelta: 0.12,
+          longitudeDelta: 0.12,
+        }}
+        onMapReady={() => {
+          console.log('onMapReady → fitting');
+          setTimeout(fitToRoute, 1000);
+        }}
       >
-        {/* User marker */}
-        <Marker coordinate={userLocation} title="You" pinColor="blue" />
+        {hasValidRoute && (
+          <>
+            {/* User Marker */}
+            <Marker
+              coordinate={destination}
+              title="User Location"
+              pinColor="blue"
+            />
 
-        {/* Animated driver marker */}
-        <Marker.Animated
-          ref={driverMarkerRef}
-          coordinate={driverAnim}
-          anchor={{ x: 0.5, y: 0.5 }}
-          rotation={driverHeading}
-          flat
-        >
-          <View style={{ transform: [{ rotate: `${driverHeading}deg` }], width: 40, height: 40 }}>
-            <Image source={require('../assets/images/Track.png')} style={{ width: 40, height: 40 }} resizeMode="contain" />
-          </View>
-        </Marker.Animated>
+            {/* Driver Custom Rotated Image */}
+            <Marker
+              coordinate={origin}
+              anchor={{ x: 0.5, y: 0.5 }} // Center the image
+              flat={true} // Keeps it flat on the map (recommended)
+            >
+              <View style={{ transform: [{ rotate: `${driverHeading}deg` }] }}>
+                <Image
+                  source={require('../assets/images/Track.png')}
+                  style={{ width: 48, height: 48 }}
+                  resizeMode="contain"
+                />
+              </View>
+            </Marker>
 
-        {/* Google Maps Directions (won't blink now) */}
-        <MapViewDirections
-          origin={routeOrigin}
-          destination={routeDestination}
-          apikey={GOOGLE_MAP_API_KEY}
-          strokeWidth={4}
-          strokeColor={COLORS.warning}
-          optimizeWaypoints={true}
-          onError={errorMessage => console.log('Directions error:', errorMessage)}
-        />
+            {/* Polyline */}
+            {routeCoords.length > 1 && (
+              <Polyline
+                coordinates={routeCoords}
+                strokeColor={COLORS.warning || '#FF9800'}
+                strokeWidth={7}
+                lineCap="round"
+                lineJoin="round"
+              />
+            )}
+          </>
+        )}
       </MapView>
 
-      {/* Location button */}
-      <TouchableOpacity style={styles.button} onPress={goToMyLocation}>
-        <Octicons name="location" color="#000" size={24} />
-      </TouchableOpacity>
+      {/* Buttons */}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.button} onPress={fitToRoute}>
+          <Octicons name="location" color="#000" size={24} />
+        </TouchableOpacity>
 
-      {/* Fit route button */}
-      <TouchableOpacity style={[styles.button, { top: 210 }]} onPress={fitToRoute}>
-        <Feather name="zoom-in" color="#000" size={24} />
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, { marginTop: 12 }]}
+          onPress={fitToRoute}
+        >
+          <Feather name="zoom-in" color="#000" size={24} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  button: {
+  buttonContainer: {
     position: 'absolute',
     right: 20,
     top: 150,
+    zIndex: 10,
+  },
+  button: {
     backgroundColor: COLORS.warning,
-    padding: 10,
-    borderRadius: 8,
-    ...Platform.select({
-      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 3 },
-      android: { elevation: 6 },
-    }),
+    padding: 12,
+    borderRadius: 10,
+    elevation: 6,
   },
 });
 

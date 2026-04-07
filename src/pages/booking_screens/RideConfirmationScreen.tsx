@@ -27,7 +27,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import AppLoader from '../../components/AppLoader';
 import Button from '../../components/Button';
 import { useUserStore } from '../../stores/useUserStore';
-import { COLORS } from '../../utils/Enums';
+import { COLORS, ride_role_reverse } from '../../utils/Enums';
 import { showToast } from '../../utils/toastHelper';
 import useActionMutation from '../../queryFunctions/useActionMutation';
 import { showFlash } from '../../utils/flashMessageHelper';
@@ -36,6 +36,7 @@ import { useRideStore } from '../../stores/rideStore';
 import MapScreen from '../../components/MapScreen';
 import { useDriverLocationStore } from '../../stores/driverLocationStore';
 import Geolocation from '@react-native-community/geolocation';
+import { useStore } from '../../stores/useStore';
 
 // Get screen dimensions
 const { width, height } = Dimensions.get('window');
@@ -79,6 +80,7 @@ const RideConfirmationScreen = ({ navigation, route }) => {
   const { startTracking, stopTracking } = useDriverLocationStore();
 
   const { role, userData } = useUserStore();
+  const { location } = useStore();
 
   const {
     clearRideRequests,
@@ -112,7 +114,7 @@ const RideConfirmationScreen = ({ navigation, route }) => {
     if (driver_id) {
       setDriverLocation(driver_loc);
     }
-  }, [rideId, data?.data?.driver?._id, role]);
+  }, [rideId, data?.data?.driver?._id, role, location]);
 
   useFocusEffect(
     useCallback(() => {
@@ -235,8 +237,8 @@ const RideConfirmationScreen = ({ navigation, route }) => {
   };
 
   const user_loc = {
-    lat: data?.data?.user?.location?.coordinates[1],
-    long: data?.data?.user?.location?.coordinates[0],
+    lat: data?.data?.pickup_location?.coordinates[1],
+    long: data?.data?.pickup_location?.coordinates[0],
   };
 
   useFocusEffect(
@@ -265,6 +267,7 @@ const RideConfirmationScreen = ({ navigation, route }) => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <TopHeader title={title} navigation={navigation} />
+      {/* <TopHeader title={title} navigation={navigation} /> */}
 
       <View
         style={{
@@ -325,7 +328,7 @@ const RideConfirmationScreen = ({ navigation, route }) => {
             {driver.rating > 0 ? (
               <View style={styles.ratingContainer}>
                 <Icon name="star" size={20} color="#FFD700" />
-                <Text style={styles.ratingText}>{driver.rating}</Text>
+                <Text style={styles.ratingText}>{Number(driver.rating)?.toFixed(2)}</Text>
               </View>
             ) : (
               <View style={styles.ratingContainer}>
@@ -379,7 +382,10 @@ const RideConfirmationScreen = ({ navigation, route }) => {
             {/* Red dot */}
 
             <Icon name="message-processing" size={20} color="#000" />
-            <Text style={styles.contactButtonText}>Contact Driver</Text>
+            <Text style={styles.contactButtonText}>
+              Contact{' '}
+              {ride_role_reverse.find(item => item.value === role)?.label}
+            </Text>
             {hasUnreadMessages && (
               <View
                 style={{

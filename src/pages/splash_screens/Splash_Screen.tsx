@@ -22,7 +22,7 @@ const { width, height } = Dimensions.get('window');
 const slides = [
   {
     key: '1',
-    title: 'Ride in Style with Info Assurance',
+    title: 'Rides in Style with Info Assurance',
     description:
       'Luxury rides, trusted drivers, and seamless bookings anytime, anywhere.',
     imageSource: require('../../assets/images/splash1.png'),

@@ -38,6 +38,7 @@ import {
   formatAPIDate,
   formatAPITime,
   formatDate,
+  getUserTimezone,
   GOOGLE_MAP_API_KEY,
   no_found,
 } from '../../utils/Enums';
@@ -720,7 +721,7 @@ export default function BookingMain({ navigation, route }) {
           schedule.date,
         )}&fromTime=${formatAPITime(schedule.fromTime)}&toTime=${formatAPITime(
           schedule.toTime,
-        )}`,
+        )}&timezone=${encodeURIComponent(getUserTimezone())}`,
       ),
     keepPreviousData: true,
     enabled:
@@ -766,8 +767,8 @@ export default function BookingMain({ navigation, route }) {
         day: formatAPIDate(schedule.date),
         fromTime: formatAPITime(schedule.fromTime),
         toTime: formatAPITime(schedule.toTime),
-
         vehicle_id: selectedCar || '',
+        timezone: getUserTimezone(),
       }).toString();
 
       return fetchData(`/ride/ride-estimation?${queryParams}`);
@@ -840,7 +841,7 @@ export default function BookingMain({ navigation, route }) {
 
       const baseDate = schedule.date
         ? schedule.date.split('T')[0]
-        : new Date().toISOString().split('T')[0];
+        : formatAPIDate(new Date());
 
       const newDateTimeStr = `${baseDate}T${hours}:${minutes}:00`;
       const newDateTime = new Date(newDateTimeStr);
@@ -866,7 +867,7 @@ export default function BookingMain({ navigation, route }) {
           showToast({
             type: 'error',
             title: 'Invalid Time',
-            message: 'End time must be after start time',
+            message: 'End time must be after the start time.',
           });
           return; // ❌ STOP
         }
@@ -1048,7 +1049,7 @@ export default function BookingMain({ navigation, route }) {
             {/* --- Schedule Details --- */}
             <View style={styles.scheduleDetails}>
               <Text style={styles.sectionTitle}>
-                Select desired date & time
+                Select your desired date & time
               </Text>
 
               {/* Date Picker */}
@@ -1522,7 +1523,7 @@ const styles = StyleSheet.create({
     marginVertical: hp(1),
   },
   carName: {
-    fontSize: wp(4),
+    fontSize: wp(3.5),
     fontWeight: 'bold',
     color: '#333',
     textAlign: 'left',

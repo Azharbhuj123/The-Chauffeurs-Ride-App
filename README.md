@@ -20,3 +20,8 @@ macmini@Macs-Mac-mini The-Chauffeurs-Ride-App % fc-scan assets/fonts/SFPRODISPLA
 
 <!-- Run -->
 react-native clean-project-auto
+
+
+for apk
+
+gradlew assembleRelease

@@ -121,7 +121,7 @@ const step3Schema = yup.object().shape({
   toTime: yup
     .date()
     .required('End time is required')
-    .test('is-after', 'End time must be after start time', function (value) {
+    .test('is-after', 'End time must be after the start time.', function (value) {
       const { fromTime } = this.parent;
       return value > fromTime;
     }),

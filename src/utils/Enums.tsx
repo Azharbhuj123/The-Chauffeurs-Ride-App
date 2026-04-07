@@ -57,7 +57,10 @@ export const CANCEL_REASONS = {
     { id: 5, reason: 'Other reason' },
   ],
 };
-
+export const ride_role_reverse = [
+  { label: 'Driver', value: 'User' },
+  { label: 'User', value: 'Driver' },
+];
 export const vehicle_class = [
   { label: 'Hatchback', value: 'Hatchback' },
   { label: 'Sedan', value: 'Sedan' },
@@ -84,36 +87,99 @@ export const monthly_filter = [
   { label: 'Yearly', value: 'yearly' },
 ];
 
-export const GOOGLE_MAP_API_KEY = 'AIzaSyAO096xo1HoduYAuLsAwrHkNUNRedReQkQ';
-export const STRIPE_PUBLISH_KEY =
-  'pk_test_51Sv0nYCpeX6CbJY29WLaEBNODUyiR842lT4TdGBAkieasxf3mt05aOuBh394K4eOUkUASeKZTMoRXbSvGu7uYZgx00aS4iOEMe';
+/**
+ * ──────────────────────────────────────────────
+ *  TIMEZONE-SAFE DATE / TIME HELPERS
+ *  All internal schedule values are stored as
+ *  LOCAL strings: date → "YYYY-MM-DD", time → "YYYY-MM-DDThh:mm:00"
+ *  These helpers NEVER create a Date object from
+ *  a string unless we explicitly need UTC conversion.
+ * ──────────────────────────────────────────────
+ */
 
-export const formatAPIDate = (date: Date | string | null) => {
+/** Returns the device's IANA timezone, e.g. "Asia/Karachi" */
+export const getUserTimezone = (): string => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch {
+    return 'UTC';
+  }
+};
+
+/**
+ * Extract "YYYY-MM-DD" from a local string or Date.
+ * ⚠️  NEVER does `new Date(string)` — avoids UTC date-shift.
+ */
+export const formatAPIDate = (date: Date | string | null): string => {
   if (!date) return '';
-  const d = typeof date === 'string' ? new Date(date) : date;
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
+  if (typeof date === 'string') {
+    // "2025-04-08T00:00:00" → "2025-04-08"
+    // "2025-04-08"          → "2025-04-08"
+    return date.split('T')[0];
+  }
+  // Date object → use LOCAL methods
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
 
-export const formatAPITime = (time: Date | string | null) => {
+/**
+ * Extract "HH:mm" from a local time string or Date.
+ * Accepts: "2025-04-08T15:00:00" | "15:00" | Date
+ */
+export const formatAPITime = (time: Date | string | null): string => {
   if (!time) return '';
-  // if already "HH:mm" or "HH:mm:ss" string, just slice it
-  if (typeof time === 'string') return time.split('T')[1]?.slice(0, 5) || time;
+  if (typeof time === 'string') {
+    // "2025-04-08T15:00:00" → "15:00"
+    if (time.includes('T')) return time.split('T')[1].slice(0, 5);
+    // Already "15:00" or "15:00:00"
+    return time.slice(0, 5);
+  }
+  // Date object → use LOCAL methods
   const hours = String(time.getHours()).padStart(2, '0');
   const minutes = String(time.getMinutes()).padStart(2, '0');
   return `${hours}:${minutes}`;
 };
- 
-export const formatDate = (dateStr) => {
+
+/** Display helper: "YYYY-MM-DD" or placeholder */
+export const formatDate = (dateStr: string | null): string => {
   if (!dateStr) return 'Select date';
-  return dateStr.split('T')[0]; // "2025-08-20"
+  return dateStr.split('T')[0];
 };
 
-export const format24h = (timeStr) => {
+/** Display helper: "HH:mm" or "--:--" */
+export const format24h = (timeStr: string | null): string => {
   if (!timeStr) return '--:--';
-  return timeStr.split('T')[1].slice(0, 5); // "22:00"
+  if (timeStr.includes('T')) return timeStr.split('T')[1].slice(0, 5);
+  return timeStr.slice(0, 5);
+};
+
+/**
+ * Convert a user's LOCAL date + time strings into a proper UTC ISO string.
+ *
+ * @param dateStr  e.g. "2025-04-08T00:00:00" or "2025-04-08"
+ * @param timeStr  e.g. "2025-04-08T15:00:00" or "15:00"
+ * @returns UTC ISO string e.g. "2025-04-08T10:00:00.000Z" (for UTC+5 device)
+ *
+ * How it works:
+ *   `new Date("2025-04-08T15:00:00")` (no Z) is interpreted as LOCAL time
+ *   by the JS engine, so `.toISOString()` converts it to UTC correctly
+ *   based on the device's timezone.
+ */
+export const localToUTC = (
+  dateStr: string | null,
+  timeStr: string | null,
+): string | null => {
+  if (!dateStr || !timeStr) return null;
+  const datePart = dateStr.split('T')[0]; // "2025-04-08"
+  const timePart = timeStr.includes('T')
+    ? timeStr.split('T')[1].slice(0, 5)
+    : timeStr.slice(0, 5); // "15:00"
+  // Construct WITHOUT "Z" → parsed as LOCAL time on the device
+  const localDate = new Date(`${datePart}T${timePart}:00`);
+  if (isNaN(localDate.getTime())) return null;
+  return localDate.toISOString(); // → UTC ISO string
 };
 
 export const formatDate2 = (date: Date) => {
@@ -132,3 +198,16 @@ export const formatTime = (time: any) => {
       ).padStart(2, '0')}`
     : '';
 };
+
+
+export const formatTimeUTC = (time: any) => {
+  return time
+    ? `${String(time.getUTCHours()).padStart(2, '0')}:${String(
+        time.getUTCMinutes(),
+      ).padStart(2, '0')}`
+    : '';
+};
+
+export const GOOGLE_MAP_API_KEY = 'AIzaSyBFf6S9vBuFCtND_1-bT8MrULsWEtnss0k';
+export const STRIPE_PUBLISH_KEY =
+  'pk_test_51Sv0nYCpeX6CbJY29WLaEBNODUyiR842lT4TdGBAkieasxf3mt05aOuBh394K4eOUkUASeKZTMoRXbSvGu7uYZgx00aS4iOEMe';

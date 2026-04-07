@@ -15,6 +15,7 @@ import {
   useColorScheme,
   Alert,
   Linking,
+  PermissionsAndroid,
 } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
@@ -201,37 +202,6 @@ export default function App() {
     return () => subscription.remove();
   }, [permissionStatus]);
 
-  useEffect(() => {
-    // 1️⃣ Request permission (Android 13+)
-    const requestPermission = async () => {
-      const authStatus = await messaging().requestPermission();
-      const enabled =
-        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-      if (enabled) {
-        console.log('Notification permission enabled');
-        getToken();
-      } else {
-        console.log('Notification permission denied');
-      }
-    };
-
-    requestPermission();
-
-    // 2️⃣ Foreground messages
-    const unsubscribe = messaging().onMessage(async remoteMessage => {
-      console.log('Foreground message:', remoteMessage);
-      showFlash({
-        type: 'info',
-        title: remoteMessage.notification?.title || 'New Notification',
-        message: remoteMessage.notification?.body || '',
-      });
-    });
-
-    return unsubscribe;
-  }, []);
-
   const getToken = async () => {
     try {
       const token = await messaging().getToken();
@@ -243,6 +213,37 @@ export default function App() {
       console.log('Error getting FCM token:', error);
     }
   };
+
+  useEffect(() => {
+    const initNotifications = async () => {
+      // ✅ Android 13+ permission
+      if (Platform.OS === 'android' && Platform.Version >= 33) {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+        );
+
+        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          console.log('Notification permission denied');
+          return;
+        }
+      }
+      console.log('Notification permission granted');
+    };
+
+    initNotifications();
+    getToken();
+    // ✅ Foreground listener
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      console.log('Foreground message:', remoteMessage);
+      showFlash({
+        type: 'info',
+        title: remoteMessage.notification?.title || 'New Notification',
+        message: remoteMessage.notification?.body || '',
+      });
+    });
+
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     // Handle deep link when app is launched cold (was closed)
@@ -282,7 +283,7 @@ export default function App() {
         <MainNavigation />
         <Toast config={toastConfig} />
         <FlashMessage position="top" />
-         <StripeConnectModal />
+        <StripeConnectModal />
       </SafeAreaProvider>
     </QueryClientProvider>
   );

@@ -12,7 +12,7 @@ export default function TopHeader({
   title,
   navigation,
   no_navigate = false,
-  any_navigation = false,
+any_navigation = false,
   navigate_to,
 }) {
   return (
