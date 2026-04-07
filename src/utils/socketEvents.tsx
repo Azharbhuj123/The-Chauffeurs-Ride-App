@@ -6,12 +6,11 @@ import { navigate } from './NavigationService';
 import { useRideStore } from '../stores/rideStore';
 
 export const initSocketListeners = (role: string) => {
-  const { setRideRequests ,setRideId} = useRideStore.getState();
+  const { setRideRequests, setRideId } = useRideStore.getState();
 
   socket.on('ride_request', data => {
+    console.log('🚗 New Ride Request Recseived:', data, 'role', role);
     if (data?.ride_offer && role === 'Driver') {
-      console.log('🚗 New Ride Request Received:', data);
-
       // Format data for UI
       const formattedRide = {
         id: data._id,
@@ -35,15 +34,14 @@ export const initSocketListeners = (role: string) => {
           'You’ve received a new ride request. Please review the details and respond promptly to accept or decline.',
 
         backgroundColor: COLORS.success,
-        onPress: () =>
-          navigate('DriverHome',{}),
+        onPress: () => navigate('DriverHome', {}),
       });
     }
     if (data?.ride_time_out && role === 'Driver') {
       setRideRequests(prev => prev?.filter(ride => ride?.id !== data?.ride_id));
     }
     if (data?.ride_accept && role === 'Driver') {
-      setRideId(data?.ride_id)
+      setRideId(data?.ride_id);
       navigate('RideConfirmationScreen', {
         rideId: data?.ride_id,
         from: 'driver',
@@ -94,7 +92,7 @@ export const initSocketListeners = (role: string) => {
     }
 
     if (data?.ride_cancel) {
-     navigate(data?.action_performer == 'Driver' ? 'Home' : 'DriverHome', {})
+      navigate(data?.action_performer == 'Driver' ? 'Home' : 'DriverHome', {});
       showFlash({
         type: 'danger',
         title: 'Ride Cancelled',
@@ -102,7 +100,6 @@ export const initSocketListeners = (role: string) => {
         backgroundColor: COLORS.error,
         onPress: () => navigate('Home', {}),
       });
-       
     }
   });
 };

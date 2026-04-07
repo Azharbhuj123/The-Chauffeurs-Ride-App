@@ -37,8 +37,11 @@ import CustomDropdown from '../../components/CustomDropdown';
 import {
   COLORS,
   formatDate2,
+  formatDateLocal,
   formatTime,
+  formatTimeLocal,
   formatTimeUTC,
+  getUserTimezone,
 } from '../../utils/Enums';
 import StripeWarningBox from '../../components/StripeWarningBox';
 import { useStripeStore } from '../../stores/stripeStore';
@@ -96,7 +99,7 @@ export default function HomeScreen({ navigation }) {
   const { data: scheduleRides, refetch } = useQuery({
     queryKey: ['driver-schdeule-ride'],
     queryFn: async () => {
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; // "Asia/Karachi"
+      const timezone = getUserTimezone(); // "Asia/Karachi"
 
       return fetchData(`/ride/driver-schdeule-ride?timezone=${timezone}`);
     },
@@ -368,8 +371,9 @@ export default function HomeScreen({ navigation }) {
                     ride.time_for_ride ? { borderColor: '#28a745' } : {},
                   ]}
                 >
-                  <View>
-                    <Text style={styles.destinationTitle}>
+                  {/* Add flex: 1 to this wrapper View */}
+                  <View style={{ flex: 1, paddingRight: 10 }}>
+                    <Text style={styles.destinationTitle} numberOfLines={1}>
                       {ride?.pickup_location?.famous_location ||
                         'Pickup Location'}
                     </Text>
@@ -377,14 +381,11 @@ export default function HomeScreen({ navigation }) {
                     <Text style={styles.destinationSubtitle}>
                       Rider: {ride?.user_name || 'Unknown'}
                       {'\n'}
-                      Schedule At: {formatDate2(
-                        new Date(ride?.schedule?.date),
-                      )}{' '}
-                      {formatTimeUTC(new Date(ride?.schedule?.from))} -{' '}
-                      {formatTimeUTC(new Date(ride?.schedule?.to))}
+                      Schedule At: Schedule: {ride?.schedule_local?.date}{' '}
+                      {ride?.schedule_local?.fromTime} -{' '}
+                      {ride?.schedule_local?.toTime}
                     </Text>
                   </View>
-
                   {ride.time_for_ride && (
                     <Text
                       onPress={() => {
@@ -393,7 +394,12 @@ export default function HomeScreen({ navigation }) {
                           from: 'driver',
                         });
                       }}
-                      style={{ color: '#28a745', fontWeight: '600' }}
+                      style={{
+                        color: '#28a745',
+                        fontWeight: '600',
+                        minWidth: 100,
+                        textAlign: 'right',
+                      }}
                     >
                       Time for Ride!
                     </Text>

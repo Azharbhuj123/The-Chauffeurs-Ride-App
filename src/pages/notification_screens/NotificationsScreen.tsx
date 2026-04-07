@@ -324,18 +324,18 @@ const NotificationCard = memo(
                   {item.body}
                 </Text>
 
-                {(item.sent > 1 || item.failed > 0) && (
+                {(item.sent > 1) && (
                   <View style={styles.statsRow}>
                     {item.sent > 0 && (
                       <View style={styles.statChip}>
                         <Text
                           style={[styles.statText, { color: COLORS.success }]}
                         >
-                          ✓ {item.sent} sent
+                          ✓  sent
                         </Text>
                       </View>
                     )}
-                    {item.failed > 0 && (
+                    {/* {item.failed > 0 && (
                       <View style={[styles.statChip, styles.statChipFail]}>
                         <Text
                           style={[styles.statText, { color: COLORS.error }]}
@@ -343,7 +343,7 @@ const NotificationCard = memo(
                           ✗ {item.failed} failed
                         </Text>
                       </View>
-                    )}
+                    )} */}
                   </View>
                 )}
 

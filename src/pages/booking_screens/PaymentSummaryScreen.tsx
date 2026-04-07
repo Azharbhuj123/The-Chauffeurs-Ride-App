@@ -319,8 +319,8 @@ const styles = StyleSheet.create({
     borderColor: '#E0E0E0',
   },
   tipButtonSelected: {
-    backgroundColor: '#FFD700',
-    borderColor: '#FFD700',
+    backgroundColor: COLORS.warning,
+    borderColor: COLORS.warning,
   },
   tipButtonText: {
     fontSize: wp('3.2%'),

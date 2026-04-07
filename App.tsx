@@ -44,197 +44,58 @@ import { showFlash } from './src/utils/flashMessageHelper';
 import { useStripeStore } from './src/stores/stripeStore';
 import StripeConnectModal from './src/components/StripeConnectModal';
 
+const queryClient = new QueryClient();
+
+
 export default function App() {
   const isDarkMode = useColorScheme() === 'dark';
   const { setLocation } = useStore();
   const { userData, role, setFcmToken } = useUserStore();
-  const handleSuccess = useStripeStore(s => s.handleSuccess);
-  const handleRefresh = useStripeStore(s => s.handleRefresh);
-  const queryClient = new QueryClient();
-  const { rideId } = useRideStore(); // get latest rideId
+  const { handleSuccess, handleRefresh } = useStripeStore();
+  const { rideId } = useRideStore();
+  
   const rideIdRef = useRef(rideId);
-
-  // Update ref whenever rideId changes
   const [permissionStatus, setPermissionStatus] = useState('');
-  const [appState, setAppState] = useState(AppState.currentState);
 
-  // Toast configuration
+  // 1. Toast Configuration
   const toastConfig = {
-    success: props => (
+    success: (props: any) => (
       <BaseToast
         {...props}
         style={{
           borderLeftColor: '#000',
-
           backgroundColor: '#fff',
           marginTop: Platform.OS === 'ios' ? hp(3) : 2,
         }}
-        contentContainerStyle={{ paddingHorizontal: 15 }}
-        text1Style={{
-          fontSize: 16,
-          fontWeight: 'bold',
-          color: COLORS.success,
-          fontFamily: 'Poppins-Regular',
-        }}
-        text2Style={{
-          fontSize: 14,
-          color: '#555',
-          fontFamily: 'Poppins-Regular',
-        }}
+        text1Style={{ fontSize: 16, fontWeight: 'bold', color: COLORS.success, fontFamily: 'Poppins-Regular' }}
+        text2Style={{ fontSize: 14, color: '#555', fontFamily: 'Poppins-Regular' }}
       />
     ),
-    error: props => (
+    error: (props: any) => (
       <ErrorToast
         {...props}
         style={{
           borderLeftColor: COLORS.error,
           backgroundColor: '#fff',
-          fontFamily: 'Poppins-Regular',
           marginTop: Platform.OS === 'ios' ? hp(3) : 2,
         }}
-        text1Style={{
-          fontSize: 16,
-          fontWeight: 'bold',
-          color: COLORS.error,
-          fontFamily: 'Poppins-Regular',
-        }}
-        text2Style={{
-          fontSize: 14,
-          color: '#555',
-          fontFamily: 'Poppins-Regular',
-        }}
+        text1Style={{ fontSize: 16, fontWeight: 'bold', color: COLORS.error, fontFamily: 'Poppins-Regular' }}
+        text2Style={{ fontSize: 14, color: '#555', fontFamily: 'Poppins-Regular' }}
       />
     ),
   };
 
+  // 2. Unified Initialization Logic
   useEffect(() => {
-    rideIdRef.current = rideId;
-  }, [rideId]);
-  // Socket & user room initialization
-  useEffect(() => {
-    console.log('Hermes:', !!global.HermesInternal);
-    if (userData?._id) {
-      joinUserRoom(userData._id);
-      initSocketListeners(role);
-    }
-  }, [userData?._id]);
-
-  // Request location permissions (foreground + background)
-  const requestLocationPermission = async () => {
-    try {
-      if (Platform.OS === 'ios') {
-        // Step 1: Request "When In Use" permission first
-        const whenInUse = await request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
-        console.log('When In Use:', whenInUse);
-
-        if (whenInUse === RESULTS.GRANTED) {
-          // Step 2: Then request "Always" permission
-          const always = await request(PERMISSIONS.IOS.LOCATION_ALWAYS);
-          console.log('Always permission:', always);
-
-          setPermissionStatus(always);
-
-          // Start tracking once we have any permission
-          if (always === RESULTS.GRANTED || whenInUse === RESULTS.GRANTED) {
-            startLocationTracking();
-          }
-        } else {
-          console.warn('Location permission not granted.');
-        }
-      } else {
-        // Android flow
-        const fine = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
-        const background = await request(
-          PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION,
-        );
-
-        console.log('Fine location:', fine);
-        console.log('Background location:', background);
-
-        setPermissionStatus(fine);
-        if (fine === RESULTS.GRANTED) startLocationTracking();
-      }
-    } catch (error) {
-      console.error('Permission request error:', error);
-    }
-  };
-
-  // Check permission on app start
-  useEffect(() => {
-    requestLocationPermission();
-  }, []);
-
-  // Track user location continuously
-  const startLocationTracking = () => {
-    Geolocation.watchPosition(
-      position => {
-        console.log('User location:', position.coords);
-        setLocation(position.coords);
-
-        if (userData?._id) {
-          socket.emit('user-location', {
-            userId: userData._id.toString(),
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-        }
-      },
-      error => console.error('Location watch error:', error),
-      {
-        enableHighAccuracy: true, // Use GPS for precise location
-        distanceFilter: 5, // Trigger update only if user moves 5 meters
-        interval: 5000, // Android: attempt update every 2 sec
-        fastestInterval: 1000, // Android: min interval 1 sec
-        forceRequestLocation: true, // Force location fetch
-        useSignificantChanges: false, // iOS: ignore only significant changes
-      },
-    );
-  };
-
-  // Optional: handle app state changes (pause/resume tracking)
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', nextAppState => {
-      setAppState(nextAppState);
-      if (nextAppState === 'active' && permissionStatus === RESULTS.GRANTED) {
-        startLocationTracking();
-      }
-    });
-    return () => subscription.remove();
-  }, [permissionStatus]);
-
-  const getToken = async () => {
-    try {
-      const token = await messaging().getToken();
-      console.log('FCM Token:', token);
-      setFcmToken(token);
-
-      // ✅ TODO: Send token to your backend
-    } catch (error) {
-      console.log('Error getting FCM token:', error);
-    }
-  };
-
-  useEffect(() => {
-    const initNotifications = async () => {
-      // ✅ Android 13+ permission
-      if (Platform.OS === 'android' && Platform.Version >= 33) {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-        );
-
-        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-          console.log('Notification permission denied');
-          return;
-        }
-      }
-      console.log('Notification permission granted');
+    const initApp = async () => {
+      await handlePermissionsSequence();
+      setupDeepLinks();
     };
 
-    initNotifications();
-    getToken();
-    // ✅ Foreground listener
-    const unsubscribe = messaging().onMessage(async remoteMessage => {
-      console.log('Foreground message:', remoteMessage);
+    initApp();
+
+    // Foreground Notification Listener
+    const unsubscribeFCM = messaging().onMessage(async remoteMessage => {
       showFlash({
         type: 'info',
         title: remoteMessage.notification?.title || 'New Notification',
@@ -242,39 +103,109 @@ export default function App() {
       });
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribeFCM();
+    };
   }, []);
 
-  useEffect(() => {
-    // Handle deep link when app is launched cold (was closed)
-    Linking.getInitialURL().then(url => {
-      if (url) handleDeepLink(url);
-    });
+  // 3. Sequential Permission Handler
+  const handlePermissionsSequence = async () => {
+    try {
+      // --- Location Permissions ---
+      const locPermission = Platform.OS === 'ios' 
+        ? PERMISSIONS.IOS.LOCATION_WHEN_IN_USE 
+        : PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION;
 
-    // Handle deep link when app is already running in background
-    const subscription = Linking.addEventListener('url', ({ url }) =>
-      handleDeepLink(url),
+      const currentStatus = await check(locPermission);
+
+      if (currentStatus === RESULTS.DENIED) {
+        // First time asking
+        await requestLocationPermission();
+      } else if (currentStatus === RESULTS.GRANTED) {
+        startLocationTracking();
+      }
+
+      // --- Notification Permissions ---
+      if (Platform.OS === 'android' && Platform.Version >= 33) {
+        const hasNotifyPerm = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+        if (!hasNotifyPerm) {
+          await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+        }
+      } else if (Platform.OS === 'ios') {
+        await messaging().requestPermission();
+      }
+
+      // --- Get FCM Token ---
+      const token = await messaging().getToken();
+      if (token) setFcmToken(token);
+
+    } catch (err) {
+      console.error('Initialization Error:', err);
+    }
+  };
+
+  const requestLocationPermission = async () => {
+    if (Platform.OS === 'ios') {
+      const whenInUse = await request(PERMISSIONS.IOS.LOCATION_WHEN_IN_USE);
+      if (whenInUse === RESULTS.GRANTED) {
+        await request(PERMISSIONS.IOS.LOCATION_ALWAYS); // Background permission
+        startLocationTracking();
+      }
+    } else {
+      const fine = await request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
+      if (fine === RESULTS.GRANTED) {
+        setPermissionStatus(fine);
+        startLocationTracking();
+        // Request background separately for Android 11+ if needed
+        await request(PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION);
+      }
+    }
+  };
+
+  const startLocationTracking = () => {
+    Geolocation.watchPosition(
+      position => {
+        setLocation(position.coords);
+        if (userData?._id) {
+          socket.emit('user-location', {
+            userId: userData._id,
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        }
+      },
+      error => console.log('Location Error:', error),
+      { enableHighAccuracy: true, distanceFilter: 5, interval: 5000, fastestInterval: 2000 }
     );
+  };
 
+  // 4. Socket & AppState Management
+  useEffect(() => {
+    if (userData?._id) {
+      joinUserRoom(userData._id);
+      initSocketListeners(role);
+    }
+  }, [userData?._id]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextState => {
+      if (nextState === 'active') startLocationTracking();
+    });
     return () => subscription.remove();
   }, []);
 
-  function handleDeepLink(url: string) {
-    if (!url) return;
+  // 5. Deep Linking Logic
+  const setupDeepLinks = () => {
+    Linking.getInitialURL().then(url => url && handleDeepLink(url));
+    const sub = Linking.addEventListener('url', ({ url }) => handleDeepLink(url));
+    return () => sub.remove();
+  };
 
-    try {
-      // React Native's URL parser needs a valid base for custom schemes
-      const accountId = url.split('accountId=')[1]?.split('&')[0] ?? '';
-
-      if (url.includes('stripe-connect-success')) {
-        handleSuccess(accountId);
-      } else if (url.includes('stripe-connect-refresh')) {
-        handleRefresh(accountId);
-      }
-    } catch (err) {
-      console.warn('[DeepLink] Failed to parse URL:', url, err);
-    }
-  }
+  const handleDeepLink = (url: string) => {
+    const accountId = url.split('accountId=')?.split('&') ?? '';
+    if (url.includes('stripe-connect-success')) handleSuccess(accountId);
+    if (url.includes('stripe-connect-refresh')) handleRefresh(accountId);
+  };
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -290,7 +221,5 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
 });

@@ -382,89 +382,50 @@ const ConfirmBooking = ({ navigation, route }) => {
   });
 
   const handleConfirmBooking = () => {
-    let final_voucher_ids = [...rideData?.voucher_ids];
-
-    if (paymentMethod === 'Free' && voucherData?.voucher?._id) {
-      final_voucher_ids.push(voucherData?.voucher?._id);
-    }
-
-    // ✅ Convert local schedule times → proper UTC ISO strings for MongoDB
     const scheduleUTC = {
       date: localToUTC(schedule?.date, '00:00') || schedule?.date,
-      from: localToUTC(schedule?.date, schedule?.fromTime) || schedule?.fromTime,
+      from:
+        localToUTC(schedule?.date, schedule?.fromTime) || schedule?.fromTime,
       to: localToUTC(schedule?.date, schedule?.toTime) || schedule?.toTime,
     };
 
-    let body = {
+    // Guard: don't submit if conversion failed
+    if (!scheduleUTC.from || !scheduleUTC.to) {
+      showToast({
+        type: 'error',
+        title: 'Error',
+        message: 'Invalid schedule time.',
+      });
+      return;
+    }
+
+    const body = {
       vehicle: rideData?.selectedCar,
       payment_method: paymentMethod,
       total_fare: rideData?.totalFare,
       category_type: rideData?.selectedClass,
       ride_time_out: ride_id ? true : false,
       remaining_fare: 0,
-      ride_id: ride_id,
+      ride_id,
       is_upgrade_class: rideData?.is_upgrade_class,
       duration: rideData?.duration_min_value,
       distance: rideData?.distance,
-      voucher_ids: final_voucher_ids,
+      voucher_ids: [],
       postalCode: rideData?.postalCode,
       city: rideData?.city,
       state: rideData?.state,
       timezone: getUserTimezone(),
-      schedule: scheduleUTC,
+      schedule: scheduleUTC, // ✅ single source of truth
+      pickup_location: {
+        type: 'Point',
+        coordinates: [pickupLocation?.longitude, pickupLocation?.latitude],
+        address: pickupLocation?.address,
+        famous_location: pickupLocation?.shortAddress,
+        city: pickupLocation?.city,
+      },
     };
 
-    const pickup_location = {
-      type: 'Point',
-      coordinates: [pickupLocation?.longitude, pickupLocation?.latitude],
-      address: pickupLocation?.address,
-      famous_location: pickupLocation?.shortAddress,
-      city: pickupLocation?.city,
-    };
-
-    // const drop_location = {
-    //   type: 'Point',
-    //   coordinates: [dropoffLocation?.longitude, dropoffLocation?.latitude],
-    //   address: dropoffLocation?.address,
-    //   famous_location: dropoffLocation?.shortAddress,
-    //   city: dropoffLocation?.city,
-    // };
-    if (
-      rideData?.isScheduledRide &&
-      date instanceof Date &&
-      time instanceof Date
-    ) {
-      const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
-      const hours = time.getHours().toString().padStart(2, '0');
-      const minutes = time.getMinutes().toString().padStart(2, '0');
-      const formattedTime = `${hours}:${minutes}`;
-
-      const timestamp = new Date(
-        `${formattedDate}T${formattedTime}:00`,
-      ).toISOString();
-
-      const schedule = {
-        date: formattedDate,
-        time: formattedTime,
-        timestamp,
-      };
-
-      console.log(schedule, '✅ final schedule');
-      body.schedule = schedule;
-    } else {
-      console.warn('⚠️ Date or time invalid', date, time);
-    }
-
-    body.pickup_location = pickup_location;
-    // body.drop_location = drop_location;
-
-    triggerMutation({
-      endPoint: '/ride/',
-      body: body,
-      method: 'post',
-    });
-
-    // navigation.navigate('RideConfirmationScreen', { driver });
+    triggerMutation({ endPoint: '/ride/', body, method: 'post' });
   };
 
   useFocusEffect(
@@ -753,7 +714,7 @@ const ConfirmBooking = ({ navigation, route }) => {
                     <Text style={styles.driverName}>{data?.driver?.name}</Text>
                     <View style={styles.ratingContainer}>
                       <Icon name="star" size={14} color="#F8D833" />
-                      <Text style={styles.rating}>{data?.driver?.rating}</Text>
+                      <Text style={styles.rating}>{Number(data?.driver?.rating)?.toFixed(2)}</Text>
                       {data?.total_success_rides > 20000 ? (
                         <Text style={styles.trips}>20000+ Trips</Text>
                       ) : data?.total_success_rides > 0 ? (
@@ -1278,9 +1239,20 @@ const styles = StyleSheet.create({
   cancelButton: {
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    paddingVertical: 10,
-    borderRadius: 24,
+    paddingVertical: hp(2),
+    borderRadius: wp(6),
     fontFamily: 'Poppins-Regular',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   cancelButtonText: {
     textAlign: 'center',

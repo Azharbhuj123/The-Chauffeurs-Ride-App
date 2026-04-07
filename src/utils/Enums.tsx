@@ -208,6 +208,36 @@ export const formatTimeUTC = (time: any) => {
     : '';
 };
 
+
+//  add this helper
+export const formatTimeLocal = (date: Date, timezone?: string): string => {
+  const tz = timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(date);
+};
+
+export const formatDateLocal = (date: Date, timezone?: string): string => {
+  const tz = timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return new Intl.DateTimeFormat('en-CA', { // en-CA gives YYYY-MM-DD
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+};
+
+
+
+
+
+
+
+
+
 export const GOOGLE_MAP_API_KEY = 'AIzaSyBFf6S9vBuFCtND_1-bT8MrULsWEtnss0k';
 export const STRIPE_PUBLISH_KEY =
   'pk_test_51Sv0nYCpeX6CbJY29WLaEBNODUyiR842lT4TdGBAkieasxf3mt05aOuBh394K4eOUkUASeKZTMoRXbSvGu7uYZgx00aS4iOEMe';

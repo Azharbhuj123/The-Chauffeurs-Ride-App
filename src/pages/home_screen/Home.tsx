@@ -23,7 +23,12 @@ import { useUserStore } from '../../stores/useUserStore';
 import { useQuery } from '@tanstack/react-query';
 import { fetchData } from '../../queryFunctions/queryFunctions';
 import { formatSmartDate } from '../../utils/DateFormats';
-import { COLORS, formatDate2, formatTime } from '../../utils/Enums';
+import {
+  COLORS,
+  formatDate2,
+  formatTime,
+  getUserTimezone,
+} from '../../utils/Enums';
 import { useLoaderStore } from '../../stores/useLoaderStore';
 import AppLoader from '../../components/AppLoader';
 import { useStore } from '../../stores/useStore';
@@ -49,7 +54,12 @@ export default function Home({ navigation }) {
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['user-home'],
-    queryFn: () => fetchData('/ride/user-screen'),
+
+    queryFn: async () => {
+      const timezone = getUserTimezone(); // "Asia/Karachi"
+
+      return fetchData(`/ride/user-screen?timezone=${timezone}`);
+    },
     keepPreviousData: true,
   });
 
@@ -330,12 +340,13 @@ export default function Home({ navigation }) {
           {Array.isArray(data?.schedule_destination) &&
             data?.schedule_destination?.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Schedule Ride</Text>
+                <Text style={styles.sectionTitle}>Scheduled Rides</Text>
                 {data?.schedule_destination?.map(des => (
                   <View key={des?._id} style={styles.destinationCard}>
-                    <View>
-                      <Text style={styles.destinationTitle}>
-                        {des?.pickup_location?.famous_location}
+                    <View style={{ flex: 1, paddingRight: 10 }}>
+                      <Text style={styles.destinationTitle} numberOfLines={1}>
+                        {des?.pickup_location?.famous_location ||
+                          'Pickup Location'}
                       </Text>
                       <Text style={styles.destinationSubtitle}>
                         Schedule At:{' '}
@@ -373,8 +384,8 @@ export default function Home({ navigation }) {
                 <Text style={styles.sectionTitle}>Quick Destinations</Text>
                 {data?.quick_destination?.map(des => (
                   <View key={des?._id} style={styles.destinationCard}>
-                    <View>
-                      <Text style={styles.destinationTitle}>
+                    <View style={{ flex: 1, paddingRight: 10 }}>
+                      <Text style={styles.destinationTitle} numberOfLines={1}>
                         {des?.pickup_location?.famous_location}
                       </Text>
                       <Text style={styles.destinationSubtitle}>
