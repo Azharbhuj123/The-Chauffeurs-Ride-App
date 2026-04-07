@@ -40,8 +40,20 @@ export const initSocketListeners = (role: string) => {
     if (data?.ride_time_out && role === 'Driver') {
       setRideRequests(prev => prev?.filter(ride => ride?.id !== data?.ride_id));
     }
-    if (data?.ride_accept && role === 'Driver') {
+    if (data?.ride_accept && role === 'User') {
       setRideId(data?.ride_id);
+      showFlash({
+        type: 'success',
+        title: 'Ride Started',
+        message: `Your driver ${data?.accept_by} is on the way. Please be ready at your pickup point.`,
+        backgroundColor: COLORS.success,
+        onPress: () =>
+          navigate('RideConfirmationScreen', {
+            rideId: data?.ride_id,
+            from: 'driver',
+          }),
+      });
+
       navigate('RideConfirmationScreen', {
         rideId: data?.ride_id,
         from: 'driver',

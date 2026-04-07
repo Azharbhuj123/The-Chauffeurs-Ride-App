@@ -199,14 +199,10 @@ export default function HomeScreen({ navigation }) {
 
   const { triggerMutation, loading } = useActionMutation({
     onSuccessCallback: async data => {
-      if (data?.success && data?.action === 'reject_transfer') {
-        setShowRejectPopup(false);
-
-        setRideRequests(rideId);
-        setRideId(null);
-        setDriverId(null);
-        selectedRide(null);
-      }
+      navigation.navigate('RideConfirmationScreen', {
+        rideId: rideId,
+        from: 'driver',
+      });
     },
     onErrorCallback: errmsg => {
       showToast({
@@ -218,8 +214,12 @@ export default function HomeScreen({ navigation }) {
   });
 
   const handleAccept = ride => {
+    if (!ride.time_for_ride) return;
+    
+
+    setRideId(ride?._id);
     const body = {
-      ride_id: ride?.id,
+      ride_id: ride?._id,
       action: 'accept',
     };
     triggerMutation({
@@ -364,12 +364,13 @@ export default function HomeScreen({ navigation }) {
             <Text style={styles.sectionTitle}>Scheduled Rides</Text>
             <View style={styles.section}>
               {ridesArray.map(ride => (
-                <View
+                <TouchableOpacity
                   key={ride?._id}
                   style={[
                     styles.destinationCard,
                     ride.time_for_ride ? { borderColor: '#28a745' } : {},
                   ]}
+                  onPress={() => handleAccept(ride)}
                 >
                   {/* Add flex: 1 to this wrapper View */}
                   <View style={{ flex: 1, paddingRight: 10 }}>
@@ -388,12 +389,6 @@ export default function HomeScreen({ navigation }) {
                   </View>
                   {ride.time_for_ride && (
                     <Text
-                      onPress={() => {
-                        navigation.navigate('RideConfirmationScreen', {
-                          rideId: ride?._id,
-                          from: 'driver',
-                        });
-                      }}
                       style={{
                         color: '#28a745',
                         fontWeight: '600',
@@ -401,10 +396,10 @@ export default function HomeScreen({ navigation }) {
                         textAlign: 'right',
                       }}
                     >
-                      Time for Ride!
+                      {loading ? 'Processing...' : 'Time for Ride!'}
                     </Text>
                   )}
-                </View>
+                </TouchableOpacity>
               ))}
             </View>
           </>

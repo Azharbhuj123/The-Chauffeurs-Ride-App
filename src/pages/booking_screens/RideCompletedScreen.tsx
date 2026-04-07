@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
- 
+
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -36,7 +36,7 @@ export default function RideCompletedScreen({ navigation, route }) {
   const [note, setNote] = useState('');
   const { rideId } = route.params || {};
   const tabBarHeight = useTabBarHeightHelper();
-  const {userData} = useUserStore();
+  const { userData } = useUserStore();
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['ride_view', rideId],
@@ -44,24 +44,23 @@ export default function RideCompletedScreen({ navigation, route }) {
     keepPreviousData: true,
     enabled: !!rideId,
   });
-  
 
   const payment_breakdown = data?.data?.payment_breakdown;
 
-const { triggerMutation, loading } = useActionMutation({
+  const { triggerMutation, loading } = useActionMutation({
     onSuccessCallback: async data => {
-        // Reset the Booking stack completely
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Bookings' }], // 👈 take user to Home first
-        });
+      // Reset the Booking stack completely
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Bookings' }], // 👈 take user to Home first
+      });
 
-        // Optionally also reset the Booking stack when user revisits it
-        setTimeout(() => {
-          navigation.navigate('Bookings', {
-            screen: 'BookingMain', // 👈 start fresh page 1
-          });
-        }, 300);
+      // Optionally also reset the Booking stack when user revisits it
+      setTimeout(() => {
+        navigation.navigate('Bookings', {
+          screen: 'BookingMain', // 👈 start fresh page 1
+        });
+      }, 300);
     },
     onErrorCallback: errmsg => {
       showToast({
@@ -72,41 +71,31 @@ const { triggerMutation, loading } = useActionMutation({
     },
   });
 
-  const handleReview = () =>{
-    if(rating === 0){
+  const handleReview = () => {
+    if (rating === 0) {
       showToast({
         type: 'error',
         title: 'Action Failed',
         message: 'Please fill out all fields',
-      })
+      });
 
       return;
     }
- 
 
     const data_obj = {
-      user:userData?._id,
+      user: userData?._id,
       rating: rating,
       comment: note,
       ride: rideId,
-      driver: data?.data?.driver?._id
+      driver: data?.data?.driver?._id,
     };
 
- 
-    
-
-triggerMutation({
+    triggerMutation({
       endPoint: '/review/',
       body: data_obj,
       method: 'post',
     });
-
-
-
-
-
-  }
-
+  };
 
   const is_free_ride = data?.data?.payment_method === 'Free';
   return (
@@ -164,21 +153,27 @@ triggerMutation({
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Base Fare:</Text>
                 <Text style={styles.summaryValue}>
-                  ${is_free_ride ? '0' :payment_breakdown?.driver_earning?.toFixed(2)}
+                  $
+                  {is_free_ride
+                    ? '0'
+                    : payment_breakdown?.driver_earning?.toFixed(2)}
                 </Text>
               </View>
 
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Taxes & Fees:</Text>
                 <Text style={styles.summaryValue}>
-                  ${is_free_ride ? '0' :payment_breakdown?.platform_fee?.toFixed(2)}
+                  $
+                  {is_free_ride
+                    ? '0'
+                    : payment_breakdown?.platform_fee?.toFixed(2)}
                 </Text>
               </View>
               {payment_breakdown?.dispatch_fee > 0 && (
                 <View style={styles.summaryRow}>
                   <Text style={styles.summaryLabel}>Dispatch Fees:</Text>
                   <Text style={styles.summaryValue}>
-                    ${ is_free_ride ? '0' :payment_breakdown?.dispatch_fee}
+                    ${is_free_ride ? '0' : payment_breakdown?.dispatch_fee}
                   </Text>
                 </View>
               )}
@@ -186,7 +181,7 @@ triggerMutation({
                 <View style={styles.summaryRow}>
                   <Text style={styles.summaryLabel}>Referral Fees:</Text>
                   <Text style={styles.summaryValue}>
-                    ${is_free_ride ? '0' :payment_breakdown?.referral_fee}
+                    ${is_free_ride ? '0' : payment_breakdown?.referral_fee}
                   </Text>
                 </View>
               )}
@@ -194,7 +189,10 @@ triggerMutation({
               <View style={[styles.summaryRow, styles.totalRow]}>
                 <Text style={styles.totalLabel}>Total Charged:</Text>
                 <Text style={styles.totalValue}>
-                  ${is_free_ride ? '0' :payment_breakdown?.total_fare?.toFixed(2)}
+                  $
+                  {is_free_ride
+                    ? '0'
+                    : payment_breakdown?.total_fare?.toFixed(2)}
                 </Text>
               </View>
             </View>
@@ -248,8 +246,12 @@ triggerMutation({
                 onChangeText={setNote}
                 multiline
               />
-              
-              <Button isLoading={loading} title='Submit' onPress={handleReview}/>
+
+              <Button
+                isLoading={loading}
+                title="Submit"
+                onPress={handleReview}
+              />
             </View>
           </ScrollView>
           {data?.data?.payment_method === 'Card' && (
@@ -341,7 +343,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: wp('4%'),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     marginBottom: hp('2%'),
     fontFamily: 'Poppins-Regular',
@@ -361,7 +363,7 @@ const styles = StyleSheet.create({
     fontSize: wp('3.8%'),
     color: '#000',
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     fontFamily: 'Poppins-Regular',
   },
   totalRow: {
@@ -373,7 +375,7 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: wp('4.2%'),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     fontFamily: 'Poppins-Regular',
   },
@@ -414,7 +416,7 @@ const styles = StyleSheet.create({
   driverName: {
     fontSize: wp('4.2%'),
     fontWeight: '0',
-        fontFamily:"Poppins-Regular",
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     marginBottom: hp('0.3%'),
     fontFamily: 'Poppins-Regular',

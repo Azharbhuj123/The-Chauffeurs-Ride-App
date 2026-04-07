@@ -10,6 +10,7 @@ import {
   ScrollView,
   StatusBar,
   Alert,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -404,7 +405,7 @@ const RideConfirmationScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
         {role === 'Driver' &&
-          (rideStatus === 'Scheduled' ? (
+          (rideStatus === 'Scheduled' || rideStatus === 'Accepted' ? (
             <View style={{ marginTop: hp(3) }}>
               <Button
                 onPress={() => handleAction('arrived')}
@@ -630,6 +631,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 10,
     fontFamily: 'Poppins-Regular',
+
+   
   },
   cancelButtonText: {
     fontSize: 14,

@@ -45,7 +45,12 @@ export default function UserHeader({ navigation }) {
         <Text style={styles.greetingText}>{greeting}</Text>
 
         <View style={styles.nameContainer}>
-          <Text style={styles.userName}>Welcome, {userData?.name}</Text>
+          <Text style={styles.userName}>
+            Welcome,{' '}
+            {userData?.name && userData?.name?.length > 15
+              ? userData?.name?.substring(0, 15) + '...'
+              : userData?.name}{' '}
+          </Text>
           <View style={styles.onlineDot} />
         </View>
       </View>
@@ -58,7 +63,7 @@ export default function UserHeader({ navigation }) {
         </TouchableOpacity>
       ) : (
         <TouchableOpacity
-          onPress={() =>navigation.navigate('Notification')}
+          onPress={() => navigation.navigate('Notification')}
           style={styles.profileButton}
         >
           <Icon name="notifications-outline" size={wp('6%')} color="#FFD700" />
@@ -78,8 +83,8 @@ export default function UserHeader({ navigation }) {
             <Image source={require('../assets/images/logout.png')} />
             <Text style={styles.modalTitle}>Confirm Logout</Text>
             <Text style={styles.modalSubtitle}>
-              Are you sure you want to log out of your Drivo account? You
-              will need to sign in again to book a ride.{' '}
+              Are you sure you want to log out of your Drivo account? You will
+              need to sign in again to book a ride.{' '}
             </Text>
 
             <View style={styles.btnContainer}>

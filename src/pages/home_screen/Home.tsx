@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   FlatList,
   StatusBar,
+  RefreshControl, // Added RefreshControl
 } from 'react-native';
 import React, { useCallback, useRef, useState } from 'react';
 import {
@@ -41,6 +42,7 @@ import { showToast } from '../../utils/toastHelper';
 
 export default function Home({ navigation }) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [refreshing, setRefreshing] = useState(false); // Added refreshing state
   const [isModalVisible, setModalVisible] = useState({
     status: false,
     rideId: null,
@@ -68,6 +70,13 @@ export default function Home({ navigation }) {
     queryFn: () => fetchData('/ride/user-last-ride'),
     keepPreviousData: true,
   });
+
+  // Added onRefresh handler
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   useFocusEffect(
     useCallback(() => {
@@ -161,7 +170,7 @@ export default function Home({ navigation }) {
       case 'Pending':
         return 'Searching for a driver...';
       case 'Accepted':
-        return 'Driver accepted your ride, on the way!';
+        return 'Your driver is heading towards your pickup location. Get ready!';
       case 'Arrived':
         return 'The driver has arrived at your location';
 
@@ -190,11 +199,11 @@ export default function Home({ navigation }) {
 
   const handleBookAgain = data => {
     // Extract coordinates
-    const pickLat = data?.pickup_location?.coordinates[1];
-    const pickLng = data?.pickup_location?.coordinates[0];
+    const pickLat = data?.pickup_location?.coordinates;
+    const pickLng = data?.pickup_location?.coordinates;
 
-    const dropLat = data?.drop_location?.coordinates[1];
-    const dropLng = data?.drop_location?.coordinates[0];
+    const dropLat = data?.drop_location?.coordinates;
+    const dropLng = data?.drop_location?.coordinates;
     console.log(
       data?.drop_location?.famous_location,
       'data?.drop_location?.famous_location',
@@ -207,13 +216,6 @@ export default function Home({ navigation }) {
       address: data?.pickup_location?.address,
       shortAddress: data?.pickup_location?.famous_location,
     };
-
-    // const drop_location = {
-    //   latitude: dropLat,
-    //   longitude: dropLng,
-    //   address: data?.drop_location?.address,
-    //   shortAddress: data?.drop_location?.famous_location,
-    // };
 
     // Update ride data
     setRideData({
@@ -268,6 +270,14 @@ export default function Home({ navigation }) {
             { paddingBottom: tabBarHeight + 20 },
           ]}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[COLORS.warning]} // Android loader color
+              tintColor={COLORS.warning} // iOS loader color
+            />
+          }
         >
           {/* Header */}
           <UserHeader navigation={navigation} />
@@ -295,7 +305,6 @@ export default function Home({ navigation }) {
           >
             <Text style={styles.sectionTitle}>Current Ride Status</Text>
             <View style={styles.statusRow}>
-              {/* // data?.data?._id  ride id if active.... */}
               {data?.data?._id ? (
                 <View style={{ flexDirection: 'row' }}>
                   <Icon
@@ -317,25 +326,6 @@ export default function Home({ navigation }) {
             </View>
           </TouchableOpacity>
 
-          {/* Loyalty & Offers - Slider */}
-          {/* <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Loyalty & Offers</Text>
-            <FlatList
-              ref={flatListRef}
-              data={loyaltyData}
-              renderItem={renderLoyaltyCard}
-              keyExtractor={item => item.id}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              onScroll={onScroll}
-              scrollEventThrottle={16}
-              snapToInterval={wp('90%')}
-              decelerationRate="fast"
-              contentContainerStyle={styles.sliderContainer}
-            />
-          </View> */}
-
           {/* Schedule Ride */}
           {Array.isArray(data?.schedule_destination) &&
             data?.schedule_destination?.length > 0 && (
@@ -353,10 +343,8 @@ export default function Home({ navigation }) {
                         {formatDate2(new Date(des?.schedule?.date))}{' '}
                         {formatTime(new Date(des?.schedule?.from))} -{' '}
                         {formatTime(new Date(des?.schedule?.to))}
-                        {/* {des?.distance} */}
                       </Text>
                     </View>
-                    {/* <Icon name="chevron-forward" size={wp('5%')} color="#666" /> */}
                     <TouchableOpacity
                       onPress={() =>
                         setModalVisible({ status: true, rideId: des?._id })
@@ -390,10 +378,8 @@ export default function Home({ navigation }) {
                       </Text>
                       <Text style={styles.destinationSubtitle}>
                         Last Trip: {formatSmartDate(des?.schedule?.date)}
-                        {/* {des?.distance} */}
                       </Text>
                     </View>
-                    {/* <Icon name="chevron-forward" size={wp('5%')} color="#666" /> */}
                     <TouchableOpacity onPress={() => handleBookAgain(des)}>
                       <Text
                         style={{
@@ -410,7 +396,6 @@ export default function Home({ navigation }) {
               </View>
             )}
 
-          {/* Bottom spacing to prevent content hiding behind tab bar */}
           <CancellationModal
             isVisible={isModalVisible.status}
             onClose={() => setModalVisible({ status: false, rideId: '' })}
@@ -452,19 +437,16 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
     color: '#000',
     marginBottom: hp('0.5%'),
-    fontFamily: 'Poppins-Regular',
   },
   ctaSubtitle: {
     fontSize: wp('3.5%'),
     color: '#000',
     fontWeight: '400',
-
     fontFamily: 'Poppins-Regular',
   },
   rideStatusCard: {
     backgroundColor: '#fff',
     elevation: 8,
-
     borderWidth: 1,
     borderColor: '1px solid rgba(17, 17, 17, 0.10)',
     borderRadius: wp('4%'),
@@ -477,7 +459,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
     color: '#000',
     marginBottom: hp('1.5%'),
-    fontFamily: 'Poppins-Regular',
   },
   statusRow: {
     flexDirection: 'row',
@@ -515,7 +496,6 @@ const styles = StyleSheet.create({
     color: COLORS.warning,
     marginBottom: hp('1%'),
     fontWeight: '0',
-    fontFamily: 'Poppins-Regular',
     fontFamily: 'Poppins-Regular',
   },
   loyaltyPoints: {
@@ -567,7 +547,6 @@ const styles = StyleSheet.create({
   destinationCard: {
     backgroundColor: '#fff',
     elevation: 8,
-
     borderWidth: 1,
     borderColor: '1px solid rgba(17, 17, 17, 0.10)',
     borderRadius: wp('4%'),
@@ -584,7 +563,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
     color: '#000',
     marginBottom: hp('0.5%'),
-    fontFamily: 'Poppins-Regular',
   },
   destinationSubtitle: {
     fontSize: wp('3%'),

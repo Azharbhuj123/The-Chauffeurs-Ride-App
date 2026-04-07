@@ -447,12 +447,12 @@ const ConfirmBooking = ({ navigation, route }) => {
               backgroundColor: COLORS.error,
             });
           }
-          if (data?.ride_accept) {
-            navigation.navigate('RideConfirmationScreen', {
-              rideId: data?.ride_id,
-              from: 'user',
-            });
-          }
+          // if (data?.ride_accept) {
+          //   navigation.navigate('RideConfirmationScreen', {
+          //     rideId: data?.ride_id,
+          //     from: 'user',
+          //   });
+          // }
         });
       }
 
@@ -714,7 +714,9 @@ const ConfirmBooking = ({ navigation, route }) => {
                     <Text style={styles.driverName}>{data?.driver?.name}</Text>
                     <View style={styles.ratingContainer}>
                       <Icon name="star" size={14} color="#F8D833" />
-                      <Text style={styles.rating}>{Number(data?.driver?.rating)?.toFixed(2)}</Text>
+                      <Text style={styles.rating}>
+                        {Number(data?.driver?.rating)?.toFixed(2)}
+                      </Text>
                       {data?.total_success_rides > 20000 ? (
                         <Text style={styles.trips}>20000+ Trips</Text>
                       ) : data?.total_success_rides > 0 ? (
@@ -906,19 +908,13 @@ const ConfirmBooking = ({ navigation, route }) => {
 
         <View style={styles.bottomButtons}>
           <Button
-            disabled={loading || (timer < 30 && timer > 0)} // disable while counting
-            title={
-              timer > 0
-                ? `Waiting... ${timer}s`
-                : rideData?.schedule?.date
-                ? 'Confirm Scheduled Ride'
-                : 'Confirm Booking'
-            }
+            disabled={loading} // disable while counting
+            title={loading ? `Confirming Ride...` : 'Confirm Booking'}
             onPress={handleConfirmBooking}
           />
 
           <TouchableOpacity
-            disabled={timer < 30 && timer > 0}
+            disabled={loading}
             onPress={() => navigation?.goBack()}
             style={styles.cancelButton}
           >
@@ -1242,17 +1238,6 @@ const styles = StyleSheet.create({
     paddingVertical: hp(2),
     borderRadius: wp(6),
     fontFamily: 'Poppins-Regular',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
   },
   cancelButtonText: {
     textAlign: 'center',
